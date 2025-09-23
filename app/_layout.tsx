@@ -7,6 +7,7 @@ import { StyleSheet, View } from "react-native";
 import { CalorieTrackerProvider } from "@/providers/CalorieTrackerProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
+import { HealthProvider } from "@/providers/HealthProvider";
 
 
 SplashScreen.preventAutoHideAsync();
@@ -45,9 +46,11 @@ export default function RootLayout() {
       <GestureHandlerRootView style={styles.container}>
         <LanguageProvider>
           <ThemeProvider>
-            <CalorieTrackerProvider>
-              <RootLayoutNav />
-            </CalorieTrackerProvider>
+            <HealthProvider>
+              <CalorieTrackerProvider>
+                <RootLayoutNav />
+              </CalorieTrackerProvider>
+            </HealthProvider>
           </ThemeProvider>
         </LanguageProvider>
       </GestureHandlerRootView>
