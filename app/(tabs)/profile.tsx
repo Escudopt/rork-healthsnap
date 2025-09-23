@@ -9,15 +9,17 @@ import {
   Alert,
   StatusBar,
   Platform,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Save, Activity, Target, Scale, Ruler, TrendingUp, CheckCircle } from 'lucide-react-native';
+import { Save, Activity, Target, Scale, Ruler, TrendingUp, CheckCircle, Trash2, AlertTriangle, History, X } from 'lucide-react-native';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { UserProfile } from '@/types/food';
 import { BlurCard } from '@/components/BlurCard';
 import { ThemeSelector } from '@/components/ThemeSelector';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const activityLevels = [
   { key: 'sedentary', label: 'Sedentário', description: 'Pouco ou nenhum exercício' },
@@ -39,11 +41,15 @@ export default function ProfileScreen() {
     healthMetrics, 
     updateUserProfile,
     meals,
-    calculateHealthScore 
+    calculateHealthScore,
+    resetData,
+    clearHistory 
   } = useCalorieTracker();
   const { colors, isDark } = useTheme();
   const [isEditing, setIsEditing] = useState(!userProfile);
   const [loading, setLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteType, setDeleteType] = useState<'profile' | 'history' | 'all'>('profile');
   
   const [formData, setFormData] = useState<UserProfile>({
     name: userProfile?.name || '',
@@ -526,7 +532,213 @@ export default function ProfileScreen() {
       fontSize: 10,
       fontStyle: 'italic',
     },
+    
+    // Header icon button
+    headerIconButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: isDark ? 0 : 0.1,
+      shadowRadius: 2,
+      elevation: isDark ? 0 : 1,
+    },
+    
+    // Delete options styles
+    deleteOptionsContainer: {
+      gap: 12,
+      marginTop: 16,
+    },
+    deleteOptionButton: {
+      borderRadius: 12,
+      padding: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: isDark ? 0.2 : 0.05,
+      shadowRadius: isDark ? 2 : 4,
+      elevation: isDark ? 1 : 2,
+      borderWidth: isDark ? 0 : 0.5,
+      borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.05)',
+    },
+    deleteOptionContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    deleteOptionIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    deleteOptionText: {
+      flex: 1,
+    },
+    deleteOptionTitle: {
+      fontSize: 16,
+      fontWeight: '600' as const,
+      marginBottom: 2,
+    },
+    deleteOptionDescription: {
+      fontSize: 13,
+      fontWeight: '400' as const,
+      opacity: 0.8,
+    },
+    
+    // Modal styles
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    modalContainer: {
+      width: '100%',
+      maxWidth: 400,
+      borderRadius: 24,
+      overflow: 'hidden',
+      shadowColor: 'rgba(255, 59, 48, 0.5)',
+      shadowOffset: { width: 0, height: 20 },
+      shadowOpacity: 0.4,
+      shadowRadius: 30,
+      elevation: 20,
+    },
+    modalGradient: {
+      padding: 0,
+      borderRadius: 24,
+    },
+    modalHeader: {
+      alignItems: 'center',
+      padding: 20,
+      paddingBottom: 10,
+      position: 'relative',
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: '700' as const,
+      color: 'white',
+      textAlign: 'center' as const,
+    },
+    closeButton: {
+      position: 'absolute',
+      top: 20,
+      right: 20,
+      padding: 4,
+    },
+    modalContent: {
+      padding: 20,
+      paddingTop: 10,
+    },
+    deleteModalIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    deleteWarningText: {
+      fontSize: 16,
+      fontWeight: '400' as const,
+      color: 'rgba(255, 255, 255, 0.9)',
+      textAlign: 'center' as const,
+      lineHeight: 22,
+      marginBottom: 24,
+    },
+    deleteStatsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 24,
+    },
+    deleteStat: {
+      alignItems: 'center',
+    },
+    deleteStatValue: {
+      fontSize: 24,
+      fontWeight: '700' as const,
+      color: 'white',
+      marginBottom: 4,
+    },
+    deleteStatLabel: {
+      fontSize: 12,
+      fontWeight: '500' as const,
+      color: 'rgba(255, 255, 255, 0.8)',
+      textTransform: 'uppercase' as const,
+      letterSpacing: 0.5,
+    },
+    modalButtons: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    cancelButton: {
+      flex: 1,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      borderRadius: 12,
+      paddingVertical: 16,
+      alignItems: 'center',
+    },
+    cancelButtonText: {
+      color: 'white',
+      fontSize: 16,
+      fontWeight: '600' as const,
+    },
+    deleteButton: {
+      flex: 1,
+      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      borderRadius: 12,
+      paddingVertical: 16,
+      alignItems: 'center',
+    },
+    deleteButtonText: {
+      color: '#FF3B30',
+      fontSize: 16,
+      fontWeight: '700' as const,
+    },
   }));
+
+  const handleDeletePress = (type: 'profile' | 'history' | 'all') => {
+    setDeleteType(type);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      setLoading(true);
+      
+      if (deleteType === 'profile') {
+        // Clear only profile data
+        await AsyncStorage.removeItem('user_profile');
+        // The provider will handle state updates when the profile is removed
+        setIsEditing(true);
+        Alert.alert('Sucesso', 'Dados do perfil foram apagados!');
+      } else if (deleteType === 'history') {
+        // Clear only meal history
+        await clearHistory();
+        Alert.alert('Sucesso', 'Histórico de refeições foi apagado!');
+      } else {
+        // Reset everything
+        await resetData();
+        setIsEditing(true);
+        Alert.alert('Sucesso', 'Todos os dados foram resetados!');
+      }
+    } catch (error) {
+      console.error('Error deleting data:', error);
+      Alert.alert('Erro', 'Não foi possível apagar os dados. Tente novamente.');
+    } finally {
+      setLoading(false);
+      setShowDeleteModal(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
@@ -742,12 +954,21 @@ export default function ProfileScreen() {
               </View>
               <View style={styles.headerButtons}>
                 {userProfile && !isEditing && (
-                  <TouchableOpacity
-                    style={styles.editButton}
-                    onPress={() => setIsEditing(true)}
-                  >
-                    <Text style={styles.editButtonText}>Editar</Text>
-                  </TouchableOpacity>
+                  <>
+                    <TouchableOpacity
+                      onPress={() => handleDeletePress('profile')}
+                      style={[styles.headerIconButton, { backgroundColor: colors.surfaceElevated }]}
+                      activeOpacity={0.6}
+                    >
+                      <Trash2 color={colors.error || '#FF3B30'} size={18} strokeWidth={2} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => setIsEditing(true)}
+                    >
+                      <Text style={styles.editButtonText}>Editar</Text>
+                    </TouchableOpacity>
+                  </>
                 )}
               </View>
             </View>
@@ -1081,12 +1302,140 @@ export default function ProfileScreen() {
                     </View>
                     
                     <ThemeSelector />
+                    
+                    {/* Delete Options */}
+                    <View style={[styles.fullWidthCard, { backgroundColor: colors.surfaceElevated }]}>
+                      <View style={styles.summaryCardHeader}>
+                        <View style={[styles.summaryCardIcon, { backgroundColor: '#FF3B30' }]}>
+                          <Trash2 color="white" size={16} strokeWidth={2.5} />
+                        </View>
+                        <Text style={[styles.summaryCardTitle, { color: colors.text }]}>Gerenciar Dados</Text>
+                      </View>
+                      
+                      <View style={styles.deleteOptionsContainer}>
+                        <TouchableOpacity
+                          style={[styles.deleteOptionButton, { backgroundColor: colors.surfaceSecondary }]}
+                          onPress={() => handleDeletePress('history')}
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.deleteOptionContent}>
+                            <View style={[styles.deleteOptionIcon, { backgroundColor: '#FF9500' }]}>
+                              <History color="white" size={16} strokeWidth={2} />
+                            </View>
+                            <View style={styles.deleteOptionText}>
+                              <Text style={[styles.deleteOptionTitle, { color: colors.text }]}>Apagar Histórico</Text>
+                              <Text style={[styles.deleteOptionDescription, { color: colors.textSecondary }]}>Remove todas as refeições registradas</Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                        
+                        <TouchableOpacity
+                          style={[styles.deleteOptionButton, { backgroundColor: colors.surfaceSecondary }]}
+                          onPress={() => handleDeletePress('all')}
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.deleteOptionContent}>
+                            <View style={[styles.deleteOptionIcon, { backgroundColor: '#FF3B30' }]}>
+                              <AlertTriangle color="white" size={16} strokeWidth={2} />
+                            </View>
+                            <View style={styles.deleteOptionText}>
+                              <Text style={[styles.deleteOptionTitle, { color: colors.text }]}>Reset Completo</Text>
+                              <Text style={[styles.deleteOptionDescription, { color: colors.textSecondary }]}>Remove todos os dados do app</Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
                   </View>
                 )}
               </>
             )
           )}
         </ScrollView>
+        
+        {/* Delete Confirmation Modal */}
+        <Modal
+          visible={showDeleteModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowDeleteModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <LinearGradient
+                colors={['rgba(255, 59, 48, 0.9)', 'rgba(255, 69, 58, 0.8)', 'rgba(255, 45, 85, 0.9)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.modalGradient}
+              >
+                <View style={styles.modalHeader}>
+                  <View style={styles.deleteModalIcon}>
+                    <AlertTriangle color="white" size={24} strokeWidth={2} />
+                  </View>
+                  <Text style={styles.modalTitle}>
+                    {deleteType === 'profile' && 'Apagar Perfil'}
+                    {deleteType === 'history' && 'Apagar Histórico'}
+                    {deleteType === 'all' && 'Reset Completo'}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setShowDeleteModal(false)}
+                    style={styles.closeButton}
+                  >
+                    <X color="white" size={24} />
+                  </TouchableOpacity>
+                </View>
+                
+                <View style={styles.modalContent}>
+                  <Text style={styles.deleteWarningText}>
+                    {deleteType === 'profile' && 'Tem certeza que deseja apagar seus dados pessoais? Você precisará configurar seu perfil novamente.'}
+                    {deleteType === 'history' && 'Tem certeza que deseja apagar todo o histórico de refeições? Esta ação não pode ser desfeita.'}
+                    {deleteType === 'all' && 'Tem certeza que deseja resetar todos os dados do app? Esta ação não pode ser desfeita.'}
+                  </Text>
+                  
+                  <View style={styles.deleteStatsContainer}>
+                    {deleteType === 'profile' && (
+                      <View style={styles.deleteStat}>
+                        <Text style={styles.deleteStatValue}>1</Text>
+                        <Text style={styles.deleteStatLabel}>Perfil</Text>
+                      </View>
+                    )}
+                    {(deleteType === 'history' || deleteType === 'all') && (
+                      <View style={styles.deleteStat}>
+                        <Text style={styles.deleteStatValue}>{meals.length}</Text>
+                        <Text style={styles.deleteStatLabel}>Refeições</Text>
+                      </View>
+                    )}
+                    {deleteType === 'all' && (
+                      <View style={styles.deleteStat}>
+                        <Text style={styles.deleteStatValue}>Tudo</Text>
+                        <Text style={styles.deleteStatLabel}>Dados</Text>
+                      </View>
+                    )}
+                  </View>
+                  
+                  <View style={styles.modalButtons}>
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={() => setShowDeleteModal(false)}
+                    >
+                      <Text style={styles.cancelButtonText}>Cancelar</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={handleConfirmDelete}
+                      disabled={loading}
+                    >
+                      <Text style={styles.deleteButtonText}>
+                        {loading ? 'Apagando...' : 'Apagar'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </LinearGradient>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </View>
   );
