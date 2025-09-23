@@ -1,22 +1,27 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Platform } from 'react-native';
 import createContextHook from '@nkzw/create-context-hook';
+import * as Health from 'expo-health';
 
-// Mock Health API for development since expo-health might not be available
-const Health = {
-  isAvailableAsync: async () => Platform.OS === 'ios',
-  getPermissionsAsync: async (read: string[], write: string[]) => ({ granted: read }),
-  requestPermissionsAsync: async (read: string[], write: string[]) => ({ granted: read }),
+// Fallback mock for web/development
+const MockHealth = {
+  isAvailableAsync: async () => false,
+  getPermissionsAsync: async (read: string[], write: string[]) => ({ granted: [] }),
+  requestPermissionsAsync: async (read: string[], write: string[]) => ({ granted: [] }),
   getHealthRecordsAsync: async ({ dataType }: { dataType: string; startDate: Date; endDate: Date }) => {
-    // Mock data for development
     const mockData = {
       Steps: [{ value: Math.floor(Math.random() * 5000) + 3000 }],
       ActiveEnergyBurned: [{ value: Math.floor(Math.random() * 300) + 200 }],
       BasalEnergyBurned: [{ value: Math.floor(Math.random() * 800) + 1200 }],
       DistanceWalkingRunning: [{ value: Math.random() * 5 + 2 }],
       HeartRate: [{ value: Math.floor(Math.random() * 40) + 60 }],
+      DietaryEnergyConsumed: [{ value: Math.floor(Math.random() * 500) + 1500 }],
     };
     return mockData[dataType as keyof typeof mockData] || [];
+  },
+  writeHealthRecordsAsync: async (records: any[]) => {
+    console.log('Mock: Writing health records:', records);
+    return true;
   },
   HealthDataType: {
     Steps: 'Steps',
@@ -24,8 +29,17 @@ const Health = {
     BasalEnergyBurned: 'BasalEnergyBurned',
     DistanceWalkingRunning: 'DistanceWalkingRunning',
     HeartRate: 'HeartRate',
+    DietaryEnergyConsumed: 'DietaryEnergyConsumed',
+    DietaryProtein: 'DietaryProtein',
+    DietaryCarbohydrates: 'DietaryCarbohydrates',
+    DietaryFatTotal: 'DietaryFatTotal',
+    DietarySodium: 'DietarySodium',
+    DietarySugar: 'DietarySugar',
   },
 };
+
+// Use real Health API on iOS, mock on other platforms
+const HealthAPI = Platform.OS === 'ios' ? Health : MockHealth;
 
 export interface HealthData {
   steps: number;
@@ -34,8 +48,18 @@ export interface HealthData {
   totalCalories: number;
   distance: number;
   heartRate?: number;
+  consumedCalories?: number;
   isLoading: boolean;
   error?: string;
+}
+
+export interface NutritionData {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  sodium: number;
+  sugar: number;
 }
 
 export interface HealthContextType {
@@ -44,6 +68,10 @@ export interface HealthContextType {
   requestPermissions: () => Promise<boolean>;
   refreshHealthData: () => Promise<void>;
   hasPermissions: boolean;
+  writeSteps: (steps: number, date?: Date) => Promise<boolean>;
+  writeCalories: (calories: number, date?: Date) => Promise<boolean>;
+  writeNutritionData: (nutrition: NutritionData, date?: Date) => Promise<boolean>;
+  writeMealData: (mealData: { calories: number; protein: number; carbs: number; fat: number; sodium: number; sugar: number; }, date?: Date) => Promise<boolean>;
 }
 
 const initialHealthData: HealthData = {
@@ -60,34 +88,30 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
   const [isHealthKitAvailable, setIsHealthKitAvailable] = useState(false);
   const [hasPermissions, setHasPermissions] = useState(false);
 
-  const checkHealthKitAvailability = useCallback(async () => {
-    if (Platform.OS !== 'ios') {
-      console.log('HealthKit is only available on iOS');
-      return;
-    }
-
-    try {
-      const available = await Health.isAvailableAsync();
-      setIsHealthKitAvailable(available);
-      console.log('HealthKit available:', available);
-      
-      if (available) {
-        await checkExistingPermissions();
-      }
-    } catch (error) {
-      console.error('Error checking HealthKit availability:', error);
-      setHealthData(prev => ({ ...prev, error: 'Failed to check HealthKit availability' }));
-    }
-  }, []);
-
   const checkExistingPermissions = useCallback(async () => {
     try {
-      const permissions = await Health.getPermissionsAsync(
-        [Health.HealthDataType.Steps],
-        [Health.HealthDataType.ActiveEnergyBurned]
+      const permissions = await HealthAPI.getPermissionsAsync(
+        [
+          HealthAPI.HealthDataType.Steps,
+          HealthAPI.HealthDataType.ActiveEnergyBurned,
+          HealthAPI.HealthDataType.BasalEnergyBurned,
+          HealthAPI.HealthDataType.DistanceWalkingRunning,
+          HealthAPI.HealthDataType.HeartRate,
+          HealthAPI.HealthDataType.DietaryEnergyConsumed,
+        ],
+        [
+          HealthAPI.HealthDataType.Steps,
+          HealthAPI.HealthDataType.ActiveEnergyBurned,
+          HealthAPI.HealthDataType.DietaryEnergyConsumed,
+          HealthAPI.HealthDataType.DietaryProtein,
+          HealthAPI.HealthDataType.DietaryCarbohydrates,
+          HealthAPI.HealthDataType.DietaryFatTotal,
+          HealthAPI.HealthDataType.DietarySodium,
+          HealthAPI.HealthDataType.DietarySugar,
+        ]
       );
       
-      const hasReadPermissions = permissions.granted.includes(Health.HealthDataType.Steps);
+      const hasReadPermissions = permissions.granted.includes(HealthAPI.HealthDataType.Steps);
       setHasPermissions(hasReadPermissions);
       
       if (hasReadPermissions) {
@@ -110,24 +134,29 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       
       // Get today's health data
-      const [stepsData, activeCaloriesData, basalCaloriesData, distanceData] = await Promise.all([
-        Health.getHealthRecordsAsync({
-          dataType: Health.HealthDataType.Steps,
+      const [stepsData, activeCaloriesData, basalCaloriesData, distanceData, consumedCaloriesData] = await Promise.all([
+        HealthAPI.getHealthRecordsAsync({
+          dataType: HealthAPI.HealthDataType.Steps,
           startDate: startOfDay,
           endDate: now,
         }),
-        Health.getHealthRecordsAsync({
-          dataType: Health.HealthDataType.ActiveEnergyBurned,
+        HealthAPI.getHealthRecordsAsync({
+          dataType: HealthAPI.HealthDataType.ActiveEnergyBurned,
           startDate: startOfDay,
           endDate: now,
         }),
-        Health.getHealthRecordsAsync({
-          dataType: Health.HealthDataType.BasalEnergyBurned,
+        HealthAPI.getHealthRecordsAsync({
+          dataType: HealthAPI.HealthDataType.BasalEnergyBurned,
           startDate: startOfDay,
           endDate: now,
         }),
-        Health.getHealthRecordsAsync({
-          dataType: Health.HealthDataType.DistanceWalkingRunning,
+        HealthAPI.getHealthRecordsAsync({
+          dataType: HealthAPI.HealthDataType.DistanceWalkingRunning,
+          startDate: startOfDay,
+          endDate: now,
+        }),
+        HealthAPI.getHealthRecordsAsync({
+          dataType: HealthAPI.HealthDataType.DietaryEnergyConsumed,
           startDate: startOfDay,
           endDate: now,
         }),
@@ -138,12 +167,13 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
       const activeCalories = activeCaloriesData.reduce((sum: number, record: any) => sum + (record.value as number), 0);
       const basalCalories = basalCaloriesData.reduce((sum: number, record: any) => sum + (record.value as number), 0);
       const distance = distanceData.reduce((sum: number, record: any) => sum + (record.value as number), 0);
+      const consumedCalories = consumedCaloriesData.reduce((sum: number, record: any) => sum + (record.value as number), 0);
       
       // Try to get latest heart rate (optional)
       let heartRate: number | undefined;
       try {
-        const heartRateData = await Health.getHealthRecordsAsync({
-          dataType: Health.HealthDataType.HeartRate,
+        const heartRateData = await HealthAPI.getHealthRecordsAsync({
+          dataType: HealthAPI.HealthDataType.HeartRate,
           startDate: new Date(now.getTime() - 24 * 60 * 60 * 1000), // Last 24 hours
           endDate: now,
         });
@@ -162,6 +192,7 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
         totalCalories: Math.round(activeCalories + basalCalories),
         distance: Math.round(distance * 100) / 100, // Round to 2 decimal places
         heartRate,
+        consumedCalories: Math.round(consumedCalories),
         isLoading: false,
       });
       
@@ -170,6 +201,7 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
         activeCalories: Math.round(activeCalories),
         basalCalories: Math.round(basalCalories),
         distance: Math.round(distance * 100) / 100,
+        consumedCalories: Math.round(consumedCalories),
       });
     } catch (error) {
       console.error('Error fetching health data:', error);
@@ -181,6 +213,26 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
     }
   }, [isHealthKitAvailable, hasPermissions]);
 
+  const checkHealthKitAvailability = useCallback(async () => {
+    if (Platform.OS !== 'ios') {
+      console.log('HealthKit is only available on iOS');
+      return;
+    }
+
+    try {
+      const available = await HealthAPI.isAvailableAsync();
+      setIsHealthKitAvailable(available);
+      console.log('HealthKit available:', available);
+      
+      if (available) {
+        await checkExistingPermissions();
+      }
+    } catch (error) {
+      console.error('Error checking HealthKit availability:', error);
+      setHealthData(prev => ({ ...prev, error: 'Failed to check HealthKit availability' }));
+    }
+  }, [checkExistingPermissions]);
+
   const requestPermissions = useCallback(async (): Promise<boolean> => {
     if (Platform.OS !== 'ios' || !isHealthKitAvailable) {
       console.log('HealthKit not available');
@@ -190,18 +242,33 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
     try {
       setHealthData(prev => ({ ...prev, isLoading: true, error: undefined }));
       
-      const { granted } = await Health.requestPermissionsAsync(
+      const { granted } = await HealthAPI.requestPermissionsAsync(
         [
-          Health.HealthDataType.Steps,
-          Health.HealthDataType.ActiveEnergyBurned,
-          Health.HealthDataType.BasalEnergyBurned,
-          Health.HealthDataType.DistanceWalkingRunning,
-          Health.HealthDataType.HeartRate,
+          HealthAPI.HealthDataType.Steps,
+          HealthAPI.HealthDataType.ActiveEnergyBurned,
+          HealthAPI.HealthDataType.BasalEnergyBurned,
+          HealthAPI.HealthDataType.DistanceWalkingRunning,
+          HealthAPI.HealthDataType.HeartRate,
+          HealthAPI.HealthDataType.DietaryEnergyConsumed,
+          HealthAPI.HealthDataType.DietaryProtein,
+          HealthAPI.HealthDataType.DietaryCarbohydrates,
+          HealthAPI.HealthDataType.DietaryFatTotal,
+          HealthAPI.HealthDataType.DietarySodium,
+          HealthAPI.HealthDataType.DietarySugar,
         ],
-        [Health.HealthDataType.ActiveEnergyBurned]
+        [
+          HealthAPI.HealthDataType.Steps,
+          HealthAPI.HealthDataType.ActiveEnergyBurned,
+          HealthAPI.HealthDataType.DietaryEnergyConsumed,
+          HealthAPI.HealthDataType.DietaryProtein,
+          HealthAPI.HealthDataType.DietaryCarbohydrates,
+          HealthAPI.HealthDataType.DietaryFatTotal,
+          HealthAPI.HealthDataType.DietarySodium,
+          HealthAPI.HealthDataType.DietarySugar,
+        ]
       );
 
-      const hasStepsPermission = granted.includes(Health.HealthDataType.Steps);
+      const hasStepsPermission = granted.includes(HealthAPI.HealthDataType.Steps);
       setHasPermissions(hasStepsPermission);
       
       if (hasStepsPermission) {
@@ -221,6 +288,125 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
     }
   }, [isHealthKitAvailable, refreshHealthData]);
 
+  // Write functions for health data
+  const writeSteps = useCallback(async (steps: number, date: Date = new Date()): Promise<boolean> => {
+    if (Platform.OS !== 'ios' || !isHealthKitAvailable || !hasPermissions) {
+      console.log('HealthKit not available for writing steps');
+      return false;
+    }
+
+    try {
+      const success = await HealthAPI.writeHealthRecordsAsync([
+        {
+          dataType: HealthAPI.HealthDataType.Steps,
+          value: steps,
+          startDate: date,
+          endDate: date,
+        },
+      ]);
+      
+      console.log('Steps written to HealthKit:', steps, success);
+      return success;
+    } catch (error) {
+      console.error('Error writing steps to HealthKit:', error);
+      return false;
+    }
+  }, [isHealthKitAvailable, hasPermissions]);
+
+  const writeCalories = useCallback(async (calories: number, date: Date = new Date()): Promise<boolean> => {
+    if (Platform.OS !== 'ios' || !isHealthKitAvailable || !hasPermissions) {
+      console.log('HealthKit not available for writing calories');
+      return false;
+    }
+
+    try {
+      const success = await HealthAPI.writeHealthRecordsAsync([
+        {
+          dataType: HealthAPI.HealthDataType.ActiveEnergyBurned,
+          value: calories,
+          startDate: date,
+          endDate: date,
+        },
+      ]);
+      
+      console.log('Calories written to HealthKit:', calories, success);
+      return success;
+    } catch (error) {
+      console.error('Error writing calories to HealthKit:', error);
+      return false;
+    }
+  }, [isHealthKitAvailable, hasPermissions]);
+
+  const writeNutritionData = useCallback(async (nutrition: NutritionData, date: Date = new Date()): Promise<boolean> => {
+    if (Platform.OS !== 'ios' || !isHealthKitAvailable || !hasPermissions) {
+      console.log('HealthKit not available for writing nutrition data');
+      return false;
+    }
+
+    try {
+      const records = [
+        {
+          dataType: HealthAPI.HealthDataType.DietaryEnergyConsumed,
+          value: nutrition.calories,
+          startDate: date,
+          endDate: date,
+        },
+        {
+          dataType: HealthAPI.HealthDataType.DietaryProtein,
+          value: nutrition.protein,
+          startDate: date,
+          endDate: date,
+        },
+        {
+          dataType: HealthAPI.HealthDataType.DietaryCarbohydrates,
+          value: nutrition.carbs,
+          startDate: date,
+          endDate: date,
+        },
+        {
+          dataType: HealthAPI.HealthDataType.DietaryFatTotal,
+          value: nutrition.fat,
+          startDate: date,
+          endDate: date,
+        },
+        {
+          dataType: HealthAPI.HealthDataType.DietarySodium,
+          value: nutrition.sodium,
+          startDate: date,
+          endDate: date,
+        },
+        {
+          dataType: HealthAPI.HealthDataType.DietarySugar,
+          value: nutrition.sugar,
+          startDate: date,
+          endDate: date,
+        },
+      ];
+
+      const success = await HealthAPI.writeHealthRecordsAsync(records);
+      
+      console.log('Nutrition data written to HealthKit:', nutrition, success);
+      return success;
+    } catch (error) {
+      console.error('Error writing nutrition data to HealthKit:', error);
+      return false;
+    }
+  }, [isHealthKitAvailable, hasPermissions]);
+
+  const writeMealData = useCallback(async (
+    mealData: { calories: number; protein: number; carbs: number; fat: number; sodium: number; sugar: number; },
+    date: Date = new Date()
+  ): Promise<boolean> => {
+    return await writeNutritionData({
+      calories: mealData.calories,
+      protein: mealData.protein,
+      carbs: mealData.carbs,
+      fat: mealData.fat,
+      sodium: mealData.sodium,
+      sugar: mealData.sugar,
+    }, date);
+  }, [writeNutritionData]);
+
   useEffect(() => {
     checkHealthKitAvailability();
   }, [checkHealthKitAvailability]);
@@ -231,5 +417,9 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
     requestPermissions,
     refreshHealthData,
     hasPermissions,
-  }), [healthData, isHealthKitAvailable, requestPermissions, refreshHealthData, hasPermissions]);
+    writeSteps,
+    writeCalories,
+    writeNutritionData,
+    writeMealData,
+  }), [healthData, isHealthKitAvailable, requestPermissions, refreshHealthData, hasPermissions, writeSteps, writeCalories, writeNutritionData, writeMealData]);
 });

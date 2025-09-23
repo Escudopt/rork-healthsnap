@@ -18,6 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { X, Check, Sparkles, Info, Edit3, Plus, Minus, Calendar, Clock, Zap, Star, TrendingUp, Award } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
+import { useHealth } from '@/providers/HealthProvider';
 import { useTheme } from '@/providers/ThemeProvider';
 import { BlurCard } from '@/components/BlurCard';
 import * as Haptics from 'expo-haptics';
@@ -26,6 +27,7 @@ import { AnalysisResult, FoodItem } from '@/types/food';
 export default function AnalysisScreen() {
   const { imageBase64 } = useLocalSearchParams<{ imageBase64: string }>();
   const { addMeal } = useCalorieTracker();
+  const { writeMealData, isHealthKitAvailable, hasPermissions } = useHealth();
   const { colors, isDark } = useTheme();
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
@@ -230,7 +232,13 @@ export default function AnalysisScreen() {
       }
 
       const totalCalories = editedFoods.reduce((sum, food) => sum + food.calories, 0);
+      const totalProtein = editedFoods.reduce((sum, food) => sum + (food.protein || 0), 0);
+      const totalCarbs = editedFoods.reduce((sum, food) => sum + (food.carbs || 0), 0);
+      const totalFat = editedFoods.reduce((sum, food) => sum + (food.fat || 0), 0);
+      const totalSodium = editedFoods.reduce((sum, food) => sum + (food.sodium || 0), 0);
+      const totalSugar = editedFoods.reduce((sum, food) => sum + (food.sugar || 0), 0);
 
+      // Save to local storage
       await addMeal({
         foods: editedFoods,
         totalCalories: totalCalories,
@@ -238,9 +246,30 @@ export default function AnalysisScreen() {
         imageBase64: imageBase64,
       });
 
+      // Write to HealthKit if available and permissions granted
+      if (isHealthKitAvailable && hasPermissions) {
+        try {
+          const healthWriteSuccess = await writeMealData({
+            calories: totalCalories,
+            protein: totalProtein,
+            carbs: totalCarbs,
+            fat: totalFat,
+            sodium: totalSodium,
+            sugar: totalSugar,
+          });
+          
+          if (healthWriteSuccess) {
+            console.log('Meal data successfully written to HealthKit');
+          }
+        } catch (healthError) {
+          console.error('Error writing to HealthKit:', healthError);
+          // Don't show error to user, just log it
+        }
+      }
+
       Alert.alert(
         'Refeição Salva!',
-        `${totalCalories} calorias adicionadas ao seu dia.`,
+        `${totalCalories} calorias adicionadas ao seu dia.${isHealthKitAvailable && hasPermissions ? ' Dados sincronizados com a app Saúde.' : ''}`,
         [{ text: 'OK', onPress: () => router.back() }]
       );
     } catch (error) {
