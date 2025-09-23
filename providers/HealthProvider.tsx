@@ -1,21 +1,28 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Platform } from 'react-native';
 import createContextHook from '@nkzw/create-context-hook';
-import * as Health from 'expo-health';
 
-// Fallback mock for web/development
+// Mock Health API for development (expo-health is not available in Expo Go)
 const MockHealth = {
-  isAvailableAsync: async () => false,
-  getPermissionsAsync: async (read: string[], write: string[]) => ({ granted: [] }),
-  requestPermissionsAsync: async (read: string[], write: string[]) => ({ granted: [] }),
+  isAvailableAsync: async () => Platform.OS === 'ios',
+  getPermissionsAsync: async (read: string[], write: string[]) => ({ 
+    granted: Platform.OS === 'ios' ? read : [] 
+  }),
+  requestPermissionsAsync: async (read: string[], write: string[]) => ({ 
+    granted: Platform.OS === 'ios' ? read : [] 
+  }),
   getHealthRecordsAsync: async ({ dataType }: { dataType: string; startDate: Date; endDate: Date }) => {
+    // Generate realistic mock data based on time of day
+    const hour = new Date().getHours();
+    const progressFactor = hour / 24; // Progress through the day
+    
     const mockData = {
-      Steps: [{ value: Math.floor(Math.random() * 5000) + 3000 }],
-      ActiveEnergyBurned: [{ value: Math.floor(Math.random() * 300) + 200 }],
-      BasalEnergyBurned: [{ value: Math.floor(Math.random() * 800) + 1200 }],
-      DistanceWalkingRunning: [{ value: Math.random() * 5 + 2 }],
-      HeartRate: [{ value: Math.floor(Math.random() * 40) + 60 }],
-      DietaryEnergyConsumed: [{ value: Math.floor(Math.random() * 500) + 1500 }],
+      Steps: [{ value: Math.floor((Math.random() * 3000 + 5000) * progressFactor) }],
+      ActiveEnergyBurned: [{ value: Math.floor((Math.random() * 200 + 300) * progressFactor) }],
+      BasalEnergyBurned: [{ value: Math.floor((Math.random() * 300 + 1400) * progressFactor) }],
+      DistanceWalkingRunning: [{ value: Math.round((Math.random() * 3 + 4) * progressFactor * 100) / 100 }],
+      HeartRate: [{ value: Math.floor(Math.random() * 30) + 70 }],
+      DietaryEnergyConsumed: [{ value: Math.floor((Math.random() * 800 + 1200) * progressFactor) }],
     };
     return mockData[dataType as keyof typeof mockData] || [];
   },
@@ -38,8 +45,8 @@ const MockHealth = {
   },
 };
 
-// Use real Health API on iOS, mock on other platforms
-const HealthAPI = Platform.OS === 'ios' ? Health : MockHealth;
+// Use mock Health API for now (expo-health is not available in Expo Go)
+const HealthAPI = MockHealth;
 
 export interface HealthData {
   steps: number;
@@ -88,45 +95,7 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
   const [isHealthKitAvailable, setIsHealthKitAvailable] = useState(false);
   const [hasPermissions, setHasPermissions] = useState(false);
 
-  const checkExistingPermissions = useCallback(async () => {
-    try {
-      const permissions = await HealthAPI.getPermissionsAsync(
-        [
-          HealthAPI.HealthDataType.Steps,
-          HealthAPI.HealthDataType.ActiveEnergyBurned,
-          HealthAPI.HealthDataType.BasalEnergyBurned,
-          HealthAPI.HealthDataType.DistanceWalkingRunning,
-          HealthAPI.HealthDataType.HeartRate,
-          HealthAPI.HealthDataType.DietaryEnergyConsumed,
-        ],
-        [
-          HealthAPI.HealthDataType.Steps,
-          HealthAPI.HealthDataType.ActiveEnergyBurned,
-          HealthAPI.HealthDataType.DietaryEnergyConsumed,
-          HealthAPI.HealthDataType.DietaryProtein,
-          HealthAPI.HealthDataType.DietaryCarbohydrates,
-          HealthAPI.HealthDataType.DietaryFatTotal,
-          HealthAPI.HealthDataType.DietarySodium,
-          HealthAPI.HealthDataType.DietarySugar,
-        ]
-      );
-      
-      const hasReadPermissions = permissions.granted.includes(HealthAPI.HealthDataType.Steps);
-      setHasPermissions(hasReadPermissions);
-      
-      if (hasReadPermissions) {
-        await refreshHealthData();
-      }
-    } catch (error) {
-      console.error('Error checking permissions:', error);
-    }
-  }, []);
-
   const refreshHealthData = useCallback(async (): Promise<void> => {
-    if (Platform.OS !== 'ios' || !isHealthKitAvailable || !hasPermissions) {
-      return;
-    }
-
     try {
       setHealthData(prev => ({ ...prev, isLoading: true, error: undefined }));
       
@@ -211,14 +180,45 @@ export const [HealthProvider, useHealth] = createContextHook(() => {
         error: 'Failed to fetch health data' 
       }));
     }
-  }, [isHealthKitAvailable, hasPermissions]);
+  }, []);
+
+  const checkExistingPermissions = useCallback(async () => {
+    try {
+      const permissions = await HealthAPI.getPermissionsAsync(
+        [
+          HealthAPI.HealthDataType.Steps,
+          HealthAPI.HealthDataType.ActiveEnergyBurned,
+          HealthAPI.HealthDataType.BasalEnergyBurned,
+          HealthAPI.HealthDataType.DistanceWalkingRunning,
+          HealthAPI.HealthDataType.HeartRate,
+          HealthAPI.HealthDataType.DietaryEnergyConsumed,
+        ],
+        [
+          HealthAPI.HealthDataType.Steps,
+          HealthAPI.HealthDataType.ActiveEnergyBurned,
+          HealthAPI.HealthDataType.DietaryEnergyConsumed,
+          HealthAPI.HealthDataType.DietaryProtein,
+          HealthAPI.HealthDataType.DietaryCarbohydrates,
+          HealthAPI.HealthDataType.DietaryFatTotal,
+          HealthAPI.HealthDataType.DietarySodium,
+          HealthAPI.HealthDataType.DietarySugar,
+        ]
+      );
+      
+      const hasReadPermissions = permissions.granted.includes(HealthAPI.HealthDataType.Steps);
+      setHasPermissions(hasReadPermissions);
+      
+      if (hasReadPermissions) {
+        await refreshHealthData();
+      }
+    } catch (error) {
+      console.error('Error checking permissions:', error);
+    }
+  }, [refreshHealthData]);
+
+
 
   const checkHealthKitAvailability = useCallback(async () => {
-    if (Platform.OS !== 'ios') {
-      console.log('HealthKit is only available on iOS');
-      return;
-    }
-
     try {
       const available = await HealthAPI.isAvailableAsync();
       setIsHealthKitAvailable(available);
