@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useHealth } from '@/providers/HealthProvider';
+import { useTheme } from '@/providers/ThemeProvider';
 import { Heart, Activity, Footprints } from 'lucide-react-native';
 import { BlurCard } from './BlurCard';
 
@@ -10,6 +11,7 @@ interface HealthWidgetProps {
 
 export function HealthWidget({ onPress }: HealthWidgetProps) {
   const { healthData, hasPermissions, isHealthKitAvailable } = useHealth();
+  const { colors } = useTheme();
 
   if (!isHealthKitAvailable || !hasPermissions) {
     return null;
@@ -19,27 +21,27 @@ export function HealthWidget({ onPress }: HealthWidgetProps) {
     <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
       <BlurCard style={styles.container}>
         <View style={styles.header}>
-          <Heart size={20} color="#FF3B30" />
-          <Text style={styles.title}>Health Today</Text>
+          <Heart size={20} color={colors.error} />
+          <Text style={[styles.title, { color: colors.text }]}>Health Today</Text>
         </View>
         
         <View style={styles.metricsRow}>
           <View style={styles.metric}>
-            <Footprints size={16} color="#007AFF" />
-            <Text style={styles.metricValue}>{healthData.steps.toLocaleString()}</Text>
-            <Text style={styles.metricLabel}>steps</Text>
+            <Footprints size={16} color={colors.primary} />
+            <Text style={[styles.metricValue, { color: colors.text }]}>{healthData.steps.toLocaleString()}</Text>
+            <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>steps</Text>
           </View>
           
           <View style={styles.metric}>
-            <Activity size={16} color="#34C759" />
-            <Text style={styles.metricValue}>{healthData.activeCalories}</Text>
-            <Text style={styles.metricLabel}>cal</Text>
+            <Activity size={16} color={colors.success} />
+            <Text style={[styles.metricValue, { color: colors.text }]}>{healthData.activeCalories}</Text>
+            <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>cal</Text>
           </View>
           
           <View style={styles.metric}>
-            <Heart size={16} color="#FF3B30" />
-            <Text style={styles.metricValue}>{healthData.distance}</Text>
-            <Text style={styles.metricLabel}>km</Text>
+            <Heart size={16} color={colors.error} />
+            <Text style={[styles.metricValue, { color: colors.text }]}>{healthData.distance}</Text>
+            <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>km</Text>
           </View>
         </View>
       </BlurCard>
@@ -60,7 +62,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
     marginLeft: 8,
   },
   metricsRow: {
@@ -74,12 +75,10 @@ const styles = StyleSheet.create({
   metricValue: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
     marginTop: 4,
   },
   metricLabel: {
     fontSize: 12,
-    color: '#666',
     marginTop: 2,
   },
 });

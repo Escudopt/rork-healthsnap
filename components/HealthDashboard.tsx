@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useHealth } from '@/providers/HealthProvider';
+import { useTheme } from '@/providers/ThemeProvider';
 import { Heart, Activity, Footprints, Flame, RefreshCw } from 'lucide-react-native';
 
 export default function HealthDashboard() {
@@ -11,6 +12,7 @@ export default function HealthDashboard() {
     refreshHealthData, 
     hasPermissions 
   } = useHealth();
+  const { colors, isDark } = useTheme();
 
   const handleRequestPermissions = async () => {
     const granted = await requestPermissions();
@@ -27,11 +29,11 @@ export default function HealthDashboard() {
 
   if (!isHealthKitAvailable) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.unavailableContainer}>
-          <Heart size={48} color="#666" />
-          <Text style={styles.unavailableTitle}>HealthKit Unavailable</Text>
-          <Text style={styles.unavailableText}>
+          <Heart size={48} color={colors.textSecondary} />
+          <Text style={[styles.unavailableTitle, { color: colors.textSecondary }]}>HealthKit Unavailable</Text>
+          <Text style={[styles.unavailableText, { color: colors.textTertiary }]}>
             HealthKit is only available on iOS devices. This feature will work when you run the app on an iPhone.
           </Text>
         </View>
@@ -41,15 +43,15 @@ export default function HealthDashboard() {
 
   if (!hasPermissions) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={styles.permissionContainer}>
-          <Heart size={48} color="#007AFF" />
-          <Text style={styles.permissionTitle}>Health Access Required</Text>
-          <Text style={styles.permissionText}>
+          <Heart size={48} color={colors.primary} />
+          <Text style={[styles.permissionTitle, { color: colors.text }]}>Health Access Required</Text>
+          <Text style={[styles.permissionText, { color: colors.textSecondary }]}>
             To show your health data, we need access to your HealthKit information.
           </Text>
           <TouchableOpacity 
-            style={styles.permissionButton} 
+            style={[styles.permissionButton, { backgroundColor: colors.primary }]} 
             onPress={handleRequestPermissions}
             disabled={healthData.isLoading}
           >
@@ -65,9 +67,9 @@ export default function HealthDashboard() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={styles.scrollContent}>
       <View style={styles.header}>
-        <Text style={styles.title}>Health Dashboard</Text>
+        <Text style={[styles.title, { color: colors.text }]}>Health Dashboard</Text>
         <TouchableOpacity 
           style={styles.refreshButton} 
           onPress={handleRefresh}
@@ -75,73 +77,73 @@ export default function HealthDashboard() {
         >
           <RefreshCw 
             size={20} 
-            color="#007AFF" 
+            color={colors.primary} 
             style={healthData.isLoading ? styles.spinning : undefined}
           />
         </TouchableOpacity>
       </View>
 
       {healthData.error && (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{healthData.error}</Text>
+        <View style={[styles.errorContainer, { backgroundColor: isDark ? 'rgba(255, 69, 58, 0.15)' : '#FFE5E5' }]}>
+          <Text style={[styles.errorText, { color: colors.error }]}>{healthData.error}</Text>
         </View>
       )}
 
       <View style={styles.metricsGrid}>
-        <View style={styles.metricCard}>
+        <View style={[styles.metricCard, { backgroundColor: colors.surface }]}>
           <View style={styles.metricHeader}>
-            <Footprints size={24} color="#007AFF" />
-            <Text style={styles.metricLabel}>Steps</Text>
+            <Footprints size={24} color={colors.primary} />
+            <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>Steps</Text>
           </View>
-          <Text style={styles.metricValue}>{healthData.steps.toLocaleString()}</Text>
-          <Text style={styles.metricUnit}>steps today</Text>
+          <Text style={[styles.metricValue, { color: colors.text }]}>{healthData.steps.toLocaleString()}</Text>
+          <Text style={[styles.metricUnit, { color: colors.textTertiary }]}>steps today</Text>
         </View>
 
-        <View style={styles.metricCard}>
+        <View style={[styles.metricCard, { backgroundColor: colors.surface }]}>
           <View style={styles.metricHeader}>
-            <Flame size={24} color="#FF6B35" />
-            <Text style={styles.metricLabel}>Active Calories</Text>
+            <Flame size={24} color={colors.warning} />
+            <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>Active Calories</Text>
           </View>
-          <Text style={styles.metricValue}>{healthData.activeCalories}</Text>
-          <Text style={styles.metricUnit}>kcal burned</Text>
+          <Text style={[styles.metricValue, { color: colors.text }]}>{healthData.activeCalories}</Text>
+          <Text style={[styles.metricUnit, { color: colors.textTertiary }]}>kcal burned</Text>
         </View>
 
-        <View style={styles.metricCard}>
+        <View style={[styles.metricCard, { backgroundColor: colors.surface }]}>
           <View style={styles.metricHeader}>
-            <Activity size={24} color="#34C759" />
-            <Text style={styles.metricLabel}>Total Calories</Text>
+            <Activity size={24} color={colors.success} />
+            <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>Total Calories</Text>
           </View>
-          <Text style={styles.metricValue}>{healthData.totalCalories}</Text>
-          <Text style={styles.metricUnit}>kcal total</Text>
+          <Text style={[styles.metricValue, { color: colors.text }]}>{healthData.totalCalories}</Text>
+          <Text style={[styles.metricUnit, { color: colors.textTertiary }]}>kcal total</Text>
         </View>
 
-        <View style={styles.metricCard}>
+        <View style={[styles.metricCard, { backgroundColor: colors.surface }]}>
           <View style={styles.metricHeader}>
-            <Footprints size={24} color="#5856D6" />
-            <Text style={styles.metricLabel}>Distance</Text>
+            <Footprints size={24} color={colors.primaryLight} />
+            <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>Distance</Text>
           </View>
-          <Text style={styles.metricValue}>{healthData.distance}</Text>
-          <Text style={styles.metricUnit}>km walked</Text>
+          <Text style={[styles.metricValue, { color: colors.text }]}>{healthData.distance}</Text>
+          <Text style={[styles.metricUnit, { color: colors.textTertiary }]}>km walked</Text>
         </View>
 
         {healthData.heartRate && (
-          <View style={styles.metricCard}>
+          <View style={[styles.metricCard, { backgroundColor: colors.surface }]}>
             <View style={styles.metricHeader}>
-              <Heart size={24} color="#FF3B30" />
-              <Text style={styles.metricLabel}>Heart Rate</Text>
+              <Heart size={24} color={colors.error} />
+              <Text style={[styles.metricLabel, { color: colors.textSecondary }]}>Heart Rate</Text>
             </View>
-            <Text style={styles.metricValue}>{healthData.heartRate}</Text>
-            <Text style={styles.metricUnit}>bpm latest</Text>
+            <Text style={[styles.metricValue, { color: colors.text }]}>{healthData.heartRate}</Text>
+            <Text style={[styles.metricUnit, { color: colors.textTertiary }]}>bpm latest</Text>
           </View>
         )}
       </View>
 
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoTitle}>About Health Data</Text>
-        <Text style={styles.infoText}>
-          This data is synced from your iPhone's Health app. Make sure your fitness tracking is enabled and your device is recording health data.
+      <View style={[styles.infoContainer, { backgroundColor: colors.surface }]}>
+        <Text style={[styles.infoTitle, { color: colors.text }]}>About Health Data</Text>
+        <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+          This data is synced from your iPhone&apos;s Health app. Make sure your fitness tracking is enabled and your device is recording health data.
         </Text>
-        <Text style={styles.infoText}>
+        <Text style={[styles.infoText, { color: colors.textSecondary }]}>
           Data is updated in real-time when you refresh or open the app.
         </Text>
       </View>
@@ -152,7 +154,6 @@ export default function HealthDashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
   },
   scrollContent: {
     padding: 20,
@@ -166,7 +167,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1a1a1a',
   },
   refreshButton: {
     padding: 8,
@@ -183,13 +183,11 @@ const styles = StyleSheet.create({
   unavailableTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#666',
     marginTop: 16,
     marginBottom: 8,
   },
   unavailableText: {
     fontSize: 16,
-    color: '#888',
     textAlign: 'center',
     lineHeight: 24,
   },
@@ -202,19 +200,16 @@ const styles = StyleSheet.create({
   permissionTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
     marginTop: 16,
     marginBottom: 8,
   },
   permissionText: {
     fontSize: 16,
-    color: '#666',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 32,
   },
   permissionButton: {
-    backgroundColor: '#007AFF',
     paddingHorizontal: 32,
     paddingVertical: 16,
     borderRadius: 12,
@@ -227,13 +222,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   errorContainer: {
-    backgroundColor: '#FFE5E5',
     padding: 16,
     borderRadius: 12,
     marginBottom: 20,
   },
   errorText: {
-    color: '#D32F2F',
     fontSize: 14,
     textAlign: 'center',
   },
@@ -244,7 +237,6 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   metricCard: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     flex: 1,
@@ -263,21 +255,17 @@ const styles = StyleSheet.create({
   metricLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
     marginLeft: 8,
   },
   metricValue: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
     marginBottom: 4,
   },
   metricUnit: {
     fontSize: 12,
-    color: '#888',
   },
   infoContainer: {
-    backgroundColor: '#fff',
     borderRadius: 16,
     padding: 20,
     shadowColor: '#000',
@@ -289,12 +277,10 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
     marginBottom: 12,
   },
   infoText: {
     fontSize: 14,
-    color: '#666',
     lineHeight: 20,
     marginBottom: 8,
   },
