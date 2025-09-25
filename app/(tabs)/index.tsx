@@ -630,7 +630,7 @@ export default function HomeScreen() {
                       }]
                     }
                   ]}>
-                    <Sparkles color={colors.primary} size={24} strokeWidth={2} />
+                    <Sparkles color={colors.primary} size={20} strokeWidth={2} />
                   </Animated.View>
                 </View>
                 <Text style={[styles.date, { color: colors.textSecondary }]}>
@@ -647,17 +647,17 @@ export default function HomeScreen() {
                         <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Idade</Text>
                         <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.age}</Text>
                       </View>
-                      <View style={styles.userInfoDivider} />
+                      <View style={[styles.userInfoDivider, { backgroundColor: colors.border }]} />
                       <View style={styles.userInfoItem}>
                         <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Altura</Text>
                         <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.height}cm</Text>
                       </View>
-                      <View style={styles.userInfoDivider} />
+                      <View style={[styles.userInfoDivider, { backgroundColor: colors.border }]} />
                       <View style={styles.userInfoItem}>
                         <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>IMC</Text>
                         <Text style={[styles.userInfoValue, { color: colors.text }]}>{healthMetrics.bmi}</Text>
                       </View>
-                      <View style={styles.userInfoDivider} />
+                      <View style={[styles.userInfoDivider, { backgroundColor: colors.border }]} />
                       <View style={styles.userInfoItem}>
                         <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Peso</Text>
                         <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.weight}kg</Text>
@@ -676,14 +676,14 @@ export default function HomeScreen() {
                   style={[styles.headerIconButton, { backgroundColor: colors.surfaceElevated }]}
                   activeOpacity={0.6}
                 >
-                  <Settings color={colors.text} size={18} strokeWidth={2} />
+                  <Settings color={colors.textSecondary} size={16} strokeWidth={2} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => router.push('/profile')}
                   style={[styles.headerIconButton, { backgroundColor: colors.surfaceElevated }]}
                   activeOpacity={0.6}
                 >
-                  <User color={colors.text} size={18} strokeWidth={2} />
+                  <User color={colors.textSecondary} size={16} strokeWidth={2} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -730,9 +730,9 @@ export default function HomeScreen() {
                     end={{ x: 1, y: 1 }}
                     style={styles.achievementGradient}
                   >
-                    <Trophy color="white" size={18} strokeWidth={2.5} />
+                    <Trophy color="white" size={16} strokeWidth={2.5} />
                     <Text style={styles.achievementText}>Meta Diária Alcançada!</Text>
-                    <Star color="white" size={14} strokeWidth={2} />
+                    <Star color="white" size={12} strokeWidth={2} />
                   </LinearGradient>
                 </Animated.View>
               )}
@@ -1090,9 +1090,9 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
   headerTop: {
     flexDirection: 'row',
@@ -1103,24 +1103,24 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     flex: 1,
   },
   userInfoContainer: {
-    marginTop: 12,
-    paddingVertical: 16,
+    marginTop: 16,
+    paddingVertical: 18,
     paddingHorizontal: 20,
-    borderRadius: 16,
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 20,
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
     borderWidth: isDark ? 0 : 1,
-    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.06)',
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: isDark ? 0.2 : 0.04,
-    shadowRadius: isDark ? 4 : 8,
-    elevation: isDark ? 2 : 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: isDark ? 0.3 : 0.06,
+    shadowRadius: isDark ? 8 : 12,
+    elevation: isDark ? 4 : 3,
   },
   userInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   userInfoItem: {
     alignItems: 'center',
@@ -1128,17 +1128,17 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     minWidth: 0,
   },
   userInfoLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.8,
-    marginBottom: 3,
-    opacity: 0.8,
+    letterSpacing: 0.6,
+    marginBottom: 4,
+    opacity: 0.7,
   },
   userInfoValue: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700' as const,
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -1147,23 +1147,23 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   userInfoDivider: {
     width: 1,
-    height: 24,
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
-    marginHorizontal: 12,
+    height: 28,
+    marginHorizontal: 16,
     borderRadius: 0.5,
+    opacity: 0.3,
   },
   bmiCategory: {
     fontSize: 13,
-    fontWeight: '600' as const,
+    fontWeight: '500' as const,
     textAlign: 'center' as const,
-    opacity: 0.8,
-    letterSpacing: 0.2,
+    opacity: 0.7,
+    letterSpacing: 0.1,
   },
   greeting: {
-    fontSize: 32,
-    fontWeight: '800' as const,
-    marginBottom: 4,
-    letterSpacing: -0.6,
+    fontSize: 28,
+    fontWeight: '700' as const,
+    marginBottom: 2,
+    letterSpacing: -0.4,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -1171,11 +1171,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     }),
   },
   date: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500' as const,
     textTransform: 'capitalize' as const,
-    lineHeight: 20,
-    opacity: 0.7,
+    lineHeight: 18,
+    opacity: 0.6,
     letterSpacing: 0.1,
   },
   headerButtons: {
@@ -1184,19 +1184,19 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 8,
   },
   headerIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.8)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: isDark ? 0.2 : 0.08,
-    shadowRadius: isDark ? 4 : 6,
-    elevation: isDark ? 2 : 3,
-    borderWidth: isDark ? 0 : 1,
-    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
+    shadowOpacity: isDark ? 0.2 : 0.06,
+    shadowRadius: isDark ? 4 : 8,
+    elevation: isDark ? 2 : 2,
+    borderWidth: isDark ? 0 : 0.5,
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.06)',
   },
   addButton: {
     width: 44,
@@ -1251,11 +1251,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     position: 'relative',
   },
   statsContainer: {
-    paddingHorizontal: 24,
-    marginBottom: 28,
+    paddingHorizontal: 20,
+    marginBottom: 32,
   },
   mainContentContainer: {
-    gap: 4,
+    gap: 8,
   },
   summaryCards: {
     flexDirection: 'row',
@@ -1452,7 +1452,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     marginTop: 4,
   },
   mealsSection: {
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontSize: 20,
@@ -1851,8 +1851,8 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   greetingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 2,
+    gap: 8,
+    marginBottom: 4,
   },
   sparkleIcon: {
     opacity: 0.9,
@@ -1946,29 +1946,29 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   
   // Achievement badge styles
   achievementBadge: {
-    marginTop: 12,
-    marginBottom: 8,
+    marginTop: 16,
+    marginBottom: 12,
     alignSelf: 'center',
-    borderRadius: 24,
+    borderRadius: 20,
     overflow: 'hidden',
     shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
   achievementGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    gap: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    gap: 8,
   },
   achievementText: {
     color: 'white',
-    fontSize: 15,
-    fontWeight: '800' as const,
-    letterSpacing: 0.2,
+    fontSize: 14,
+    fontWeight: '700' as const,
+    letterSpacing: 0.1,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -2275,15 +2275,14 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   
   // Macro Widgets Styles
   macroWidgetsSection: {
-    marginTop: 20,
-    marginBottom: 12,
+    marginTop: 24,
+    marginBottom: 16,
   },
   macroSectionTitle: {
-    fontSize: 20,
-    fontWeight: '800' as const,
+    fontSize: 18,
+    fontWeight: '700' as const,
     marginBottom: 16,
-    letterSpacing: -0.4,
-    textTransform: 'capitalize' as const,
+    letterSpacing: -0.2,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -2292,11 +2291,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   macroWidgetsGrid: {
     flexDirection: 'row',
-    gap: 14,
+    gap: 12,
   },
   
   // Macro Chart Styles
   macroChartsSection: {
-    marginTop: 12,
+    marginTop: 16,
   },
 });
