@@ -709,22 +709,19 @@ export default function SupplementsScreen() {
       lineHeight: 22,
     },
     priorityBadge: {
-      position: 'absolute',
-      top: 16,
-      right: 16,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
-      borderRadius: 12,
-      zIndex: 2,
+      alignSelf: 'center',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 16,
+      marginBottom: 16,
       shadowColor: 'rgba(0, 0, 0, 0.15)',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.8,
       shadowRadius: 4,
       elevation: 3,
-      maxWidth: 100,
     },
     priorityText: {
-      fontSize: 10,
+      fontSize: 11,
       fontWeight: '800',
       color: 'white',
       textTransform: 'uppercase',
@@ -871,7 +868,7 @@ export default function SupplementsScreen() {
                           styles.priorityBadge,
                           {
                             backgroundColor: supplement.priority === 'high' ? '#4CAF50' : 
-                                           supplement.priority === 'medium' ? '#FF9800' : '#9E9E9E'
+                                           supplement.priority === 'medium' ? '#4CAF50' : '#9E9E9E'
                           }
                         ]}>
                           <Text style={styles.priorityText}>
