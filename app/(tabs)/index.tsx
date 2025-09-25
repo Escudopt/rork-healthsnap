@@ -621,8 +621,24 @@ export default function HomeScreen() {
                 </Text>
                 {userProfile && healthMetrics && (
                   <View style={styles.userInfoContainer}>
-                    <Text style={[styles.userInfo, { color: colors.textSecondary }]}>
-                      {userProfile.age} anos • IMC: {healthMetrics.bmi}
+                    <View style={styles.userInfoRow}>
+                      <View style={styles.userInfoItem}>
+                        <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Idade</Text>
+                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.age} anos</Text>
+                      </View>
+                      <View style={styles.userInfoDivider} />
+                      <View style={styles.userInfoItem}>
+                        <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>IMC</Text>
+                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{healthMetrics.bmi}</Text>
+                      </View>
+                      <View style={styles.userInfoDivider} />
+                      <View style={styles.userInfoItem}>
+                        <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Peso</Text>
+                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.weight} kg</Text>
+                      </View>
+                    </View>
+                    <Text style={[styles.bmiCategory, { color: colors.textSecondary }]}>
+                      {healthMetrics.bmiCategory}
                     </Text>
                   </View>
                 )}
@@ -1059,12 +1075,47 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     flex: 1,
   },
   userInfoContainer: {
-    marginTop: 4,
+    marginTop: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
+    borderWidth: isDark ? 0 : 0.5,
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.08)',
   },
-  userInfo: {
-    fontSize: 14,
+  userInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  userInfoItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  userInfoLabel: {
+    fontSize: 11,
     fontWeight: '500' as const,
-    opacity: 0.8,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  userInfoValue: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    letterSpacing: -0.2,
+  },
+  userInfoDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+    marginHorizontal: 8,
+  },
+  bmiCategory: {
+    fontSize: 12,
+    fontWeight: '500' as const,
+    textAlign: 'center' as const,
+    opacity: 0.7,
   },
   greeting: {
     fontSize: 34,
