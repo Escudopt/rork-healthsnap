@@ -24,36 +24,18 @@ import {
   Globe,
   Database,
   User,
-  Smartphone,
-  Send,
-  CheckCircle,
-  XCircle,
-  Clock,
+
 } from 'lucide-react-native';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useLanguage } from '@/providers/LanguageProvider';
-import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
-import { useHealth } from '@/providers/HealthProvider';
+
+
 import { BlurCard } from '@/components/BlurCard';
 
 export default function SettingsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
   const { t, language } = useLanguage();
-  const {
-    isHealthSyncEnabled,
-    healthSyncStatus,
-    enableHealthSync,
-    disableHealthSync,
-    syncWithHealthApp,
-  } = useCalorieTracker();
-  
-  const {
-    isHealthKitAvailable,
-    hasPermissions,
-    requestPermissions,
-    refreshHealthData,
-    healthData,
-  } = useHealth();
+
 
   const settingsOptions = [
     {
@@ -173,114 +155,7 @@ export default function SettingsScreen() {
     );
   };
 
-  const renderHealthSyncSection = () => {
-    const getHealthStatus = () => {
-      if (!isHealthKitAvailable) return { icon: XCircle, color: '#F44336', text: 'Não disponível' };
-      if (!hasPermissions) return { icon: Clock, color: '#FF9800', text: 'Permissões necessárias' };
-      if (healthData.isLoading) return { icon: Clock, color: '#FF9800', text: 'Carregando...' };
-      if (healthData.error) return { icon: XCircle, color: '#F44336', text: 'Erro na sincronização' };
-      return { icon: CheckCircle, color: '#4CAF50', text: 'Conectado' };
-    };
 
-    const status = getHealthStatus();
-    const StatusIcon = status.icon;
-
-    return (
-      <View style={styles.section}>
-        <BlurCard variant="default" style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
-          <View style={styles.sectionHeader}>
-            <View style={[styles.sectionIcon, { backgroundColor: colors.primary + '15' }]}>
-              <Smartphone color={colors.primary} size={20} strokeWidth={2} />
-            </View>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Apple Health (HealthKit)
-            </Text>
-          </View>
-          
-          <View style={styles.healthSyncContent}>
-            <Text style={[styles.healthSyncDescription, { color: colors.textSecondary }]}>
-              Conecte com o app Saúde do iPhone para ler e escrever dados de saúde automaticamente.
-            </Text>
-            
-            <View style={styles.healthSyncStatus}>
-              <View style={styles.statusIndicator}>
-                <StatusIcon color={status.color} size={20} />
-                <Text style={[styles.statusText, { color: colors.text }]}>
-                  {status.text}
-                </Text>
-              </View>
-              
-              {isHealthKitAvailable && (
-                <View style={styles.healthDataPreview}>
-                  <Text style={[styles.healthDataTitle, { color: colors.text }]}>Dados de Hoje:</Text>
-                  <View style={styles.healthDataGrid}>
-                    <View style={styles.healthDataItem}>
-                      <Text style={[styles.healthDataValue, { color: colors.primary }]}>
-                        {healthData.steps.toLocaleString()}
-                      </Text>
-                      <Text style={[styles.healthDataLabel, { color: colors.textSecondary }]}>Passos</Text>
-                    </View>
-                    <View style={styles.healthDataItem}>
-                      <Text style={[styles.healthDataValue, { color: colors.primary }]}>
-                        {healthData.totalCalories}
-                      </Text>
-                      <Text style={[styles.healthDataLabel, { color: colors.textSecondary }]}>Calorias</Text>
-                    </View>
-                    <View style={styles.healthDataItem}>
-                      <Text style={[styles.healthDataValue, { color: colors.primary }]}>
-                        {healthData.distance.toFixed(1)}km
-                      </Text>
-                      <Text style={[styles.healthDataLabel, { color: colors.textSecondary }]}>Distância</Text>
-                    </View>
-                  </View>
-                </View>
-              )}
-              
-              <View style={styles.healthSyncButtons}>
-                {!isHealthKitAvailable ? (
-                  <View style={[styles.unavailableButton, { backgroundColor: colors.surfaceSecondary }]}>
-                    <Text style={[styles.unavailableButtonText, { color: colors.textSecondary }]}>
-                      Disponível apenas no iOS
-                    </Text>
-                  </View>
-                ) : !hasPermissions ? (
-                  <TouchableOpacity
-                    style={[styles.enableSyncButton, { backgroundColor: colors.primary }]}
-                    onPress={requestPermissions}
-                    disabled={healthData.isLoading}
-                  >
-                    <Text style={styles.enableSyncButtonText}>Solicitar Permissões</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <View style={styles.syncButtonsRow}>
-                    <TouchableOpacity
-                      style={[styles.syncButton, { backgroundColor: colors.primary }]}
-                      onPress={refreshHealthData}
-                      disabled={healthData.isLoading}
-                    >
-                      <Send color="white" size={14} />
-                      <Text style={styles.syncButtonText}>Atualizar Dados</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity
-                      style={[styles.disableSyncButton, { backgroundColor: colors.surfaceSecondary, borderColor: colors.border }]}
-                      onPress={() => console.log('Configurações do HealthKit')}
-                    >
-                      <Text style={[styles.disableSyncButtonText, { color: colors.text }]}>Configurar</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              </View>
-            </View>
-            
-            <Text style={[styles.healthSyncNote, { color: colors.textTertiary }]}>
-              🍎 Integração completa com Apple Health. Dados são sincronizados automaticamente.
-            </Text>
-          </View>
-        </BlurCard>
-      </View>
-    );
-  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -378,7 +253,7 @@ export default function SettingsScreen() {
             </BlurCard>
           </View>
 
-          {renderHealthSyncSection()}
+
 
           <View style={styles.section}>
             <BlurCard variant="default" style={[styles.sectionCard, { backgroundColor: colors.surface }]}>
@@ -530,108 +405,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  healthSyncContent: {
-    gap: 16,
-  },
-  healthSyncDescription: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  healthSyncStatus: {
-    gap: 16,
-  },
-  statusIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  statusText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  healthSyncButtons: {
-    gap: 12,
-  },
-  enableSyncButton: {
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  enableSyncButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  syncButtonsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  syncButton: {
-    flex: 1,
-    borderRadius: 12,
-    padding: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  syncButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  disableSyncButton: {
-    flex: 1,
-    borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  disableSyncButtonText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  healthSyncNote: {
-    fontSize: 12,
-    fontStyle: 'italic',
-    lineHeight: 16,
-  },
-  healthDataPreview: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-    padding: 16,
-    marginVertical: 8,
-  },
-  healthDataTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 12,
-  },
-  healthDataGrid: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  healthDataItem: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  healthDataValue: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  healthDataLabel: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  unavailableButton: {
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-  },
-  unavailableButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
+
 });
