@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Info } from 'lucide-react-native';
+import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Info, Target } from 'lucide-react-native';
 import { BlurCard } from '@/components/BlurCard';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
+import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 
 interface Supplement {
   id: string;
@@ -22,12 +23,202 @@ interface Supplement {
   dosage: string;
   icon: React.ReactNode;
   color: string;
+  priority?: 'high' | 'medium' | 'low';
   ageWarnings?: {
     minAge?: number;
     maxAge?: number;
     warning: string;
   }[];
 }
+
+// Vitamin recommendation system based on age and diet
+const getVitaminRecommendations = (age: number, gender: 'male' | 'female', activityLevel: string, goal: string) => {
+  const recommendations: Supplement[] = [];
+  
+  // Age-based recommendations
+  if (age < 18) {
+    recommendations.push({
+      id: 'teen-multi',
+      name: 'Multivitamínico Teen',
+      description: 'Fórmula específica para adolescentes em crescimento',
+      benefits: ['Suporte ao crescimento', 'Desenvolvimento cognitivo', 'Sistema imunológico'],
+      dosage: '1 comprimido ao dia com refeição',
+      icon: <Shield color="white" size={24} />,
+      color: '#4CAF50',
+      priority: 'high'
+    });
+    
+    recommendations.push({
+      id: 'teen-calcium',
+      name: 'Cálcio + Vitamina D',
+      description: 'Essencial para desenvolvimento ósseo na adolescência',
+      benefits: ['Formação óssea', 'Crescimento', 'Dentes fortes'],
+      dosage: '600-800mg de cálcio + 600 UI de vitamina D',
+      icon: <Bone color="white" size={24} />,
+      color: '#FF9800',
+      priority: 'high'
+    });
+  } else if (age >= 18 && age <= 30) {
+    recommendations.push({
+      id: 'young-adult-multi',
+      name: 'Multivitamínico Adulto',
+      description: 'Suporte nutricional para vida ativa',
+      benefits: ['Energia', 'Imunidade', 'Metabolismo'],
+      dosage: '1 comprimido ao dia',
+      icon: <Shield color="white" size={24} />,
+      color: '#2196F3',
+      priority: 'medium'
+    });
+    
+    if (gender === 'female') {
+      recommendations.push({
+        id: 'iron-women',
+        name: 'Ferro para Mulheres',
+        description: 'Prevenção de anemia em mulheres em idade fértil',
+        benefits: ['Prevenção anemia', 'Energia', 'Concentração'],
+        dosage: '18mg ao dia com vitamina C',
+        icon: <Heart color="white" size={24} />,
+        color: '#E91E63',
+        priority: 'high'
+      });
+    }
+  } else if (age >= 31 && age <= 50) {
+    recommendations.push({
+      id: 'adult-multi',
+      name: 'Multivitamínico 30+',
+      description: 'Fórmula para adultos com vida ativa',
+      benefits: ['Antioxidantes', 'Energia', 'Saúde cardiovascular'],
+      dosage: '1 comprimido ao dia',
+      icon: <Shield color="white" size={24} />,
+      color: '#9C27B0',
+      priority: 'medium'
+    });
+    
+    recommendations.push({
+      id: 'coq10-adult',
+      name: 'Coenzima Q10',
+      description: 'Antioxidante para energia celular e coração',
+      benefits: ['Energia celular', 'Saúde cardíaca', 'Antioxidante'],
+      dosage: '100mg ao dia',
+      icon: <Heart color="white" size={24} />,
+      color: '#F44336',
+      priority: 'medium'
+    });
+  } else if (age >= 51 && age <= 65) {
+    recommendations.push({
+      id: 'senior-multi',
+      name: 'Multivitamínico 50+',
+      description: 'Fórmula específica para maturidade',
+      benefits: ['Saúde óssea', 'Memória', 'Imunidade'],
+      dosage: '1 comprimido ao dia',
+      icon: <Shield color="white" size={24} />,
+      color: '#607D8B',
+      priority: 'high'
+    });
+    
+    recommendations.push({
+      id: 'calcium-senior',
+      name: 'Cálcio + Magnésio + D3',
+      description: 'Prevenção de osteoporose e saúde óssea',
+      benefits: ['Densidade óssea', 'Prevenção fraturas', 'Absorção mineral'],
+      dosage: '1000mg cálcio + 400mg magnésio + 1000 UI D3',
+      icon: <Bone color="white" size={24} />,
+      color: '#795548',
+      priority: 'high'
+    });
+    
+    recommendations.push({
+      id: 'omega3-senior',
+      name: 'Ômega-3 EPA/DHA',
+      description: 'Proteção cardiovascular e cerebral',
+      benefits: ['Saúde cardíaca', 'Função cerebral', 'Anti-inflamatório'],
+      dosage: '1000-2000mg ao dia',
+      icon: <Brain color="white" size={24} />,
+      color: '#00BCD4',
+      priority: 'high'
+    });
+  } else if (age > 65) {
+    recommendations.push({
+      id: 'elderly-multi',
+      name: 'Multivitamínico Sênior',
+      description: 'Suporte nutricional para terceira idade',
+      benefits: ['Imunidade', 'Energia', 'Saúde cognitiva'],
+      dosage: '1 comprimido ao dia com refeição',
+      icon: <Shield color="white" size={24} />,
+      color: '#8BC34A',
+      priority: 'high'
+    });
+    
+    recommendations.push({
+      id: 'b12-elderly',
+      name: 'Vitamina B12',
+      description: 'Essencial para idosos - absorção reduzida com idade',
+      benefits: ['Energia', 'Memória', 'Sistema nervoso'],
+      dosage: '500-1000mcg ao dia',
+      icon: <Brain color="white" size={24} />,
+      color: '#FF5722',
+      priority: 'high'
+    });
+    
+    recommendations.push({
+      id: 'vitamin-d-elderly',
+      name: 'Vitamina D3 Alta Potência',
+      description: 'Dose elevada para idosos com pouca exposição solar',
+      benefits: ['Saúde óssea', 'Imunidade', 'Força muscular'],
+      dosage: '2000-4000 UI ao dia',
+      icon: <Bone color="white" size={24} />,
+      color: '#FFC107',
+      priority: 'high'
+    });
+  }
+  
+  // Activity level based recommendations
+  if (activityLevel === 'active' || activityLevel === 'very_active') {
+    if (age >= 18) {
+      recommendations.push({
+        id: 'magnesium-active',
+        name: 'Magnésio para Atletas',
+        description: 'Recuperação muscular e redução de cãibras',
+        benefits: ['Recuperação muscular', 'Reduz cãibras', 'Qualidade do sono'],
+        dosage: '300-400mg antes de dormir',
+        icon: <Zap color="white" size={24} />,
+        color: '#4CAF50',
+        priority: 'medium'
+      });
+    }
+  }
+  
+  // Goal-based recommendations
+  if (goal === 'lose' && age >= 18) {
+    recommendations.push({
+      id: 'chromium-weight',
+      name: 'Cromo + L-Carnitina',
+      description: 'Suporte ao metabolismo e controle de açúcar',
+      benefits: ['Metabolismo', 'Controle glicêmico', 'Queima de gordura'],
+      dosage: '200mcg cromo + 1000mg L-carnitina',
+      icon: <Target color="white" size={24} />,
+      color: '#E91E63',
+      priority: 'medium'
+    });
+  }
+  
+  // Universal recommendations for all ages
+  recommendations.push({
+    id: 'vitamin-c-universal',
+    name: 'Vitamina C',
+    description: 'Antioxidante essencial para todas as idades',
+    benefits: ['Sistema imunológico', 'Antioxidante', 'Absorção de ferro'],
+    dosage: age < 18 ? '65-75mg ao dia' : '500-1000mg ao dia',
+    icon: <Shield color="white" size={24} />,
+    color: '#FF9800',
+    priority: 'medium'
+  });
+  
+  return recommendations.sort((a, b) => {
+    const priorityOrder = { high: 3, medium: 2, low: 1 };
+    return (priorityOrder[b.priority as keyof typeof priorityOrder] || 0) - (priorityOrder[a.priority as keyof typeof priorityOrder] || 0);
+  });
+};
 
 const supplements: Supplement[] = [
   {
@@ -211,6 +402,12 @@ export default function SupplementsScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const { colors, isDark } = useTheme();
+  const { userProfile } = useCalorieTracker();
+  
+  // Get personalized recommendations
+  const personalizedRecommendations = userProfile 
+    ? getVitaminRecommendations(userProfile.age, userProfile.gender, userProfile.activityLevel, userProfile.goal)
+    : [];
 
   useEffect(() => {
     Animated.parallel([
@@ -485,6 +682,93 @@ export default function SupplementsScreen() {
       fontWeight: '500',
       paddingLeft: 4,
     },
+    
+    // Personalized recommendations styles
+    personalizedSection: {
+      marginBottom: 24,
+    },
+    personalizedHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 16,
+      paddingHorizontal: 4,
+    },
+    personalizedTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: colors.text,
+      marginLeft: 12,
+      letterSpacing: 0.3,
+    },
+    personalizedSubtitle: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      marginBottom: 20,
+      paddingHorizontal: 4,
+      lineHeight: 22,
+    },
+    priorityBadge: {
+      position: 'absolute',
+      top: 16,
+      right: 16,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+      zIndex: 2,
+    },
+    priorityText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: 'white',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    noProfileCard: {
+      padding: 24,
+      marginBottom: 20,
+      borderRadius: 20,
+      alignItems: 'center',
+      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.15)' : 'rgba(255, 152, 0, 0.08)',
+      borderWidth: 1.5,
+      borderColor: isDark ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 152, 0, 0.2)',
+    },
+    noProfileIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: '#FF9800',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    noProfileTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+    noProfileText: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+    },
+    generalSupplementsTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: colors.text,
+      marginBottom: 16,
+      paddingHorizontal: 4,
+      letterSpacing: 0.2,
+    },
+    summaryCardIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
   }));
 
   return (
@@ -534,6 +818,129 @@ export default function SupplementsScreen() {
           </Animated.View>
 
           <Animated.View style={[styles.supplementsSection, { opacity: fadeAnim }]}>
+            {/* Personalized Recommendations */}
+            {userProfile ? (
+              <View style={styles.personalizedSection}>
+                <View style={styles.personalizedHeader}>
+                  <View style={[styles.summaryCardIcon, { backgroundColor: '#4CAF50' }]}>
+                    <Target color="white" size={20} strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.personalizedTitle}>Recomendações Personalizadas</Text>
+                </View>
+                <Text style={styles.personalizedSubtitle}>
+                  Baseado no seu perfil: {userProfile.age} anos, {userProfile.gender === 'male' ? 'masculino' : 'feminino'}, 
+                  objetivo de {userProfile.goal === 'lose' ? 'perder peso' : userProfile.goal === 'gain' ? 'ganhar peso' : 'manter peso'}
+                </Text>
+                
+                {personalizedRecommendations.map((supplement, index) => (
+                  <Animated.View
+                    key={supplement.id}
+                    style={[
+                      {
+                        transform: [{
+                          translateY: fadeAnim.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [30 + (index * 15), 0],
+                          })
+                        }]
+                      }
+                    ]}
+                  >
+                    <BlurCard style={styles.supplementCard}>
+                      <LinearGradient
+                        colors={[
+                          `${supplement.color}20`,
+                          `${supplement.color}10`,
+                          'transparent'
+                        ]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.supplementGradient}
+                      />
+                      
+                      {supplement.priority && (
+                        <View style={[
+                          styles.priorityBadge,
+                          {
+                            backgroundColor: supplement.priority === 'high' ? '#4CAF50' : 
+                                           supplement.priority === 'medium' ? '#FF9800' : '#9E9E9E'
+                          }
+                        ]}>
+                          <Text style={styles.priorityText}>
+                            {supplement.priority === 'high' ? 'PRIORIDADE' : 
+                             supplement.priority === 'medium' ? 'RECOMENDADO' : 'OPCIONAL'}
+                          </Text>
+                        </View>
+                      )}
+                      
+                      <View style={styles.supplementHeader}>
+                        <View style={[
+                          styles.supplementIcon,
+                          { backgroundColor: supplement.color }
+                        ]}>
+                          {supplement.icon}
+                        </View>
+                        <View style={styles.supplementInfo}>
+                          <Text style={styles.supplementName}>{supplement.name}</Text>
+                          <Text style={styles.supplementDescription}>{supplement.description}</Text>
+                        </View>
+                      </View>
+                      
+                      <View style={styles.benefitsSection}>
+                        <Text style={styles.benefitsTitle}>Principais Benefícios</Text>
+                        <View style={styles.benefitsGrid}>
+                          {supplement.benefits.map((benefit, benefitIndex) => (
+                            <View key={`${supplement.id}-benefit-${benefitIndex}`} style={styles.benefitChip}>
+                              <View style={[styles.benefitDot, { backgroundColor: supplement.color }]} />
+                              <Text style={styles.benefitText}>{benefit}</Text>
+                            </View>
+                          ))}
+                        </View>
+                      </View>
+                      
+                      <View style={styles.dosageSection}>
+                        <View style={styles.dosageHeader}>
+                          <Pill color={colors.textSecondary} size={16} />
+                          <Text style={styles.dosageTitle}>Dosagem Recomendada</Text>
+                        </View>
+                        <Text style={styles.dosageText}>{supplement.dosage}</Text>
+                      </View>
+
+                      {supplement.ageWarnings && supplement.ageWarnings.length > 0 && (
+                        <View style={styles.warningSection}>
+                          <View style={styles.warningHeader}>
+                            <AlertTriangle color="#FF6B35" size={18} />
+                            <Text style={styles.warningTitle}>Avisos Importantes</Text>
+                          </View>
+                          <View style={styles.warningContent}>
+                            {supplement.ageWarnings.map((warning, warningIndex) => (
+                              <View key={`${supplement.id}-warning-${warningIndex}`} style={styles.warningItem}>
+                                <View style={styles.warningBullet} />
+                                <Text style={styles.warningText}>{warning.warning}</Text>
+                              </View>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+                    </BlurCard>
+                  </Animated.View>
+                ))}
+              </View>
+            ) : (
+              <BlurCard style={styles.noProfileCard}>
+                <View style={styles.noProfileIcon}>
+                  <AlertTriangle color="white" size={24} />
+                </View>
+                <Text style={styles.noProfileTitle}>Configure seu Perfil</Text>
+                <Text style={styles.noProfileText}>
+                  Para receber recomendações personalizadas de vitaminas baseadas na sua idade e estilo de vida, 
+                  configure seu perfil na aba &ldquo;Perfil&rdquo;.
+                </Text>
+              </BlurCard>
+            )}
+            
+            {/* General Supplements */}
+            <Text style={styles.generalSupplementsTitle}>Guia Geral de Suplementos</Text>
             {supplements.map((supplement, index) => (
               <Animated.View
                 key={supplement.id}
