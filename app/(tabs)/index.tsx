@@ -640,49 +640,7 @@ export default function HomeScreen() {
                     month: 'long' 
                   })}
                 </Text>
-                {userProfile && healthMetrics && (
-                  <View style={styles.userMetricsContainer}>
-                    <View style={styles.userMetricsGrid}>
-                      <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
-                        <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
-                          <User color={colors.primary} size={16} strokeWidth={2} />
-                        </View>
-                        <Text style={[styles.userMetricValue, { color: colors.text }]}>{userProfile.age}</Text>
-                        <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>Idade</Text>
-                      </View>
-                      
-                      <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
-                        <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
-                          <Activity color={colors.primary} size={16} strokeWidth={2} />
-                        </View>
-                        <Text style={[styles.userMetricValue, { color: colors.text }]}>{userProfile.height}cm</Text>
-                        <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>Altura</Text>
-                      </View>
-                    </View>
-                    
-                    <View style={styles.userMetricsGrid}>
-                      <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
-                        <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
-                          <Target color={colors.primary} size={16} strokeWidth={2} />
-                        </View>
-                        <Text style={[styles.userMetricValue, { color: colors.text }]}>{healthMetrics.bmi}</Text>
-                        <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>IMC</Text>
-                      </View>
-                      
-                      <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
-                        <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
-                          <Heart color={colors.primary} size={16} strokeWidth={2} />
-                        </View>
-                        <Text style={[styles.userMetricValue, { color: colors.text }]}>{userProfile.weight}kg</Text>
-                        <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>Peso</Text>
-                      </View>
-                    </View>
-                    
-                    <Text style={[styles.bmiCategory, { color: colors.textSecondary }]}>
-                      {healthMetrics.bmiCategory}
-                    </Text>
-                  </View>
-                )}
+
               </View>
               <View style={styles.headerButtons}>
                 <FloatingAIChat isHeaderButton={true} />
@@ -750,6 +708,51 @@ export default function HomeScreen() {
                     <Star color="white" size={12} strokeWidth={2} />
                   </LinearGradient>
                 </Animated.View>
+              )}
+              
+              {/* User Metrics Widgets */}
+              {userProfile && healthMetrics && (
+                <View style={styles.userMetricsSection}>
+                  <View style={styles.userMetricsGrid}>
+                    <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
+                      <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
+                        <User color={colors.primary} size={16} strokeWidth={2} />
+                      </View>
+                      <Text style={[styles.userMetricValue, { color: colors.text }]}>{userProfile.age}</Text>
+                      <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>Idade</Text>
+                    </View>
+                    
+                    <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
+                      <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
+                        <Activity color={colors.primary} size={16} strokeWidth={2} />
+                      </View>
+                      <Text style={[styles.userMetricValue, { color: colors.text }]}>{userProfile.height}cm</Text>
+                      <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>Altura</Text>
+                    </View>
+                  </View>
+                  
+                  <View style={styles.userMetricsGrid}>
+                    <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
+                      <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
+                        <Target color={colors.primary} size={16} strokeWidth={2} />
+                      </View>
+                      <Text style={[styles.userMetricValue, { color: colors.text }]}>{healthMetrics.bmi}</Text>
+                      <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>IMC</Text>
+                    </View>
+                    
+                    <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
+                      <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
+                        <Heart color={colors.primary} size={16} strokeWidth={2} />
+                      </View>
+                      <Text style={[styles.userMetricValue, { color: colors.text }]}>{userProfile.weight}kg</Text>
+                      <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>Peso</Text>
+                    </View>
+                  </View>
+                  
+                  <Text style={[styles.bmiCategory, { color: colors.textSecondary }]}>
+                    {healthMetrics.bmiCategory}
+                  </Text>
+                </View>
               )}
               
               {/* Macro Widgets */}
@@ -1117,8 +1120,9 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   headerLeft: {
     flex: 1,
   },
-  userMetricsContainer: {
-    marginTop: 16,
+  userMetricsSection: {
+    marginTop: 20,
+    marginBottom: 16,
     gap: 12,
   },
   userMetricsGrid: {
