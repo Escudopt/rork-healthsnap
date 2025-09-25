@@ -755,31 +755,7 @@ export default function HomeScreen() {
                 </View>
               )}
               
-              {/* Macro Widgets */}
-              {todayFoods.length > 0 && (
-                <View style={styles.macroWidgetsSection}>
-                  <Text style={[styles.macroSectionTitle, { color: colors.text }]}>
-                    Macronutrientes
-                  </Text>
-                  <View style={styles.macroWidgetsGrid}>
-                    <MacroWidget 
-                      foods={todayFoods} 
-                      type="protein"
-                      goal={userProfile?.weight ? userProfile.weight * 1.2 : 120}
-                    />
-                    <MacroWidget 
-                      foods={todayFoods} 
-                      type="carbs"
-                      goal={200}
-                    />
-                    <MacroWidget 
-                      foods={todayFoods} 
-                      type="fat"
-                      goal={70}
-                    />
-                  </View>
-                </View>
-              )}
+
               
               {/* Macro Distribution Chart */}
               {todayFoods.length > 0 && (
