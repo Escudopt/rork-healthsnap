@@ -310,17 +310,17 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
     borderWidth: 0.5,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
+    borderColor: 'rgba(0, 0, 0, 0.04)',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 20,
+    marginBottom: 18,
   },
   titleContainer: {
     flex: 1,
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
 
   caloriesSection: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   caloriesContainer: {
     alignItems: 'center',
@@ -448,9 +448,9 @@ const styles = StyleSheet.create({
   },
   currentCalories: {
     ...Typography.largeNumber,
-    fontSize: 56,
+    fontSize: 52,
     fontWeight: '200' as const,
-    letterSpacing: -2.8,
+    letterSpacing: -2.6,
     marginBottom: 4,
     ...Platform.select({
       ios: {
@@ -460,19 +460,19 @@ const styles = StyleSheet.create({
   },
   calorieUnit: {
     ...Typography.caption1Emphasized,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.8,
-    opacity: 0.8,
+    letterSpacing: 0.6,
+    opacity: 0.7,
   },
   goalText: {
     ...Typography.caption1,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.5,
-    opacity: 0.8,
+    letterSpacing: 0.4,
+    opacity: 0.7,
   },
   statusIndicator: {
     borderRadius: 24,
@@ -494,34 +494,34 @@ const styles = StyleSheet.create({
   },
   progressSection: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 20,
   },
   circularProgressContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   circularProgress: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
   },
   circularProgressBackground: {
     position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 6,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 5,
+    borderColor: 'rgba(0, 0, 0, 0.08)',
   },
   circularProgressFill: {
     position: 'absolute',
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 6,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 5,
     borderColor: 'transparent',
   },
   circularProgressLeft: {
@@ -541,9 +541,9 @@ const styles = StyleSheet.create({
   },
   progressPercentage: {
     ...Typography.smallNumber,
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '600' as const,
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -607,17 +607,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 32,
+    gap: 28,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
     ...Typography.smallNumber,
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '500' as const,
-    marginBottom: 4,
-    letterSpacing: -0.6,
+    marginBottom: 3,
+    letterSpacing: -0.5,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -626,17 +626,17 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     ...Typography.caption2Emphasized,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.8,
-    opacity: 0.7,
+    letterSpacing: 0.6,
+    opacity: 0.6,
   },
   statDivider: {
     width: 1,
-    height: 24,
+    height: 20,
     borderRadius: 0.5,
-    opacity: 0.2,
+    opacity: 0.15,
   },
   animatedContainer: {
     // Container for animated view

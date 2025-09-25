@@ -82,7 +82,7 @@ export function MacroWidget({ foods, type, goal, onPress }: MacroWidgetProps) {
             <View style={[styles.iconContainer, { backgroundColor: config.color + '20' }]}>
               <IconComponent 
                 color={config.color} 
-                size={18} 
+                size={16} 
                 strokeWidth={2.5} 
               />
             </View>
@@ -160,39 +160,40 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(0, 0, 0, 0.05)',
   },
   gradientOverlay: {
-    padding: 18,
-    minHeight: 130,
+    padding: 16,
+    minHeight: 120,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 8,
+    marginBottom: 10,
+    gap: 6,
   },
   iconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
     ...Typography.caption1Emphasized,
+    fontSize: 11,
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    opacity: 0.9,
+    letterSpacing: 0.6,
+    opacity: 0.8,
   },
   valueContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: 12,
-    gap: 4,
+    marginBottom: 10,
+    gap: 3,
   },
   value: {
     ...Typography.mediumNumber,
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    letterSpacing: -0.8,
+    letterSpacing: -0.6,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -201,14 +202,14 @@ const styles = StyleSheet.create({
   },
   unit: {
     ...Typography.caption1Emphasized,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    opacity: 0.8,
+    letterSpacing: 0.4,
+    opacity: 0.7,
   },
   progressContainer: {
-    gap: 6,
+    gap: 5,
   },
   progressTrack: {
     height: 4,
@@ -225,24 +226,24 @@ const styles = StyleSheet.create({
   },
   progressText: {
     ...Typography.caption2,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
     textAlign: 'center',
-    letterSpacing: 0.2,
-    opacity: 0.8,
+    letterSpacing: 0.1,
+    opacity: 0.7,
   },
   statusContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
-    gap: 4,
+    marginTop: 6,
+    gap: 3,
   },
   statusText: {
     ...Typography.caption2Emphasized,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
 });

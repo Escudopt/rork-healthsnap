@@ -1104,23 +1104,23 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   userInfoContainer: {
     marginTop: 16,
-    paddingVertical: 18,
+    paddingVertical: 16,
     paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
-    borderWidth: isDark ? 0 : 1,
-    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
+    borderRadius: 16,
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.8)',
+    borderWidth: isDark ? 0 : 0.5,
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.06)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: isDark ? 0.3 : 0.06,
-    shadowRadius: isDark ? 8 : 12,
-    elevation: isDark ? 4 : 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.2 : 0.04,
+    shadowRadius: isDark ? 6 : 8,
+    elevation: isDark ? 2 : 2,
   },
   userInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   userInfoItem: {
     alignItems: 'center',
@@ -1128,17 +1128,17 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     minWidth: 0,
   },
   userInfoLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.6,
-    marginBottom: 4,
-    opacity: 0.7,
+    letterSpacing: 0.8,
+    marginBottom: 3,
+    opacity: 0.6,
   },
   userInfoValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700' as const,
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -1147,23 +1147,23 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   userInfoDivider: {
     width: 1,
-    height: 28,
-    marginHorizontal: 16,
+    height: 24,
+    marginHorizontal: 12,
     borderRadius: 0.5,
-    opacity: 0.3,
+    opacity: 0.2,
   },
   bmiCategory: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '500' as const,
     textAlign: 'center' as const,
-    opacity: 0.7,
+    opacity: 0.6,
     letterSpacing: 0.1,
   },
   greeting: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700' as const,
     marginBottom: 2,
-    letterSpacing: -0.4,
+    letterSpacing: -0.3,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -1171,10 +1171,10 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     }),
   },
   date: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500' as const,
     textTransform: 'capitalize' as const,
-    lineHeight: 18,
+    lineHeight: 17,
     opacity: 0.6,
     letterSpacing: 0.1,
   },
@@ -1184,19 +1184,19 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 8,
   },
   headerIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: isDark ? 0.2 : 0.06,
-    shadowRadius: isDark ? 4 : 8,
-    elevation: isDark ? 2 : 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: isDark ? 0.15 : 0.04,
+    shadowRadius: isDark ? 3 : 6,
+    elevation: isDark ? 1 : 1,
     borderWidth: isDark ? 0 : 0.5,
-    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.06)',
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
   },
   addButton: {
     width: 44,
@@ -1252,10 +1252,10 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   statsContainer: {
     paddingHorizontal: 20,
-    marginBottom: 32,
+    marginBottom: 24,
   },
   mainContentContainer: {
-    gap: 16,
+    gap: 20,
     paddingHorizontal: 0,
   },
   summaryCards: {
@@ -1454,6 +1454,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   mealsSection: {
     paddingHorizontal: 20,
+    marginTop: 8,
   },
   sectionTitle: {
     fontSize: 20,
@@ -1537,7 +1538,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     textAlign: 'center',
   },
   sectionHeader: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   segmentedControl: {
     flexDirection: 'row',
@@ -1744,7 +1745,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   
   tabContent: {
-    marginTop: 20,
+    marginTop: 16,
   },
   
   // History day card styles
@@ -1947,27 +1948,27 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   
   // Achievement badge styles
   achievementBadge: {
-    marginTop: 16,
-    marginBottom: 12,
+    marginTop: 14,
+    marginBottom: 10,
     alignSelf: 'center',
-    borderRadius: 20,
+    borderRadius: 18,
     overflow: 'hidden',
     shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 6,
   },
   achievementGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    gap: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    gap: 6,
   },
   achievementText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700' as const,
     letterSpacing: 0.1,
     ...Platform.select({
@@ -2276,14 +2277,15 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   
   // Macro Widgets Styles
   macroWidgetsSection: {
-    marginTop: 24,
+    marginTop: 20,
     marginBottom: 16,
   },
   macroSectionTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '700' as const,
-    marginBottom: 16,
+    marginBottom: 14,
     letterSpacing: -0.2,
+    opacity: 0.9,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -2292,13 +2294,13 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   macroWidgetsGrid: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
     marginHorizontal: 0,
     paddingHorizontal: 0,
   },
   
   // Macro Chart Styles
   macroChartsSection: {
-    marginTop: 16,
+    marginTop: 14,
   },
 });
