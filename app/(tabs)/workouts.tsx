@@ -856,8 +856,8 @@ Crie 2 treinos para cada local (Casa, Rua, Ginásio). Responda APENAS com JSON v
         if (userProfile && healthMetrics && userProfile.name && userProfile.age && userProfile.weight && userProfile.height) {
           console.log('👤 User profile complete, generating AI recommendations...');
           
-          // Add a small delay to show default workouts first
-          const timeoutId = setTimeout(async () => {
+          // Generate AI recommendations in background
+          setTimeout(async () => {
             try {
               const aiRecommendations = await generateWorkoutRecommendations();
               if (aiRecommendations && aiRecommendations.length > 0) {
@@ -870,12 +870,7 @@ Crie 2 treinos para cada local (Casa, Rua, Ginásio). Responda APENAS com JSON v
               console.error('🚨 AI generation error:', aiError);
               // Keep default workouts on AI failure
             }
-          }, 500);
-          
-          // Return cleanup function
-          return () => {
-            clearTimeout(timeoutId);
-          };
+          }, 100);
         } else {
           console.log('📝 User profile incomplete, using default workouts only');
         }
@@ -889,7 +884,7 @@ Crie 2 treinos para cada local (Casa, Rua, Ginásio). Responda APENAS com JSON v
     };
     
     loadRecommendations();
-  }, [userProfile, healthMetrics, getDefaultWorkouts, generateWorkoutRecommendations]);
+  }, [userProfile, healthMetrics]);
 
 
 
@@ -901,11 +896,19 @@ Crie 2 treinos para cada local (Casa, Rua, Ginásio). Responda APENAS com JSON v
       workouts: workoutRecommendations.map(w => ({ id: w.id, location: w.location }))
     });
     
+    // Map category names to match workout locations
+    const categoryMap: { [key: string]: string } = {
+      'casa': 'Casa',
+      'rua': 'Rua', 
+      'ginasio': 'Ginásio'
+    };
+    
+    const targetLocation = categoryMap[selectedCategory] || selectedCategory;
     const filtered = workoutRecommendations.filter(workout => 
-      workout.location.toLowerCase() === selectedCategory.toLowerCase()
+      workout.location === targetLocation
     );
     
-    console.log('Filtered workouts:', filtered.length);
+    console.log('Filtered workouts:', filtered.length, 'for location:', targetLocation);
     return filtered;
   }, [workoutRecommendations, selectedCategory]);
 
@@ -1266,40 +1269,47 @@ Crie 2 treinos para cada local (Casa, Rua, Ginásio). Responda APENAS com JSON v
           ))}
         </View>
 
-        {/* Loading State */}
-        {isLoading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-              Gerando recomendações personalizadas...
-            </Text>
-          </View>
-        )}
+
 
 
 
         {/* Workout Recommendations */}
-        {!isLoading && (
-          <View style={styles.workoutsContainer}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Treinos para {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
-            </Text>
-            {filteredWorkouts.length > 0 ? (
-              filteredWorkouts.map(renderWorkoutCard)
-            ) : (
-              <BlurCard style={styles.emptyState}>
-                <Dumbbell size={48} color={colors.textSecondary} />
-                <Text style={[styles.emptyTitle, { color: colors.text }]}>Carregando treinos...</Text>
-                <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
-                  Preparando treinos personalizados para {selectedCategory}
-                </Text>
-              </BlurCard>
-            )}
-          </View>
-        )}
+        <View style={styles.workoutsContainer}>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            Treinos para {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
+          </Text>
+          
+          {isLoading ? (
+            <BlurCard style={styles.emptyState}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Carregando treinos...</Text>
+              <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
+                Preparando treinos personalizados para {selectedCategory}
+              </Text>
+            </BlurCard>
+          ) : filteredWorkouts.length > 0 ? (
+            filteredWorkouts.map(renderWorkoutCard)
+          ) : workoutRecommendations.length === 0 ? (
+            <BlurCard style={styles.emptyState}>
+              <Dumbbell size={48} color={colors.textSecondary} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Carregando treinos...</Text>
+              <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
+                Preparando treinos básicos...
+              </Text>
+            </BlurCard>
+          ) : (
+            <BlurCard style={styles.emptyState}>
+              <Dumbbell size={48} color={colors.textSecondary} />
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhum treino encontrado</Text>
+              <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
+                Não há treinos disponíveis para {selectedCategory}. Tente outra categoria.
+              </Text>
+            </BlurCard>
+          )}
+        </View>
 
         {/* Profile Completion Prompt */}
-        {!isLoading && workoutRecommendations.length > 0 && (!userProfile || !userProfile.name || !userProfile.age || !userProfile.weight || !userProfile.height) && (
+        {workoutRecommendations.length > 0 && (!userProfile || !userProfile.name || !userProfile.age || !userProfile.weight || !userProfile.height) && (
           <BlurCard style={styles.profilePrompt}>
             <User size={24} color={colors.warning} />
             <Text style={[styles.promptTitle, { color: colors.text }]}>Complete seu perfil</Text>
