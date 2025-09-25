@@ -47,14 +47,276 @@ export default function AnalysisScreen() {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const editMenuAnim = useRef(new Animated.Value(0)).current;
 
-  const analyzeImage = useCallback(async (retryCount = 0) => {
+  const analyzeImageWithLogMeal = useCallback(async (retryCount = 0) => {
     const maxRetries = 3;
     
     try {
       setIsAnalyzing(true);
       setError(null);
 
-      console.log(`Starting image analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
+      console.log(`Starting LogMeal analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
+      
+      if (!imageBase64) {
+        throw new Error('Nenhuma imagem foi fornecida para análise');
+      }
+      
+      const startTime = Date.now();
+
+      // Step 1: Use LogMeal API for food detection
+      console.log('Calling LogMeal API for food detection...');
+      
+      const logMealResponse = await fetch('https://api.logmeal.es/v2/image/segmentation/complete', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer 4c5b8b8e8f8e8f8e8f8e8f8e8f8e8f8e', // Substitua pela sua chave da API LogMeal
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: imageBase64
+        })
+      });
+
+      if (!logMealResponse.ok) {
+        throw new Error(`LogMeal API error: ${logMealResponse.status}`);
+      }
+
+      const logMealData = await logMealResponse.json();
+      console.log('LogMeal response:', logMealData);
+
+      // Step 2: Process LogMeal results and enhance with AI
+      const analysisSchema = z.object({
+        mealName: z.string().describe('Nome automático gerado para a refeição'),
+        foods: z.array(z.object({
+          name: z.string(),
+          weightInGrams: z.number(),
+          calories: z.number(),
+          protein: z.number(),
+          carbs: z.number(),
+          fat: z.number(),
+          fiber: z.number().optional(),
+          sugar: z.number().optional(),
+          sodium: z.number().optional(),
+          portion: z.string()
+        })),
+        totalCalories: z.number(),
+        totalWeight: z.number(),
+        mealType: z.enum(['Café da Manhã', 'Almoço', 'Jantar', 'Lanche']),
+        confidence: z.enum(['high', 'medium', 'low'])
+      });
+
+      // Add timeout to the request
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout: A análise demorou muito para responder')), 45000);
+      });
+
+      console.log('Processing LogMeal data with AI enhancement...');
+      
+      const analysisPromise = generateObject({
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Com base nos dados da API LogMeal abaixo, processe e melhore a identificação dos alimentos, separando CADA INGREDIENTE com informações nutricionais precisas em português. Gere também um NOME AUTOMÁTICO para a refeição.
+                
+                DADOS DA LOGMEAL API:
+                ${JSON.stringify(logMealData, null, 2)}
+                
+                REGRAS CRÍTICAS PARA PROCESSAMENTO:
+                - Use os dados da LogMeal como base, mas melhore a identificação
+                - Separe CADA ingrediente individualmente com pesos realistas em GRAMAS
+                - Calcule valores nutricionais precisos por 100g e ajuste para o peso estimado
+                - Identifique 4-10 ingredientes diferentes quando possível
+                - Seja específico: "Peito de frango grelhado", não apenas "Frango"
+                - Para vegetais, estime peso individual (ex: "Tomate" 80g, "Alface" 30g)
+                - Para carnes, estime porções realistas (ex: "Peito de frango" 120g)
+                - Para carboidratos, use medidas precisas (ex: "Arroz cozido" 150g)
+                - Inclua temperos e molhos visíveis se significativos
+                
+                REGRAS PARA NOME AUTOMÁTICO DA REFEIÇÃO:
+                - Crie um nome atrativo e descritivo baseado nos ingredientes principais
+                - Use nomes brasileiros típicos (ex: "Frango com Arroz e Brócolis", "Salada Tropical", "Bowl Proteico")
+                - Seja criativo mas realista
+                - Máximo 4-5 palavras
+                - Evite nomes genéricos como "Refeição" ou "Prato"
+                
+                Exemplo de resposta:
+                {
+                  "mealName": "Frango Grelhado com Arroz e Brócolis",
+                  "foods": [
+                    {
+                      "name": "Peito de frango grelhado",
+                      "weightInGrams": 120,
+                      "calories": 198,
+                      "protein": 37,
+                      "carbs": 0,
+                      "fat": 4,
+                      "fiber": 0,
+                      "portion": "120g"
+                    }
+                  ],
+                  "totalCalories": 503,
+                  "totalWeight": 360,
+                  "mealType": "Almoço",
+                  "confidence": "high"
+                }`
+              },
+              {
+                type: 'image',
+                image: imageBase64
+              }
+            ]
+          }
+        ],
+        schema: analysisSchema
+      });
+
+      console.log('Waiting for enhanced analysis result...');
+      const result = await Promise.race([analysisPromise, timeoutPromise]) as any;
+      console.log('Enhanced analysis result received:', result);
+      
+      const processingTime = Date.now() - startTime;
+      console.log(`LogMeal + AI analysis completed in ${processingTime}ms`);
+      
+      // Validate the result structure
+      if (!result || typeof result !== 'object') {
+        throw new Error('Resposta inválida da análise');
+      }
+      
+      if (!result.foods || !Array.isArray(result.foods) || result.foods.length === 0) {
+        console.warn('No foods detected, creating fallback food item');
+        result.foods = [{
+          name: 'Alimento não identificado',
+          weightInGrams: 100,
+          calories: 150,
+          protein: 5,
+          carbs: 20,
+          fat: 5,
+          fiber: 2,
+          portion: '100g'
+        }];
+        result.confidence = 'low';
+      }
+      
+      // Validate and fix each food item
+      result.foods = result.foods.map((food: any, index: number) => {
+        const weightInGrams = Math.max(1, Number(food.weightInGrams) || 100);
+        const validFood = {
+          name: food.name || `Ingrediente ${index + 1}`,
+          weightInGrams: weightInGrams,
+          calories: Math.max(0, Number(food.calories) || 100),
+          protein: Math.max(0, Number(food.protein) || 0),
+          carbs: Math.max(0, Number(food.carbs) || 0),
+          fat: Math.max(0, Number(food.fat) || 0),
+          fiber: Math.max(0, Number(food.fiber) || 0),
+          sugar: food.sugar ? Math.max(0, Number(food.sugar)) : undefined,
+          sodium: food.sodium ? Math.max(0, Number(food.sodium)) : undefined,
+          portion: food.portion || `${weightInGrams}g`
+        };
+        return validFood;
+      });
+      
+      // Calculate the correct total calories from individual foods
+      const calculatedTotal = result.foods.reduce((sum: number, food: any) => {
+        return sum + (Number(food.calories) || 0);
+      }, 0);
+      
+      // Fix the totalCalories if it doesn't match the sum
+      if (result.totalCalories !== calculatedTotal) {
+        console.log(`Fixing totalCalories: AI said ${result.totalCalories}, calculated ${calculatedTotal}`);
+        result.totalCalories = calculatedTotal;
+      }
+      
+      // Ensure we have a valid total
+      if (result.totalCalories <= 0) {
+        result.totalCalories = calculatedTotal > 0 ? calculatedTotal : 150;
+      }
+      
+      // Ensure we have a valid meal type
+      if (!result.mealType || !['Café da Manhã', 'Almoço', 'Jantar', 'Lanche'].includes(result.mealType)) {
+        const currentHour = new Date().getHours();
+        if (currentHour < 10) {
+          result.mealType = 'Café da Manhã';
+        } else if (currentHour < 15) {
+          result.mealType = 'Almoço';
+        } else if (currentHour < 19) {
+          result.mealType = 'Lanche';
+        } else {
+          result.mealType = 'Jantar';
+        }
+      }
+      
+      // Ensure we have a valid confidence level
+      if (!result.confidence || !['high', 'medium', 'low'].includes(result.confidence)) {
+        result.confidence = 'high'; // LogMeal + AI should have higher confidence
+      }
+      
+      console.log('LogMeal + AI analysis result:', result);
+      setAnalysisResult(result);
+      setEditedFoods(result.foods);
+      setEditedMealType(result.mealType);
+      setMealName(result.mealName || 'Refeição Personalizada');
+      
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          friction: 12,
+          tension: 80,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      
+      setTimeout(() => {
+        setShowEditMenu(true);
+        Animated.timing(editMenuAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }).start();
+      }, 200);
+      
+      setIsAnalyzing(false);
+    } catch (err) {
+      console.error(`Error in LogMeal analysis (attempt ${retryCount + 1}):`, err);
+      
+      const isNetworkError = err instanceof Error && (
+        err.message.includes('Network request failed') ||
+        err.message.includes('fetch') ||
+        err.message.includes('Timeout') ||
+        err.message.includes('Failed to fetch') ||
+        err.message.includes('NetworkError') ||
+        err.message.includes('TypeError') ||
+        err.message.includes('LogMeal API error')
+      );
+      
+      if (isNetworkError && retryCount < maxRetries) {
+        console.log(`Retrying LogMeal in ${(retryCount + 1) * 2} seconds...`);
+        setTimeout(() => {
+          analyzeImageWithLogMeal(retryCount + 1);
+        }, (retryCount + 1) * 2000);
+        return;
+      }
+      
+      // If LogMeal fails, throw error to trigger fallback
+      throw err;
+    }
+  }, [imageBase64, fadeAnim, slideAnim, editMenuAnim]);
+
+  // Fallback function using the original AI analysis
+  const analyzeImageFallback = useCallback(async (retryCount = 0) => {
+    const maxRetries = 3;
+    
+    try {
+      setIsAnalyzing(true);
+      setError(null);
+
+      console.log(`Starting fallback AI analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
       
       if (!imageBase64) {
         throw new Error('Nenhuma imagem foi fornecida para análise');
@@ -82,7 +344,6 @@ export default function AnalysisScreen() {
         confidence: z.enum(['high', 'medium', 'low'])
       });
 
-      // Add timeout to the request
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(() => reject(new Error('Timeout: A análise demorou muito para responder')), 45000);
       });
@@ -269,30 +530,30 @@ export default function AnalysisScreen() {
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 250, // Reduzido para 250ms
+          duration: 250,
           useNativeDriver: true,
         }),
         Animated.spring(slideAnim, {
           toValue: 0,
-          friction: 12, // Aumentado para animação mais rápida
-          tension: 80,  // Aumentado para animação mais rápida
+          friction: 12,
+          tension: 80,
           useNativeDriver: true,
         }),
       ]).start();
       
-      // Show edit menu immediately
       setTimeout(() => {
         setShowEditMenu(true);
         Animated.timing(editMenuAnim, {
           toValue: 1,
-          duration: 200, // Reduzido para 200ms
+          duration: 200,
           useNativeDriver: true,
         }).start();
-      }, 200); // Reduzido para 200ms
-    } catch (err) {
-      console.error(`Error analyzing image (attempt ${retryCount + 1}):`, err);
+      }, 200);
       
-      // Check if it's a network error and we can retry
+      setIsAnalyzing(false);
+    } catch (err) {
+      console.error(`Error in fallback analysis (attempt ${retryCount + 1}):`, err);
+      
       const isNetworkError = err instanceof Error && (
         err.message.includes('Network request failed') ||
         err.message.includes('fetch') ||
@@ -303,16 +564,15 @@ export default function AnalysisScreen() {
       );
       
       if (isNetworkError && retryCount < maxRetries) {
-        console.log(`Retrying in ${(retryCount + 1) * 2} seconds...`);
+        console.log(`Retrying fallback in ${(retryCount + 1) * 2} seconds...`);
         setTimeout(() => {
-          analyzeImage(retryCount + 1);
-        }, (retryCount + 1) * 2000); // Exponential backoff
+          analyzeImageFallback(retryCount + 1);
+        }, (retryCount + 1) * 2000);
         return;
       }
       
-      // If all retries failed, create a fallback result
       if (retryCount >= maxRetries) {
-        console.log('All retries failed, creating fallback analysis...');
+        console.log('All fallback retries failed, creating final fallback...');
         const fallbackResult = {
           mealName: 'Refeição Mista',
           foods: [{
@@ -385,11 +645,28 @@ export default function AnalysisScreen() {
     }
   }, [imageBase64, fadeAnim, slideAnim, editMenuAnim]);
 
+  // Main analysis function that tries LogMeal first, then falls back to AI
+  const analyzeImage = useCallback(async (retryCount = 0) => {
+    try {
+      console.log('Starting analysis with LogMeal API...');
+      await analyzeImageWithLogMeal(retryCount);
+    } catch (logMealError) {
+      console.warn('LogMeal API failed, falling back to AI analysis:', logMealError);
+      try {
+        await analyzeImageFallback(retryCount);
+      } catch (fallbackError) {
+        console.error('Both LogMeal and AI analysis failed:', fallbackError);
+        setError('Não foi possível analisar a imagem. Tente novamente.');
+        setIsAnalyzing(false);
+      }
+    }
+  }, [analyzeImageWithLogMeal, analyzeImageFallback]);
+
   useEffect(() => {
     if (imageBase64) {
       analyzeImage();
     }
-  }, [imageBase64, analyzeImage]);
+  }, [imageBase64]);
 
   const handleSave = async () => {
     if (!analysisResult) return;
@@ -555,7 +832,7 @@ export default function AnalysisScreen() {
               <View style={styles.sparkleRow}>
                 <Sparkles color="#FFD700" size={20} />
                 <Text style={[styles.loadingSubtext, { color: colors.textSecondary }]}>
-                  Separando ingredientes automaticamente
+                  Usando LogMeal API + IA para identificação precisa
                 </Text>
                 <Sparkles color="#FFD700" size={20} />
               </View>
@@ -566,7 +843,7 @@ export default function AnalysisScreen() {
                 <Text style={[styles.progressText, { color: colors.textSecondary }]}>85% concluído</Text>
               </View>
               <Text style={[styles.loadingTip, { color: colors.textTertiary }]}>
-                ✨ Gerando nome automático e separando cada ingrediente...
+                🔬 LogMeal detecta alimentos + IA separa ingredientes e gera nome automático...
               </Text>
             </BlurCard>
           ) : error ? (
