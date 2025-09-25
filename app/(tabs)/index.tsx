@@ -628,6 +628,11 @@ export default function HomeScreen() {
                       </View>
                       <View style={styles.userInfoDivider} />
                       <View style={styles.userInfoItem}>
+                        <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Altura</Text>
+                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.height} cm</Text>
+                      </View>
+                      <View style={styles.userInfoDivider} />
+                      <View style={styles.userInfoItem}>
                         <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>IMC</Text>
                         <Text style={[styles.userInfoValue, { color: colors.text }]}>{healthMetrics.bmi}</Text>
                       </View>
@@ -1092,6 +1097,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   userInfoItem: {
     alignItems: 'center',
     flex: 1,
+    minWidth: 0,
   },
   userInfoLabel: {
     fontSize: 11,
