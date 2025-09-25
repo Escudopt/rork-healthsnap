@@ -156,6 +156,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 3,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
   gradientOverlay: {
     padding: 18,

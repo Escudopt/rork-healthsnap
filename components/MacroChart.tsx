@@ -235,9 +235,16 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
-    marginBottom: 12,
+    padding: 20,
+    marginBottom: 16,
     borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
   title: {
     fontSize: 15,
