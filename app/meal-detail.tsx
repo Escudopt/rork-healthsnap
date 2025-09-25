@@ -6,6 +6,7 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -24,11 +25,13 @@ import {
 } from 'lucide-react-native';
 import { BlurCard } from '@/components/BlurCard';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
+import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { FoodItem } from '@/types/food';
 
 export default function MealDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { meals } = useCalorieTracker();
+  const { colors, isDark } = useTheme();
   
   const meal = useMemo(() => {
     return meals.find(m => m.id === id);
@@ -76,30 +79,30 @@ export default function MealDetailScreen() {
       <BlurCard key={`food-${index}`} style={styles.foodCard}>
         <View style={styles.foodHeader}>
           <View style={styles.foodInfo}>
-            <Text style={styles.foodName}>{food.name}</Text>
-            <Text style={styles.foodPortion}>{food.portion}</Text>
+            <Text style={[styles.foodName, { color: colors.text }]}>{food.name}</Text>
+            <Text style={[styles.foodPortion, { color: colors.textSecondary }]}>{food.portion}</Text>
           </View>
           <View style={styles.foodCalories}>
-            <Text style={styles.foodCaloriesValue}>{food.calories}</Text>
-            <Text style={styles.foodCaloriesUnit}>kcal</Text>
+            <Text style={[styles.foodCaloriesValue, { color: colors.text }]}>{food.calories}</Text>
+            <Text style={[styles.foodCaloriesUnit, { color: colors.textSecondary }]}>kcal</Text>
           </View>
         </View>
         
         <View style={styles.macroGrid}>
           <View style={styles.macroItem}>
             <Beef color="#FF6B6B" size={16} />
-            <Text style={styles.macroValue}>{food.protein}g</Text>
-            <Text style={styles.macroLabel}>Proteína</Text>
+            <Text style={[styles.macroValue, { color: colors.text }]}>{food.protein}g</Text>
+            <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Proteína</Text>
           </View>
           <View style={styles.macroItem}>
             <Wheat color="#4ECDC4" size={16} />
-            <Text style={styles.macroValue}>{food.carbs}g</Text>
-            <Text style={styles.macroLabel}>Carboidratos</Text>
+            <Text style={[styles.macroValue, { color: colors.text }]}>{food.carbs}g</Text>
+            <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Carboidratos</Text>
           </View>
           <View style={styles.macroItem}>
             <Droplets color="#FFE66D" size={16} />
-            <Text style={styles.macroValue}>{food.fat}g</Text>
-            <Text style={styles.macroLabel}>Gorduras</Text>
+            <Text style={[styles.macroValue, { color: colors.text }]}>{food.fat}g</Text>
+            <Text style={[styles.macroLabel, { color: colors.textSecondary }]}>Gorduras</Text>
           </View>
         </View>
         
@@ -107,14 +110,14 @@ export default function MealDetailScreen() {
           <View style={styles.additionalNutrients}>
             {food.sugar && (
               <View style={styles.nutrientItem}>
-                <Text style={styles.nutrientLabel}>Açúcar:</Text>
-                <Text style={styles.nutrientValue}>{food.sugar}g</Text>
+                <Text style={[styles.nutrientLabel, { color: colors.textSecondary }]}>Açúcar:</Text>
+                <Text style={[styles.nutrientValue, { color: colors.text }]}>{food.sugar}g</Text>
               </View>
             )}
             {food.sodium && (
               <View style={styles.nutrientItem}>
-                <Text style={styles.nutrientLabel}>Sódio:</Text>
-                <Text style={styles.nutrientValue}>{food.sodium}mg</Text>
+                <Text style={[styles.nutrientLabel, { color: colors.textSecondary }]}>Sódio:</Text>
+                <Text style={[styles.nutrientValue, { color: colors.text }]}>{food.sodium}mg</Text>
               </View>
             )}
           </View>
@@ -123,43 +126,75 @@ export default function MealDetailScreen() {
     );
   };
   
+  const styles = useThemedStyles((colors, isDark) => createStyles(colors, isDark));
+
   if (!meal) {
     return (
-      <LinearGradient
-        colors={['#667eea', '#764ba2', '#f093fb']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.container}
-      >
+      <View style={styles.container}>
+        <LinearGradient
+          colors={isDark ? [
+            '#000000',
+            '#1C1C1E',
+            '#2C2C2E'
+          ] : [
+            '#F2F2F7',
+            '#FAFAFA',
+            '#F2F2F7'
+          ]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFillObject}
+        />
+        
+        <StatusBar 
+          barStyle={isDark ? 'light-content' : 'dark-content'} 
+          backgroundColor="transparent" 
+          translucent 
+        />
         <SafeAreaView style={styles.safeArea}>
           <View style={styles.notFoundContainer}>
-            <Text style={styles.notFoundText}>Refeição não encontrada</Text>
+            <Text style={[styles.notFoundText, { color: colors.text }]}>Refeição não encontrada</Text>
             <TouchableOpacity
               onPress={() => router.back()}
-              style={styles.backToHistoryButton}
+              style={[styles.backToHistoryButton, { backgroundColor: colors.surfaceElevated }]}
             >
-              <Text style={styles.backToHistoryText}>Voltar ao Histórico</Text>
+              <Text style={[styles.backToHistoryText, { color: colors.text }]}>Voltar ao Histórico</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
     );
   }
   
   const timeInfo = formatTime(meal.timestamp);
   
   return (
-    <LinearGradient
-      colors={['#667eea', '#764ba2', '#f093fb']}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.container}
-    >
+    <View style={styles.container}>
+      <LinearGradient
+        colors={isDark ? [
+          '#000000',
+          '#1C1C1E',
+          '#2C2C2E'
+        ] : [
+          '#F2F2F7',
+          '#FAFAFA',
+          '#F2F2F7'
+        ]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
+      <StatusBar 
+        barStyle={isDark ? 'light-content' : 'dark-content'} 
+        backgroundColor="transparent" 
+        translucent 
+      />
       <Stack.Screen 
         options={{
           title: 'Detalhes da Refeição',
           headerStyle: { backgroundColor: 'transparent' },
-          headerTintColor: 'white',
+          headerTintColor: colors.text,
           headerTitleStyle: { fontWeight: 'bold' },
           headerTransparent: true,
         }} 
@@ -169,15 +204,15 @@ export default function MealDetailScreen() {
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
-            style={styles.backButton}
+            style={[styles.backButton, { backgroundColor: colors.surfaceElevated }]}
           >
-            <ChevronLeft color="white" size={24} />
+            <ChevronLeft color={colors.text} size={24} />
           </TouchableOpacity>
           <View style={styles.headerInfo}>
-            <Text style={styles.headerTitle}>Detalhes da Refeição</Text>
+            <Text style={[styles.headerTitle, { color: colors.text }]}>Detalhes da Refeição</Text>
             <View style={styles.timeInfo}>
-              <Clock color="rgba(255, 255, 255, 0.8)" size={16} />
-              <Text style={styles.headerTime}>{timeInfo.time} • {timeInfo.date}</Text>
+              <Clock color={colors.textSecondary} size={16} />
+              <Text style={[styles.headerTime, { color: colors.textSecondary }]}>{timeInfo.time} • {timeInfo.date}</Text>
             </View>
           </View>
         </View>
@@ -199,11 +234,11 @@ export default function MealDetailScreen() {
           {/* Meal Type and Name */}
           <BlurCard style={styles.mealInfoCard}>
             <View style={styles.mealTypeContainer}>
-              <Utensils color="white" size={20} />
-              <Text style={styles.mealType}>{meal.mealType || 'Refeição'}</Text>
+              <Utensils color={colors.primary} size={20} />
+              <Text style={[styles.mealType, { color: colors.text }]}>{meal.mealType || 'Refeição'}</Text>
             </View>
             {meal.name && (
-              <Text style={styles.mealName}>{meal.name}</Text>
+              <Text style={[styles.mealName, { color: colors.textSecondary }]}>{meal.name}</Text>
             )}
           </BlurCard>
           
@@ -211,30 +246,30 @@ export default function MealDetailScreen() {
           {nutritionTotals && (
             <BlurCard style={styles.summaryCard}>
               <View style={styles.summaryHeader}>
-                <TrendingUp color="white" size={24} />
-                <Text style={styles.summaryTitle}>Resumo Nutricional</Text>
+                <TrendingUp color={colors.primary} size={24} />
+                <Text style={[styles.summaryTitle, { color: colors.text }]}>Resumo Nutricional</Text>
               </View>
               
               <View style={styles.totalCalories}>
-                <Text style={styles.totalCaloriesValue}>{nutritionTotals.calories}</Text>
-                <Text style={styles.totalCaloriesUnit}>kcal totais</Text>
+                <Text style={[styles.totalCaloriesValue, { color: colors.text }]}>{nutritionTotals.calories}</Text>
+                <Text style={[styles.totalCaloriesUnit, { color: colors.textSecondary }]}>kcal totais</Text>
               </View>
               
               <View style={styles.macroSummary}>
                 <View style={styles.macroSummaryItem}>
                   <Beef color="#FF6B6B" size={20} />
-                  <Text style={styles.macroSummaryValue}>{nutritionTotals.protein.toFixed(1)}g</Text>
-                  <Text style={styles.macroSummaryLabel}>Proteína</Text>
+                  <Text style={[styles.macroSummaryValue, { color: colors.text }]}>{nutritionTotals.protein.toFixed(1)}g</Text>
+                  <Text style={[styles.macroSummaryLabel, { color: colors.textSecondary }]}>Proteína</Text>
                 </View>
                 <View style={styles.macroSummaryItem}>
                   <Wheat color="#4ECDC4" size={20} />
-                  <Text style={styles.macroSummaryValue}>{nutritionTotals.carbs.toFixed(1)}g</Text>
-                  <Text style={styles.macroSummaryLabel}>Carboidratos</Text>
+                  <Text style={[styles.macroSummaryValue, { color: colors.text }]}>{nutritionTotals.carbs.toFixed(1)}g</Text>
+                  <Text style={[styles.macroSummaryLabel, { color: colors.textSecondary }]}>Carboidratos</Text>
                 </View>
                 <View style={styles.macroSummaryItem}>
                   <Droplets color="#FFE66D" size={20} />
-                  <Text style={styles.macroSummaryValue}>{nutritionTotals.fat.toFixed(1)}g</Text>
-                  <Text style={styles.macroSummaryLabel}>Gorduras</Text>
+                  <Text style={[styles.macroSummaryValue, { color: colors.text }]}>{nutritionTotals.fat.toFixed(1)}g</Text>
+                  <Text style={[styles.macroSummaryLabel, { color: colors.textSecondary }]}>Gorduras</Text>
                 </View>
               </View>
               
@@ -242,14 +277,14 @@ export default function MealDetailScreen() {
                 <View style={styles.additionalSummary}>
                   {nutritionTotals.sugar > 0 && (
                     <View style={styles.additionalSummaryItem}>
-                      <Text style={styles.additionalSummaryLabel}>Açúcar Total:</Text>
-                      <Text style={styles.additionalSummaryValue}>{nutritionTotals.sugar.toFixed(1)}g</Text>
+                      <Text style={[styles.additionalSummaryLabel, { color: colors.textSecondary }]}>Açúcar Total:</Text>
+                      <Text style={[styles.additionalSummaryValue, { color: colors.text }]}>{nutritionTotals.sugar.toFixed(1)}g</Text>
                     </View>
                   )}
                   {nutritionTotals.sodium > 0 && (
                     <View style={styles.additionalSummaryItem}>
-                      <Text style={styles.additionalSummaryLabel}>Sódio Total:</Text>
-                      <Text style={styles.additionalSummaryValue}>{nutritionTotals.sodium.toFixed(0)}mg</Text>
+                      <Text style={[styles.additionalSummaryLabel, { color: colors.textSecondary }]}>Sódio Total:</Text>
+                      <Text style={[styles.additionalSummaryValue, { color: colors.text }]}>{nutritionTotals.sodium.toFixed(0)}mg</Text>
                     </View>
                   )}
                 </View>
@@ -260,20 +295,21 @@ export default function MealDetailScreen() {
           {/* Individual Foods */}
           <View style={styles.foodsSection}>
             <View style={styles.foodsSectionHeader}>
-              <Target color="white" size={24} />
-              <Text style={styles.foodsSectionTitle}>Alimentos ({meal.foods.length})</Text>
+              <Target color={colors.primary} size={24} />
+              <Text style={[styles.foodsSectionTitle, { color: colors.text }]}>Alimentos ({meal.foods.length})</Text>
             </View>
             {meal.foods.map((food, index) => renderFoodItem(food, index))}
           </View>
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: isDark ? '#000000' : '#F2F2F7',
   },
   safeArea: {
     flex: 1,
@@ -287,9 +323,13 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 12,
     marginRight: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: isDark ? 0.2 : 0.1,
+    shadowRadius: 2,
+    elevation: isDark ? 0 : 1,
   },
   headerInfo: {
     flex: 1,
@@ -297,7 +337,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'white',
     marginBottom: 4,
   },
   timeInfo: {
@@ -307,7 +346,6 @@ const styles = StyleSheet.create({
   },
   headerTime: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -336,12 +374,10 @@ const styles = StyleSheet.create({
   mealType: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: 'white',
     textTransform: 'uppercase',
   },
   mealName: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
     marginTop: 4,
   },
   summaryCard: {
@@ -357,7 +393,6 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'white',
   },
   totalCalories: {
     alignItems: 'center',
@@ -366,11 +401,9 @@ const styles = StyleSheet.create({
   totalCaloriesValue: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: 'white',
   },
   totalCaloriesUnit: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
     marginTop: 4,
   },
   macroSummary: {
@@ -385,16 +418,14 @@ const styles = StyleSheet.create({
   macroSummaryValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'white',
   },
   macroSummaryLabel: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
     textAlign: 'center',
   },
   additionalSummary: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    borderTopColor: colors.borderSecondary,
     paddingTop: 16,
     gap: 8,
   },
@@ -405,12 +436,10 @@ const styles = StyleSheet.create({
   },
   additionalSummaryLabel: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
   },
   additionalSummaryValue: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: 'white',
   },
   foodsSection: {
     marginTop: 8,
@@ -424,7 +453,6 @@ const styles = StyleSheet.create({
   foodsSectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'white',
   },
   foodCard: {
     padding: 16,
@@ -443,12 +471,10 @@ const styles = StyleSheet.create({
   foodName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: 'white',
     marginBottom: 4,
   },
   foodPortion: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
   },
   foodCalories: {
     alignItems: 'flex-end',
@@ -456,11 +482,9 @@ const styles = StyleSheet.create({
   foodCaloriesValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: 'white',
   },
   foodCaloriesUnit: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
   },
   macroGrid: {
     flexDirection: 'row',
@@ -474,16 +498,14 @@ const styles = StyleSheet.create({
   macroValue: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: 'white',
   },
   macroLabel: {
     fontSize: 10,
-    color: 'rgba(255, 255, 255, 0.7)',
     textAlign: 'center',
   },
   additionalNutrients: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.2)',
+    borderTopColor: colors.borderSecondary,
     paddingTop: 12,
     gap: 6,
   },
@@ -494,12 +516,10 @@ const styles = StyleSheet.create({
   },
   nutrientLabel: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
   },
   nutrientValue: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: 'white',
   },
   notFoundContainer: {
     flex: 1,
@@ -510,18 +530,20 @@ const styles = StyleSheet.create({
   notFoundText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: 'white',
     textAlign: 'center',
     marginBottom: 20,
   },
   backToHistoryButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: isDark ? 0.2 : 0.1,
+    shadowRadius: 2,
+    elevation: isDark ? 0 : 1,
   },
   backToHistoryText: {
-    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
