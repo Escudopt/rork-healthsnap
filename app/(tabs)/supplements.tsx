@@ -709,9 +709,7 @@ export default function SupplementsScreen() {
       lineHeight: 22,
     },
     priorityBadge: {
-      position: 'absolute',
-      top: 16,
-      right: 16,
+      alignSelf: 'center',
       paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 16,
@@ -720,7 +718,7 @@ export default function SupplementsScreen() {
       shadowOpacity: 0.8,
       shadowRadius: 4,
       elevation: 3,
-      zIndex: 2,
+      marginBottom: 16,
     },
     priorityText: {
       fontSize: 11,
