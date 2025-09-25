@@ -62,13 +62,18 @@ export default function AnalysisScreen() {
       const analysisSchema = z.object({
         foods: z.array(z.object({
           name: z.string(),
+          weightInGrams: z.number(),
           calories: z.number(),
           protein: z.number(),
           carbs: z.number(),
           fat: z.number(),
+          fiber: z.number().optional(),
+          sugar: z.number().optional(),
+          sodium: z.number().optional(),
           portion: z.string()
         })),
         totalCalories: z.number(),
+        totalWeight: z.number(),
         mealType: z.enum(['Café da Manhã', 'Almoço', 'Jantar', 'Lanche']),
         confidence: z.enum(['high', 'medium', 'low'])
       });
@@ -87,32 +92,58 @@ export default function AnalysisScreen() {
             content: [
               {
                 type: 'text',
-                text: `Analise esta imagem de comida e identifique os alimentos com informações nutricionais em português.
+                text: `Analise esta imagem de comida e identifique CADA INGREDIENTE SEPARADAMENTE com informações nutricionais precisas em português.
                 
-                Regras importantes:
-                - Identifique 1-3 alimentos principais visíveis na imagem
-                - Use porções realistas (ex: "1 prato médio", "150g", "1 xícara")
-                - Estime calorias com base no tamanho das porções
-                - Determine o tipo de refeição baseado nos alimentos e horário
-                - Calcule proteínas, carboidratos e gorduras em gramas
-                - Se não conseguir identificar claramente, use confidence: 'low'
-                - Sempre retorne pelo menos 1 alimento, mesmo que seja genérico
+                REGRAS CRÍTICAS:
+                - Separe CADA ingrediente individualmente (ex: se vê arroz com feijão, liste "Arroz branco" e "Feijão preto" separadamente)
+                - Estime o peso em GRAMAS para cada ingrediente (muito importante!)
+                - Use estimativas realistas baseadas no tamanho visual
+                - Calcule valores nutricionais por 100g e ajuste para o peso estimado
+                - Identifique 3-8 ingredientes diferentes quando possível
+                - Seja específico: "Peito de frango grelhado", não apenas "Frango"
+                - Inclua temperos e molhos visíveis se significativos
+                - Para vegetais, estime peso individual (ex: "Tomate" 80g, "Alface" 30g)
+                - Para carnes, estime porções realistas (ex: "Peito de frango" 120g)
+                - Para carboidratos, use medidas precisas (ex: "Arroz cozido" 150g)
                 
-                Exemplo de resposta:
+                Exemplo de resposta detalhada:
                 {
                   "foods": [
                     {
-                      "name": "Arroz branco",
-                      "calories": 200,
+                      "name": "Peito de frango grelhado",
+                      "weightInGrams": 120,
+                      "calories": 198,
+                      "protein": 37,
+                      "carbs": 0,
+                      "fat": 4,
+                      "fiber": 0,
+                      "portion": "120g"
+                    },
+                    {
+                      "name": "Arroz branco cozido",
+                      "weightInGrams": 150,
+                      "calories": 195,
                       "protein": 4,
-                      "carbs": 45,
-                      "fat": 1,
-                      "portion": "1 xícara"
+                      "carbs": 43,
+                      "fat": 0.5,
+                      "fiber": 1,
+                      "portion": "150g"
+                    },
+                    {
+                      "name": "Brócolis cozido",
+                      "weightInGrams": 80,
+                      "calories": 22,
+                      "protein": 2,
+                      "carbs": 4,
+                      "fat": 0,
+                      "fiber": 2,
+                      "portion": "80g"
                     }
                   ],
-                  "totalCalories": 200,
+                  "totalCalories": 415,
+                  "totalWeight": 350,
                   "mealType": "Almoço",
-                  "confidence": "medium"
+                  "confidence": "high"
                 }`
               },
               {
@@ -141,24 +172,31 @@ export default function AnalysisScreen() {
         console.warn('No foods detected, creating fallback food item');
         result.foods = [{
           name: 'Alimento não identificado',
+          weightInGrams: 100,
           calories: 150,
           protein: 5,
           carbs: 20,
           fat: 5,
-          portion: '1 porção'
+          fiber: 2,
+          portion: '100g'
         }];
         result.confidence = 'low';
       }
       
       // Validate and fix each food item
       result.foods = result.foods.map((food: any, index: number) => {
+        const weightInGrams = Math.max(1, Number(food.weightInGrams) || 100);
         const validFood = {
-          name: food.name || `Alimento ${index + 1}`,
+          name: food.name || `Ingrediente ${index + 1}`,
+          weightInGrams: weightInGrams,
           calories: Math.max(0, Number(food.calories) || 100),
           protein: Math.max(0, Number(food.protein) || 0),
           carbs: Math.max(0, Number(food.carbs) || 0),
           fat: Math.max(0, Number(food.fat) || 0),
-          portion: food.portion || '1 porção'
+          fiber: Math.max(0, Number(food.fiber) || 0),
+          sugar: food.sugar ? Math.max(0, Number(food.sugar)) : undefined,
+          sodium: food.sodium ? Math.max(0, Number(food.sodium)) : undefined,
+          portion: food.portion || `${weightInGrams}g`
         };
         return validFood;
       });
@@ -252,14 +290,17 @@ export default function AnalysisScreen() {
         console.log('All retries failed, creating fallback analysis...');
         const fallbackResult = {
           foods: [{
-            name: 'Refeição (análise manual necessária)',
+            name: 'Refeição mista (análise manual necessária)',
+            weightInGrams: 200,
             calories: 300,
             protein: 15,
             carbs: 35,
             fat: 10,
-            portion: '1 porção'
+            fiber: 5,
+            portion: '200g'
           }],
           totalCalories: 300,
+          totalWeight: 200,
           mealType: (() => {
             const currentHour = new Date().getHours();
             if (currentHour < 10) return 'Café da Manhã';
@@ -398,12 +439,14 @@ export default function AnalysisScreen() {
 
   const handleAddFood = () => {
     const newFood: FoodItem = {
-      name: 'Novo Alimento',
+      name: 'Novo Ingrediente',
+      weightInGrams: 100,
       calories: 100,
       protein: 5,
       carbs: 15,
       fat: 3,
-      portion: '1 porção'
+      fiber: 2,
+      portion: '100g'
     };
     setEditedFoods([...editedFoods, newFood]);
     setEditingFood({ food: newFood, index: editedFoods.length });
@@ -544,11 +587,14 @@ export default function AnalysisScreen() {
               <View style={styles.foodsHeader}>
                 <View style={styles.foodsTitleContainer}>
                   <TrendingUp color="#4ECDC4" size={20} />
-                  <Text style={[styles.foodsTitle, { color: colors.text }]}>Alimentos Identificados</Text>
+                  <Text style={[styles.foodsTitle, { color: colors.text }]}>Ingredientes Separados</Text>
                 </View>
-                <TouchableOpacity onPress={handleAddFood} style={[styles.addFoodButton, { backgroundColor: colors.surfaceElevated }]}>
-                  <Plus color={colors.text} size={20} />
-                </TouchableOpacity>
+                <View style={styles.totalWeightContainer}>
+                  <Text style={[styles.totalWeightText, { color: colors.textSecondary }]}>⚖️ {editedFoods.reduce((sum, food) => sum + food.weightInGrams, 0)}g total</Text>
+                  <TouchableOpacity onPress={handleAddFood} style={[styles.addFoodButton, { backgroundColor: colors.surfaceElevated }]}>
+                    <Plus color={colors.text} size={20} />
+                  </TouchableOpacity>
+                </View>
               </View>
               
               {editedFoods.map((food, index) => (
@@ -577,7 +623,10 @@ export default function AnalysisScreen() {
                       </TouchableOpacity>
                     </View>
                   </View>
-                  <Text style={[styles.foodPortion, { color: colors.textSecondary }]}>📏 {food.portion}</Text>
+                  <View style={styles.portionContainer}>
+                    <Text style={[styles.foodPortion, { color: colors.textSecondary }]}>📏 {food.portion}</Text>
+                    <Text style={[styles.foodWeight, { color: colors.text }]}>⚖️ {food.weightInGrams}g</Text>
+                  </View>
                   <View style={styles.macrosContainer}>
                     <View style={styles.macrosRow}>
                       <View style={[styles.macroItem, styles.proteinMacro]}>
@@ -796,6 +845,38 @@ export default function AnalysisScreen() {
                           onChangeText={(text) => setEditingFood({
                             ...editingFood,
                             food: { ...editingFood.food, fat: parseInt(text) || 0 }
+                          })}
+                          keyboardType="numeric"
+                          placeholder="0"
+                          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                        />
+                      </View>
+                    </View>
+                    
+                    <View style={styles.macroInputsRow}>
+                      <View style={styles.macroInputGroup}>
+                        <Text style={styles.inputLabel}>Fibra (g)</Text>
+                        <TextInput
+                          style={styles.numberInput}
+                          value={(editingFood.food.fiber || 0).toString()}
+                          onChangeText={(text) => setEditingFood({
+                            ...editingFood,
+                            food: { ...editingFood.food, fiber: parseInt(text) || 0 }
+                          })}
+                          keyboardType="numeric"
+                          placeholder="0"
+                          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                        />
+                      </View>
+                      
+                      <View style={styles.macroInputGroup}>
+                        <Text style={styles.inputLabel}>Peso (g)</Text>
+                        <TextInput
+                          style={styles.numberInput}
+                          value={editingFood.food.weightInGrams.toString()}
+                          onChangeText={(text) => setEditingFood({
+                            ...editingFood,
+                            food: { ...editingFood.food, weightInGrams: parseInt(text) || 0 }
                           })}
                           keyboardType="numeric"
                           placeholder="0"
@@ -1469,5 +1550,30 @@ const styles = StyleSheet.create({
   confidenceBarFill: {
     height: '100%',
     borderRadius: 4,
+  },
+  portionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  foodWeight: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: 'white',
+    backgroundColor: 'rgba(78, 205, 196, 0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  totalWeightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  totalWeightText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.8)',
   },
 });
