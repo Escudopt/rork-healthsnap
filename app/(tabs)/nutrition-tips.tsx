@@ -29,6 +29,7 @@ import {
 } from 'lucide-react-native';
 import { BlurCard } from '@/components/BlurCard';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
+import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 
 interface NutritionTip {
   id: string;
@@ -115,6 +116,9 @@ export default function NutritionTipsScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = React.useState('all');
   const { colors, isDark } = useTheme();
+  const { userProfile, healthMetrics } = useCalorieTracker();
+  const [personalizedTips, setPersonalizedTips] = React.useState<string[]>([]);
+  const [isLoadingTips, setIsLoadingTips] = React.useState(false);
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -123,6 +127,91 @@ export default function NutritionTipsScreen() {
       useNativeDriver: true,
     }).start();
   }, [fadeAnim]);
+
+  // Generate personalized nutrition tips based on user profile
+  const generatePersonalizedTips = React.useCallback(async () => {
+    if (!userProfile || !healthMetrics || isLoadingTips) return;
+    
+    setIsLoadingTips(true);
+    
+    try {
+      const aiPrompt = `
+Crie 6-8 dicas de nutrição personalizadas em português para:
+
+Perfil do usuário:
+- Nome: ${userProfile.name}
+- Idade: ${userProfile.age} anos
+- Peso: ${userProfile.weight} kg
+- Altura: ${userProfile.height} cm
+- Sexo: ${userProfile.gender === 'male' ? 'Masculino' : 'Feminino'}
+- Nível de atividade: ${userProfile.activityLevel}
+- Objetivo: ${userProfile.goal === 'lose' ? 'Perder peso' : userProfile.goal === 'gain' ? 'Ganhar peso' : 'Manter peso'}
+
+Métricas de saúde:
+- IMC: ${healthMetrics.bmi}
+- TMB: ${healthMetrics.bmr} kcal/dia
+- TDEE: ${healthMetrics.tdee} kcal/dia
+- Meta calórica: ${healthMetrics.recommendedCalories} kcal/dia
+- Categoria IMC: ${healthMetrics.bmiCategory}
+
+Forneça dicas específicas e práticas sobre:
+1. Alimentos recomendados para o objetivo
+2. Timing de refeições baseado na atividade
+3. Hidratação personalizada
+4. Suplementação se necessário
+5. Estratégias nutricionais para a idade
+6. Ajustes baseados no IMC atual
+
+Cada dica deve ser:
+- Específica para o perfil
+- Prática e aplicável
+- Baseada em evidências
+- Máximo 2 frases
+- Focada em resultados
+
+Formato: Uma dica por linha, sem numeração.`;
+      
+      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: aiPrompt
+            }
+          ]
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        const tips = data.completion
+          .split('\n')
+          .filter((tip: string) => tip.trim().length > 0)
+          .map((tip: string) => tip.trim().replace(/^\d+\.\s*/, ''))
+          .slice(0, 8);
+        
+        setPersonalizedTips(tips);
+        console.log('✅ Generated personalized nutrition tips:', tips.length);
+      } else {
+        console.error('❌ Failed to generate personalized tips');
+      }
+    } catch (error) {
+      console.error('❌ Error generating personalized tips:', error);
+    } finally {
+      setIsLoadingTips(false);
+    }
+  }, [userProfile, healthMetrics, isLoadingTips]);
+
+  // Generate tips when profile is available
+  useEffect(() => {
+    if (userProfile && healthMetrics && personalizedTips.length === 0) {
+      generatePersonalizedTips();
+    }
+  }, [userProfile, healthMetrics, personalizedTips.length, generatePersonalizedTips]);
 
   const filteredTips = selectedCategory === 'all' 
     ? nutritionTips 
@@ -527,6 +616,28 @@ export default function NutritionTipsScreen() {
       lineHeight: 20,
       marginBottom: 8,
     },
+    loadingContainer: {
+      alignItems: 'center',
+      paddingVertical: 20,
+    },
+    loadingText: {
+      fontSize: 14,
+      fontStyle: 'italic',
+    },
+    refreshButton: {
+      backgroundColor: colors.surfaceSecondary,
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 12,
+      alignItems: 'center',
+      marginTop: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    refreshButtonText: {
+      fontSize: 14,
+      fontWeight: '600',
+    },
   }));
 
   return (
@@ -569,7 +680,7 @@ export default function NutritionTipsScreen() {
                   Nutrição Inteligente
                 </Text>
                 <Text style={[styles.date, { color: colors.textSecondary }]}>
-                  Guia completo para uma alimentação equilibrada e saudável
+                  {userProfile ? `Recomendações personalizadas para ${userProfile.name}` : 'Guia completo para uma alimentação equilibrada e saudável'}
                 </Text>
               </View>
             </View>
@@ -603,6 +714,46 @@ export default function NutritionTipsScreen() {
             ))}
           </View>
         </Animated.View>
+
+        {/* Personalized Tips Section */}
+        {userProfile && healthMetrics && (
+          <Animated.View style={[styles.sectionContainer, { opacity: fadeAnim }]}>
+            <View style={[styles.sectionCard, { backgroundColor: colors.surfaceElevated }]}>
+              <View style={styles.sectionHeader}>
+                <View style={[styles.sectionIcon, { backgroundColor: '#007AFF' }]}>
+                  <Sparkles color="white" size={24} />
+                </View>
+                <Text style={styles.sectionTitle}>Recomendações Personalizadas</Text>
+              </View>
+              <Text style={styles.sectionDescription}>
+                Dicas específicas baseadas no seu perfil, objetivos e métricas de saúde.
+              </Text>
+              
+              {isLoadingTips ? (
+                <View style={styles.loadingContainer}>
+                  <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Gerando recomendações personalizadas...</Text>
+                </View>
+              ) : personalizedTips.length > 0 ? (
+                <View style={styles.tipsList}>
+                  {personalizedTips.map((tip, index) => (
+                    <View key={`personalized-${index}`} style={styles.tipItem}>
+                      <View style={[styles.tipBullet, { backgroundColor: '#007AFF' }]} />
+                      <Text style={styles.tipText}>{tip}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <TouchableOpacity 
+                  style={styles.refreshButton}
+                  onPress={generatePersonalizedTips}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.refreshButtonText, { color: colors.primary }]}>Gerar Recomendações</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </Animated.View>
+        )}
 
         <Animated.View style={[styles.tipsContainer, { opacity: fadeAnim }]}>
           {filteredTips.map((tip, index) => (
