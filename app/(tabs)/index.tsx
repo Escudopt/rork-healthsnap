@@ -26,6 +26,7 @@ import { useLanguage } from '@/providers/LanguageProvider';
 import { BlurCard } from '@/components/BlurCard';
 import { CalorieProgressBar } from '@/components/CalorieProgressBar';
 import { MealCard } from '@/components/MealCard';
+import { MacroChart } from '@/components/MacroChart';
 import { Meal } from '@/types/food';
 import * as Haptics from 'expo-haptics';
 
@@ -257,6 +258,11 @@ export default function HomeScreen() {
       return mealDate.toDateString() === todayDateString;
     });
   }, [meals]);
+
+  // Get today's foods for macro analysis
+  const todayFoods = useMemo(() => {
+    return todayMeals.flatMap(meal => meal.foods || []);
+  }, [todayMeals]);
 
   // Group meals by date for history view
   const dailyMealsHistory = useMemo(() => {
@@ -852,6 +858,28 @@ export default function HomeScreen() {
                   </View>
                 </View>
               </View>
+
+              {/* Macro Distribution Charts */}
+              {todayFoods.length > 0 && (
+                <View style={styles.macroChartsSection}>
+                  <View style={styles.macroChartsRow}>
+                    <View style={styles.macroChartContainer}>
+                      <MacroChart 
+                        foods={todayFoods} 
+                        title="Gráfico de Barras" 
+                        chartType="bar" 
+                      />
+                    </View>
+                    <View style={styles.macroChartContainer}>
+                      <MacroChart 
+                        foods={todayFoods} 
+                        title="Gráfico de Pizza" 
+                        chartType="pie" 
+                      />
+                    </View>
+                  </View>
+                </View>
+              )}
             </View>
           </Animated.View>
 
@@ -2282,5 +2310,17 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 0.5,
     opacity: 0.2,
     marginHorizontal: 8,
+  },
+  
+  // Macro Charts Styles
+  macroChartsSection: {
+    marginTop: 8,
+  },
+  macroChartsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  macroChartContainer: {
+    flex: 1,
   },
 });
