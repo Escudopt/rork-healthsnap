@@ -236,11 +236,7 @@ export default function HelpScreen() {
           </View>
 
           <View style={styles.sectionsContainer}>
-            <BlurCard variant="default" style={styles.helpSection}>
-              <Text style={[styles.helpContent, { color: colors.text }]}>
-                {t('helpContent')}
-              </Text>
-            </BlurCard>
+            {helpSections.map(renderHelpSection)}
           </View>
 
           <View style={styles.footer}>
