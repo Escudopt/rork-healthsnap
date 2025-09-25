@@ -44,33 +44,46 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
   return (
     <View style={styles.container}>
       <View style={[styles.card, { backgroundColor: colors.surfaceElevated }]}>
-        {/* Compact header */}
+        {/* Enhanced header with gradient accent */}
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Text style={[styles.title, { color: colors.text }]}>Calorias Ativas</Text>
+            <Text style={[styles.title, { color: colors.textSecondary }]}>Progresso Diário</Text>
+            <View style={[styles.statusIndicator, { backgroundColor: progressColor + '20' }]}>
+              <View style={[styles.statusDot, { backgroundColor: progressColor }]} />
+              <Text style={[styles.statusText, { color: progressColor }]}>
+                {isOverGoal ? 'Excedido' : isNearGoal ? 'Quase lá' : 'Em progresso'}
+              </Text>
+            </View>
           </View>
           <TouchableOpacity 
             onPress={onCameraPress} 
-            style={[styles.cameraButton, { backgroundColor: '#007AFF' }]}
-            activeOpacity={0.8}
+            style={[styles.cameraButton, { backgroundColor: colors.primary }]}
+            activeOpacity={0.7}
           >
-            <Camera color="white" size={16} strokeWidth={2.5} />
+            <View style={styles.cameraButtonInner}>
+              <Camera color="white" size={18} strokeWidth={2.5} />
+            </View>
           </TouchableOpacity>
         </View>
         
-        {/* Compact calories display */}
-        <View style={styles.caloriesRow}>
-          <Text style={[styles.currentCalories, { color: colors.text }]}>
-            {currentCalories.toLocaleString()}
+        {/* Enhanced calories display */}
+        <View style={styles.caloriesSection}>
+          <View style={styles.caloriesRow}>
+            <Text style={[styles.currentCalories, { color: colors.text }]}>
+              {currentCalories.toLocaleString()}
+            </Text>
+            <Text style={[styles.separator, { color: colors.textTertiary }]}>/</Text>
+            <Text style={[styles.goalCalories, { color: colors.textSecondary }]}>
+              {dailyGoal.toLocaleString()}
+            </Text>
+            <Text style={[styles.calorieUnit, { color: colors.textSecondary }]}>kcal</Text>
+          </View>
+          <Text style={[styles.caloriesSubtext, { color: colors.textTertiary }]}>
+            {remaining > 0 ? `${remaining.toLocaleString()} calorias restantes` : 'Meta diária alcançada!'}
           </Text>
-          <Text style={[styles.separator, { color: colors.textSecondary }]}>/</Text>
-          <Text style={[styles.goalCalories, { color: colors.textSecondary }]}>
-            {dailyGoal.toLocaleString()}
-          </Text>
-          <Text style={[styles.calorieUnit, { color: colors.textSecondary }]}>kcal</Text>
         </View>
         
-        {/* Simple progress bar */}
+        {/* Enhanced progress bar with glow effect */}
         <View style={styles.progressSection}>
           <View style={[styles.progressBarBackground, { backgroundColor }]}>
             <View 
@@ -79,7 +92,11 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                 {
                   backgroundColor: progressColor,
                   width: `${Math.min(animatedWidth, 100)}%`,
-                  transition: Platform.OS === 'web' ? 'width 0.5s ease-out' : undefined,
+                  transition: Platform.OS === 'web' ? 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)' : undefined,
+                  shadowColor: progressColor,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.4,
+                  shadowRadius: 4,
                 }
               ]}
             />
@@ -88,9 +105,11 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
             <Text style={[styles.progressPercentage, { color: colors.text }]}>
               {Math.round(percentage)}%
             </Text>
-            <Text style={[styles.remainingText, { color: colors.textSecondary }]}>
-              {remaining > 0 ? `${remaining.toLocaleString()} restantes` : 'Meta alcançada!'}
-            </Text>
+            <TouchableOpacity onPress={onGoalPress} activeOpacity={0.7}>
+              <Text style={[styles.goalButton, { color: colors.primary }]}>
+                Ajustar Meta
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -100,59 +119,86 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   card: {
-    padding: 16,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
     borderWidth: 0.5,
     borderColor: 'rgba(0, 0, 0, 0.04)',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    alignItems: 'flex-start',
+    marginBottom: 16,
   },
   titleContainer: {
     flex: 1,
+    gap: 8,
   },
   title: {
     ...Typography.caption1Emphasized,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.5,
-    opacity: 0.8,
+    letterSpacing: 0.8,
+    opacity: 0.7,
+  },
+  statusIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 6,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+    letterSpacing: 0.2,
   },
   cameraButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  cameraButtonInner: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  caloriesSection: {
+    marginBottom: 20,
+    gap: 6,
   },
   caloriesRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginBottom: 12,
-    gap: 6,
+    gap: 8,
   },
   currentCalories: {
     ...Typography.largeNumber,
-    fontSize: 24,
-    fontWeight: '600' as const,
-    letterSpacing: -0.5,
+    fontSize: 32,
+    fontWeight: '300' as const,
+    letterSpacing: -1.2,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -160,33 +206,39 @@ const styles = StyleSheet.create({
     }),
   },
   separator: {
-    fontSize: 20,
-    fontWeight: '300' as const,
-    opacity: 0.5,
+    fontSize: 24,
+    fontWeight: '200' as const,
+    opacity: 0.4,
   },
   goalCalories: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: '400' as const,
-    opacity: 0.7,
+    opacity: 0.6,
   },
   calorieUnit: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500' as const,
-    opacity: 0.6,
+    opacity: 0.5,
     marginLeft: 4,
   },
+  caloriesSubtext: {
+    fontSize: 13,
+    fontWeight: '400' as const,
+    opacity: 0.6,
+    letterSpacing: 0.1,
+  },
   progressSection: {
-    gap: 8,
+    gap: 12,
   },
   progressBarBackground: {
-    height: 6,
-    borderRadius: 3,
+    height: 8,
+    borderRadius: 4,
     overflow: 'hidden',
   },
   progressBar: {
     height: '100%',
-    borderRadius: 3,
-    minWidth: 2,
+    borderRadius: 4,
+    minWidth: 4,
   },
   progressInfo: {
     flexDirection: 'row',
@@ -194,13 +246,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   progressPercentage: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600' as const,
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
-  remainingText: {
-    fontSize: 12,
-    fontWeight: '500' as const,
-    opacity: 0.7,
+  goalButton: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    letterSpacing: 0.2,
   },
 });

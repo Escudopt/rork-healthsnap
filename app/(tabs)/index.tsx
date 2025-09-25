@@ -577,15 +577,15 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <LinearGradient
         colors={isDark ? [
-          '#000000',
-          '#0A0A0B',
-          '#1C1C1E',
-          '#2C2C2E'
+          '#0A0B0F',
+          '#111318',
+          '#1A1D24',
+          '#242831'
         ] : [
           '#FAFBFF',
-          '#F8F9FE',
-          '#F2F4F8',
-          '#EBEEF5'
+          '#F5F7FA',
+          '#F0F2F5',
+          '#E8EBF0'
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -1076,18 +1076,18 @@ export default function HomeScreen() {
 const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isDark ? '#000000' : '#FAFBFF',
+    backgroundColor: isDark ? '#0A0B0F' : '#FAFBFF',
   },
   safeArea: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 120,
+    paddingBottom: 140,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 24,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 28,
   },
   headerTop: {
     flexDirection: 'row',
@@ -1160,10 +1160,10 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignSelf: 'center',
   },
   greeting: {
-    fontSize: 26,
+    fontSize: 28,
     fontWeight: '700' as const,
-    marginBottom: 2,
-    letterSpacing: -0.3,
+    marginBottom: 4,
+    letterSpacing: -0.4,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -1171,11 +1171,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     }),
   },
   date: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500' as const,
     textTransform: 'capitalize' as const,
-    lineHeight: 17,
-    opacity: 0.6,
+    lineHeight: 18,
+    opacity: 0.65,
     letterSpacing: 0.1,
   },
   headerButtons: {
@@ -1184,17 +1184,17 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 8,
   },
   headerIconButton: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.95)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: isDark ? 0.15 : 0.04,
-    shadowRadius: isDark ? 3 : 6,
-    elevation: isDark ? 1 : 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.2 : 0.06,
+    shadowRadius: isDark ? 4 : 8,
+    elevation: isDark ? 2 : 2,
     borderWidth: isDark ? 0 : 0.5,
     borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
   },
@@ -1251,11 +1251,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     position: 'relative',
   },
   statsContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    paddingHorizontal: 24,
+    marginBottom: 28,
   },
   mainContentContainer: {
-    gap: 20,
+    gap: 24,
     paddingHorizontal: 0,
     marginHorizontal: 0,
   },

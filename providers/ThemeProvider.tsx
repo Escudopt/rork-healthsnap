@@ -51,86 +51,86 @@ export interface ThemeColors {
 
 const lightTheme: ThemeColors = {
   // Background colors
-  background: '#FFFFFF',
-  backgroundSecondary: '#F2F2F7',
+  background: '#FAFBFF',
+  backgroundSecondary: '#F5F7FA',
   backgroundTertiary: '#FFFFFF',
   
   // Surface colors
   surface: '#FFFFFF',
-  surfaceSecondary: 'rgba(0, 122, 255, 0.08)',
-  surfaceElevated: '#FFFFFF',
+  surfaceSecondary: 'rgba(0, 122, 255, 0.06)',
+  surfaceElevated: 'rgba(255, 255, 255, 0.95)',
   
   // Text colors
-  text: '#1C1C1E',
-  textSecondary: 'rgba(60, 60, 67, 0.6)',
-  textTertiary: 'rgba(60, 60, 67, 0.3)',
+  text: '#1A1D29',
+  textSecondary: 'rgba(26, 29, 41, 0.65)',
+  textTertiary: 'rgba(26, 29, 41, 0.35)',
   
   // Border colors
-  border: 'rgba(60, 60, 67, 0.29)',
-  borderSecondary: 'rgba(60, 60, 67, 0.12)',
+  border: 'rgba(26, 29, 41, 0.12)',
+  borderSecondary: 'rgba(26, 29, 41, 0.06)',
   
   // Accent colors
-  primary: '#007AFF',
-  primaryLight: '#5AC8FA',
-  primaryDark: '#0051D5',
+  primary: '#0066FF',
+  primaryLight: '#4D94FF',
+  primaryDark: '#0052CC',
   
   // Status colors
-  success: '#34C759',
-  warning: '#FF9500',
-  error: '#FF3B30',
+  success: '#00C851',
+  warning: '#FF8800',
+  error: '#FF4444',
   
   // Glass/blur effects
-  glassBackground: 'rgba(255, 255, 255, 0.8)',
-  glassBorder: 'rgba(60, 60, 67, 0.18)',
-  glassOverlay: 'rgba(255, 255, 255, 0.5)',
+  glassBackground: 'rgba(255, 255, 255, 0.85)',
+  glassBorder: 'rgba(26, 29, 41, 0.08)',
+  glassOverlay: 'rgba(255, 255, 255, 0.6)',
   
   // Tab bar
-  tabBarBackground: 'rgba(255, 255, 255, 0.8)',
-  tabBarBorder: 'rgba(60, 60, 67, 0.18)',
-  tabBarActive: '#007AFF',
-  tabBarInactive: 'rgba(60, 60, 67, 0.6)',
+  tabBarBackground: 'rgba(255, 255, 255, 0.9)',
+  tabBarBorder: 'rgba(26, 29, 41, 0.08)',
+  tabBarActive: '#0066FF',
+  tabBarInactive: 'rgba(26, 29, 41, 0.5)',
 };
 
 const darkTheme: ThemeColors = {
   // Background colors
-  background: '#000000',
-  backgroundSecondary: '#0A0A0B',
-  backgroundTertiary: '#1A1A1C',
+  background: '#0A0B0F',
+  backgroundSecondary: '#111318',
+  backgroundTertiary: '#1A1D24',
   
   // Surface colors
-  surface: 'rgba(10, 132, 255, 0.08)',
-  surfaceSecondary: 'rgba(10, 132, 255, 0.12)',
-  surfaceElevated: 'rgba(255, 255, 255, 0.05)',
+  surface: 'rgba(102, 148, 255, 0.08)',
+  surfaceSecondary: 'rgba(102, 148, 255, 0.12)',
+  surfaceElevated: 'rgba(255, 255, 255, 0.08)',
   
   // Text colors
-  text: '#FFFFFF',
-  textSecondary: 'rgba(235, 235, 245, 0.6)',
-  textTertiary: 'rgba(235, 235, 245, 0.3)',
+  text: '#F8FAFC',
+  textSecondary: 'rgba(248, 250, 252, 0.7)',
+  textTertiary: 'rgba(248, 250, 252, 0.4)',
   
   // Border colors
-  border: 'rgba(84, 84, 88, 0.65)',
-  borderSecondary: 'rgba(84, 84, 88, 0.36)',
+  border: 'rgba(248, 250, 252, 0.12)',
+  borderSecondary: 'rgba(248, 250, 252, 0.06)',
   
   // Accent colors
-  primary: '#0A84FF',
-  primaryLight: '#64D2FF',
-  primaryDark: '#0056CC',
+  primary: '#6694FF',
+  primaryLight: '#99B8FF',
+  primaryDark: '#3366FF',
   
   // Status colors
-  success: '#30D158',
-  warning: '#FF9F0A',
-  error: '#FF453A',
+  success: '#00D97E',
+  warning: '#FFB800',
+  error: '#FF6B6B',
   
   // Glass/blur effects
-  glassBackground: 'rgba(28, 28, 30, 0.8)',
-  glassBorder: 'rgba(84, 84, 88, 0.65)',
-  glassOverlay: 'rgba(255, 255, 255, 0.05)',
+  glassBackground: 'rgba(26, 29, 36, 0.85)',
+  glassBorder: 'rgba(248, 250, 252, 0.08)',
+  glassOverlay: 'rgba(255, 255, 255, 0.06)',
   
   // Tab bar
-  tabBarBackground: 'rgba(28, 28, 30, 0.8)',
-  tabBarBorder: 'rgba(84, 84, 88, 0.65)',
-  tabBarActive: '#0A84FF',
-  tabBarInactive: 'rgba(235, 235, 245, 0.6)',
+  tabBarBackground: 'rgba(26, 29, 36, 0.9)',
+  tabBarBorder: 'rgba(248, 250, 252, 0.08)',
+  tabBarActive: '#6694FF',
+  tabBarInactive: 'rgba(248, 250, 252, 0.6)',
 };
 
 interface ThemeContextType {
