@@ -746,27 +746,42 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
       if (response.ok) {
         const data = await response.json();
         try {
+          // Ensure data.completion exists and is a string
+          if (!data.completion || typeof data.completion !== 'string') {
+            console.error('Invalid AI response format:', data);
+            return defaultWorkouts;
+          }
+          
           // Try to parse JSON from the AI response
           const jsonMatch = data.completion.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const workoutData = JSON.parse(jsonMatch[0]);
-            const workouts = workoutData.workouts.map((workout: any, index: number) => ({
-              id: `workout_${index}`,
-              title: workout.title,
-              description: workout.description,
-              duration: workout.duration,
-              difficulty: workout.difficulty,
-              location: workout.location,
-              calories: workout.calories,
-              exercises: workout.exercises || [],
-              equipment: workout.equipment || [],
-              benefits: workout.benefits || [],
-              tips: workout.tips || []
-            }));
-            return workouts;
+          if (jsonMatch && jsonMatch[0]) {
+            try {
+              const workoutData = JSON.parse(jsonMatch[0]);
+              if (workoutData && workoutData.workouts && Array.isArray(workoutData.workouts)) {
+                const workouts = workoutData.workouts.map((workout: any, index: number) => ({
+                  id: `workout_${index}`,
+                  title: workout.title || 'Treino Personalizado',
+                  description: workout.description || 'Descrição não disponível',
+                  duration: workout.duration || '30 min',
+                  difficulty: workout.difficulty || 'Intermédio',
+                  location: workout.location || 'Casa',
+                  calories: workout.calories || '200-300 kcal',
+                  exercises: workout.exercises || [],
+                  equipment: workout.equipment || [],
+                  benefits: workout.benefits || [],
+                  tips: workout.tips || []
+                }));
+                return workouts;
+              }
+            } catch (jsonParseError) {
+              console.error('JSON parse error in workout data:', jsonParseError);
+              console.error('Attempted to parse:', jsonMatch[0]);
+            }
+          } else {
+            console.error('No valid JSON found in AI response:', data.completion);
           }
         } catch (parseError) {
-          console.error('Error parsing AI workout response:', parseError);
+          console.error('Error processing AI workout response:', parseError);
         }
       }
     } catch (error) {

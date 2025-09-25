@@ -460,8 +460,12 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
       // Verify the save worked
       const verification = await AsyncStorage.getItem(STORAGE_KEY);
       if (verification) {
-        const parsed = JSON.parse(verification);
-        console.log(`✅ Verified save: ${parsed.length} meals in storage`);
+        try {
+          const parsed = JSON.parse(verification);
+          console.log(`✅ Verified save: ${parsed.length} meals in storage`);
+        } catch (verifyError) {
+          console.error('❌ Verification parse error:', verifyError);
+        }
       }
       
     } catch (error) {
@@ -503,8 +507,12 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
       // Verify the save worked
       const verification = await AsyncStorage.getItem(STORAGE_KEY);
       if (verification) {
-        const parsed = JSON.parse(verification);
-        console.log(`✅ Verified manual save: ${parsed.length} meals in storage`);
+        try {
+          const parsed = JSON.parse(verification);
+          console.log(`✅ Verified manual save: ${parsed.length} meals in storage`);
+        } catch (verifyError) {
+          console.error('❌ Manual verification parse error:', verifyError);
+        }
       }
       
     } catch (error) {
@@ -527,8 +535,12 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
       // Verify the deletion was saved
       const verification = await AsyncStorage.getItem(STORAGE_KEY);
       if (verification) {
-        const parsed = JSON.parse(verification);
-        console.log(`✅ Verified deletion: ${parsed.length} meals remaining in storage`);
+        try {
+          const parsed = JSON.parse(verification);
+          console.log(`✅ Verified deletion: ${parsed.length} meals remaining in storage`);
+        } catch (verifyError) {
+          console.error('❌ Deletion verification parse error:', verifyError);
+        }
       }
     } catch (error) {
       console.error('❌ Error deleting meal:', error);
