@@ -68,7 +68,7 @@ export default function AnalysisScreen() {
       const logMealResponse = await fetch('https://api.logmeal.es/v2/image/segmentation/complete', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer 4c5b8b8e8f8e8f8e8f8e8f8e8f8e8f8e', // Substitua pela sua chave da API LogMeal
+          'Authorization': 'Bearer e581865f523ce3657b7882fbf3cd6fdfc5dd6ca6',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
