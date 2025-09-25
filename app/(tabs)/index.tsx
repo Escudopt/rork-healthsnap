@@ -859,25 +859,14 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              {/* Macro Distribution Charts */}
+              {/* Macro Distribution Chart */}
               {todayFoods.length > 0 && (
                 <View style={styles.macroChartsSection}>
-                  <View style={styles.macroChartsRow}>
-                    <View style={styles.macroChartContainer}>
-                      <MacroChart 
-                        foods={todayFoods} 
-                        title="Gráfico de Barras" 
-                        chartType="bar" 
-                      />
-                    </View>
-                    <View style={styles.macroChartContainer}>
-                      <MacroChart 
-                        foods={todayFoods} 
-                        title="Gráfico de Pizza" 
-                        chartType="pie" 
-                      />
-                    </View>
-                  </View>
+                  <MacroChart 
+                    foods={todayFoods} 
+                    title="Distribuição de Macronutrientes" 
+                    chartType="bar" 
+                  />
                 </View>
               )}
             </View>
@@ -2312,15 +2301,8 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     marginHorizontal: 8,
   },
   
-  // Macro Charts Styles
+  // Macro Chart Styles
   macroChartsSection: {
     marginTop: 8,
-  },
-  macroChartsRow: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  macroChartContainer: {
-    flex: 1,
   },
 });
