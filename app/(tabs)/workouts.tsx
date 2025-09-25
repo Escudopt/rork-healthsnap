@@ -637,6 +637,12 @@ export default function WorkoutsScreen() {
       console.log('No user profile or health metrics, returning default workouts');
       return defaultWorkouts;
     }
+    
+    // Skip AI generation if user profile is incomplete
+    if (!userProfile.name || !userProfile.age || !userProfile.weight || !userProfile.height) {
+      console.log('User profile incomplete, returning default workouts');
+      return defaultWorkouts;
+    }
 
     setIsLoading(true);
     try {
@@ -752,14 +758,24 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
             return defaultWorkouts;
           }
           
-          // Try to parse JSON from the AI response
-          const jsonMatch = data.completion.match(/\{[\s\S]*\}/);
-          if (jsonMatch && jsonMatch[0]) {
+          // Clean the AI response to extract valid JSON
+          let cleanedResponse = data.completion;
+          
+          // Remove markdown code blocks if present
+          cleanedResponse = cleanedResponse.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+          
+          // Find JSON object boundaries more carefully
+          const startIndex = cleanedResponse.indexOf('{');
+          const lastIndex = cleanedResponse.lastIndexOf('}');
+          
+          if (startIndex !== -1 && lastIndex !== -1 && lastIndex > startIndex) {
+            const jsonString = cleanedResponse.substring(startIndex, lastIndex + 1);
+            
             try {
-              const workoutData = JSON.parse(jsonMatch[0]);
+              const workoutData = JSON.parse(jsonString);
               if (workoutData && workoutData.workouts && Array.isArray(workoutData.workouts)) {
                 const workouts = workoutData.workouts.map((workout: any, index: number) => ({
-                  id: `workout_${index}`,
+                  id: `ai_workout_${index}`,
                   title: workout.title || 'Treino Personalizado',
                   description: workout.description || 'Descrição não disponível',
                   duration: workout.duration || '30 min',
@@ -769,16 +785,26 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
                   exercises: workout.exercises || [],
                   equipment: workout.equipment || [],
                   benefits: workout.benefits || [],
-                  tips: workout.tips || []
+                  tips: workout.tips || [],
+                  warmup: workout.warmup || [],
+                  cooldown: workout.cooldown || [],
+                  progression: workout.progression || [],
+                  safety: workout.safety || [],
+                  totalSets: workout.totalSets || 3,
+                  restBetweenSets: workout.restBetweenSets || '60s'
                 }));
+                console.log('✅ Successfully parsed AI workouts:', workouts.length);
                 return workouts;
+              } else {
+                console.error('Invalid workout data structure:', workoutData);
               }
             } catch (jsonParseError) {
               console.error('JSON parse error in workout data:', jsonParseError);
-              console.error('Attempted to parse:', jsonMatch[0]);
+              console.error('Attempted to parse:', jsonString.substring(0, 200) + '...');
             }
           } else {
-            console.error('No valid JSON found in AI response:', data.completion);
+            console.error('No valid JSON boundaries found in AI response');
+            console.error('Response preview:', data.completion.substring(0, 200) + '...');
           }
         } catch (parseError) {
           console.error('Error processing AI workout response:', parseError);
@@ -802,20 +828,36 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
     const loadRecommendations = async () => {
       try {
         console.log('Loading workout recommendations...');
-        const recommendations = await generateWorkoutRecommendations();
-        console.log('Loaded recommendations:', recommendations.length);
-        setWorkoutRecommendations(recommendations);
+        
+        // Always start with default workouts for immediate display
+        const defaultWorkouts = getDefaultWorkouts();
+        console.log('Setting default workouts:', defaultWorkouts.length);
+        setWorkoutRecommendations(defaultWorkouts);
+        
+        // Then try to generate AI recommendations if profile is complete
+        if (userProfile && healthMetrics) {
+          console.log('User profile complete, generating AI recommendations...');
+          const aiRecommendations = await generateWorkoutRecommendations();
+          if (aiRecommendations && aiRecommendations.length > 0) {
+            console.log('AI recommendations loaded:', aiRecommendations.length);
+            setWorkoutRecommendations(aiRecommendations);
+          } else {
+            console.log('AI recommendations failed, keeping default workouts');
+          }
+        } else {
+          console.log('User profile incomplete, using default workouts only');
+        }
       } catch (error) {
         console.error('Error loading recommendations:', error);
-        // Fallback to default workouts
+        // Ensure we always have default workouts as fallback
         const defaultWorkouts = getDefaultWorkouts();
-        console.log('Using default workouts:', defaultWorkouts.length);
+        console.log('Error fallback - using default workouts:', defaultWorkouts.length);
         setWorkoutRecommendations(defaultWorkouts);
       }
     };
     
     loadRecommendations();
-  }, [generateWorkoutRecommendations, getDefaultWorkouts]);
+  }, [userProfile, healthMetrics, getDefaultWorkouts, generateWorkoutRecommendations]);
 
 
 
@@ -1224,22 +1266,22 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
           </View>
         )}
 
-        {/* Empty State */}
-        {!isLoading && workoutRecommendations.length === 0 && (
-          <BlurCard style={styles.emptyState}>
-            <Heart size={48} color={colors.textSecondary} />
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhum treino encontrado</Text>
-            <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
+        {/* Profile Completion Prompt */}
+        {!isLoading && workoutRecommendations.length > 0 && (!userProfile || !userProfile.name || !userProfile.age || !userProfile.weight || !userProfile.height) && (
+          <BlurCard style={styles.profilePrompt}>
+            <User size={24} color={colors.warning} />
+            <Text style={[styles.promptTitle, { color: colors.text }]}>Complete seu perfil</Text>
+            <Text style={[styles.promptDescription, { color: colors.textSecondary }]}>
               {!userProfile ? 
-                'Complete seu perfil para receber recomendações personalizadas' :
-                !userProfile.name ? 'Adicione seu nome no perfil' :
+                'Vá para Perfil para receber treinos personalizados baseados no seu objetivo e condição física.' :
+                !userProfile.name ? 'Adicione seu nome no perfil para personalização' :
                 !userProfile.age || userProfile.age === 0 ? 'Adicione sua idade no perfil' :
                 !userProfile.weight || userProfile.weight === 0 ? 'Adicione seu peso no perfil' :
                 !userProfile.height || userProfile.height === 0 ? 'Adicione sua altura no perfil' :
                 !userProfile.gender ? 'Selecione seu sexo no perfil' :
                 !userProfile.activityLevel ? 'Selecione seu nível de atividade no perfil' :
                 !userProfile.goal ? 'Defina seu objetivo no perfil' :
-                'Gerando recomendações personalizadas...'}
+                'Complete as informações restantes no perfil'}
             </Text>
           </BlurCard>
         )}
@@ -1416,6 +1458,25 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   emptyDescription: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  profilePrompt: {
+    alignItems: 'center',
+    padding: 20,
+    marginBottom: 16,
+    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 193, 7, 0.3)',
+  },
+  promptTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  promptDescription: {
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
