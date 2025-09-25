@@ -44,14 +44,15 @@ export default function AnalysisScreen() {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const editMenuAnim = useRef(new Animated.Value(0)).current;
 
-  const analyzeImage = useCallback(async () => {
+  const analyzeImage = useCallback(async (retryCount = 0) => {
+    const maxRetries = 3;
+    
     try {
       setIsAnalyzing(true);
       setError(null);
 
-      console.log('Starting ultra-fast image analysis...');
+      console.log(`Starting image analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
       
-      // Feedback imediato - sem delay
       const startTime = Date.now();
 
       const analysisSchema = z.object({
@@ -68,7 +69,12 @@ export default function AnalysisScreen() {
         confidence: z.enum(['high', 'medium', 'low'])
       });
 
-      const result = await generateObject({
+      // Add timeout to the request
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Timeout: A análise demorou muito para responder')), 30000);
+      });
+
+      const analysisPromise = generateObject({
         messages: [
           {
             role: 'user',
@@ -93,6 +99,8 @@ export default function AnalysisScreen() {
         ],
         schema: analysisSchema
       });
+
+      const result = await Promise.race([analysisPromise, timeoutPromise]) as any;
       
       const processingTime = Date.now() - startTime;
       console.log(`Analysis completed in ${processingTime}ms`);
@@ -146,10 +154,34 @@ export default function AnalysisScreen() {
         }).start();
       }, 200); // Reduzido para 200ms
     } catch (err) {
-      console.error('Error analyzing image:', err);
+      console.error(`Error analyzing image (attempt ${retryCount + 1}):`, err);
+      
+      // Check if it's a network error and we can retry
+      const isNetworkError = err instanceof Error && (
+        err.message.includes('Network request failed') ||
+        err.message.includes('fetch') ||
+        err.message.includes('Timeout') ||
+        err.message.includes('Failed to fetch')
+      );
+      
+      if (isNetworkError && retryCount < maxRetries) {
+        console.log(`Retrying in ${(retryCount + 1) * 2} seconds...`);
+        setTimeout(() => {
+          analyzeImage(retryCount + 1);
+        }, (retryCount + 1) * 2000); // Exponential backoff
+        return;
+      }
+      
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      setError(`Não foi possível analisar a imagem: ${errorMessage}`);
-    } finally {
+      let userFriendlyMessage = 'Não foi possível analisar a imagem';
+      
+      if (isNetworkError) {
+        userFriendlyMessage = 'Erro de conexão. Verifique sua internet e tente novamente';
+      } else if (errorMessage.includes('Timeout')) {
+        userFriendlyMessage = 'A análise demorou muito. Tente novamente';
+      }
+      
+      setError(userFriendlyMessage);
       setIsAnalyzing(false);
     }
   }, [imageBase64, fadeAnim, slideAnim, editMenuAnim]);
@@ -339,7 +371,7 @@ export default function AnalysisScreen() {
             <BlurCard style={styles.errorCard}>
               <Info color={colors.text} size={32} />
               <Text style={[styles.errorText, { color: colors.text }]}>{error}</Text>
-              <TouchableOpacity onPress={analyzeImage} style={[styles.retryButton, { backgroundColor: colors.surfaceElevated }]}>
+              <TouchableOpacity onPress={() => analyzeImage(0)} style={[styles.retryButton, { backgroundColor: colors.surfaceElevated }]}>
                 <Text style={[styles.retryButtonText, { color: colors.text }]}>Tentar Novamente</Text>
               </TouchableOpacity>
             </BlurCard>
