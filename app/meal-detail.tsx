@@ -15,8 +15,6 @@ import {
   ChevronLeft, 
   Clock, 
   Utensils,
-  Zap,
-  Activity,
   Target,
   TrendingUp,
   Droplets,
@@ -309,7 +307,7 @@ export default function MealDetailScreen() {
 const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isDark ? '#000000' : '#F2F2F7',
+    backgroundColor: colors.background,
   },
   safeArea: {
     flex: 1,
