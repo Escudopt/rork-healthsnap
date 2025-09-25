@@ -757,6 +757,59 @@ export default function HomeScreen() {
               
 
               
+              {/* Food Widgets Section */}
+              <View style={styles.foodWidgetsSection}>
+                <View style={styles.sectionHeader}>
+                  <View style={[styles.segmentedControl, { backgroundColor: colors.surfaceSecondary }]}>
+                    <TouchableOpacity 
+                      onPress={() => {
+                        setActiveTab('today');
+                        setSelectedHistoryDate(null);
+                      }}
+                      style={[
+                        styles.segmentButton,
+                        activeTab === 'today' && [styles.activeSegmentButton, { backgroundColor: colors.surface }]
+                      ]}
+                    >
+                      <Calendar 
+                        color={activeTab === 'today' ? colors.primary : colors.textSecondary} 
+                        size={16} 
+                        strokeWidth={2}
+                      />
+                      <Text style={[
+                        styles.segmentText,
+                        { color: activeTab === 'today' ? colors.primary : colors.textSecondary }
+                      ]}>Hoje</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      onPress={() => {
+                        setActiveTab('history');
+                        setSelectedHistoryDate(null);
+                      }}
+                      style={[
+                        styles.segmentButton,
+                        activeTab === 'history' && [styles.activeSegmentButton, { backgroundColor: colors.surface }]
+                      ]}
+                    >
+                      <Clock 
+                        color={activeTab === 'history' ? colors.primary : colors.textSecondary} 
+                        size={16} 
+                        strokeWidth={2}
+                      />
+                      <Text style={[
+                        styles.segmentText,
+                        { color: activeTab === 'history' ? colors.primary : colors.textSecondary }
+                      ]}>Histórico</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+                
+                <View style={styles.tabContent}>
+                  {renderTabContent()}
+                </View>
+              </View>
+              
               {/* Macro Distribution Chart */}
               {todayFoods.length > 0 && (
                 <View style={styles.macroChartsSection}>
@@ -767,60 +820,6 @@ export default function HomeScreen() {
                   />
                 </View>
               )}
-            </View>
-          </Animated.View>
-
-          <Animated.View style={[styles.mealsSection, { opacity: fadeAnim }]}>
-            <View style={styles.sectionHeader}>
-              <View style={[styles.segmentedControl, { backgroundColor: colors.surfaceSecondary }]}>
-                <TouchableOpacity 
-                  onPress={() => {
-                    setActiveTab('today');
-                    setSelectedHistoryDate(null);
-                  }}
-                  style={[
-                    styles.segmentButton,
-                    activeTab === 'today' && [styles.activeSegmentButton, { backgroundColor: colors.surface }]
-                  ]}
-                >
-                  <Calendar 
-                    color={activeTab === 'today' ? colors.primary : colors.textSecondary} 
-                    size={16} 
-                    strokeWidth={2}
-                  />
-                  <Text style={[
-                    styles.segmentText,
-                    { color: activeTab === 'today' ? colors.primary : colors.textSecondary }
-                  ]}>Hoje</Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity 
-                  onPress={() => {
-                    setActiveTab('history');
-                    setSelectedHistoryDate(null);
-                  }}
-                  style={[
-                    styles.segmentButton,
-                    activeTab === 'history' && [styles.activeSegmentButton, { backgroundColor: colors.surface }]
-                  ]}
-                >
-                  <Clock 
-                    color={activeTab === 'history' ? colors.primary : colors.textSecondary} 
-                    size={16} 
-                    strokeWidth={2}
-                  />
-                  <Text style={[
-                    styles.segmentText,
-                    { color: activeTab === 'history' ? colors.primary : colors.textSecondary }
-                  ]}>Histórico</Text>
-                </TouchableOpacity>
-              </View>
-              
-
-            </View>
-            
-            <View style={styles.tabContent}>
-              {renderTabContent()}
             </View>
           </Animated.View>
         </ScrollView>
@@ -2297,6 +2296,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 10,
     marginHorizontal: 0,
     paddingHorizontal: 0,
+  },
+  
+  // Food Widgets Section Styles
+  foodWidgetsSection: {
+    marginTop: 20,
   },
   
   // Macro Chart Styles
