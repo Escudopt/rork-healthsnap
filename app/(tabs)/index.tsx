@@ -2160,11 +2160,17 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     marginBottom: 8,
   },
   macroSectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: '700' as const,
+    marginBottom: 16,
     paddingHorizontal: 4,
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
+    textTransform: 'capitalize' as const,
+    ...Platform.select({
+      ios: {
+        fontFamily: 'System',
+      },
+    }),
   },
   macroWidgetsGrid: {
     flexDirection: 'row',

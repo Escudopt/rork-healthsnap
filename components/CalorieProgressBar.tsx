@@ -361,16 +361,20 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 13,
-    fontWeight: '600' as const,
+    ...Typography.caption1Emphasized,
+    fontSize: 14,
+    fontWeight: '700' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
     marginBottom: 2,
+    opacity: 0.9,
   },
   subtitle: {
-    fontSize: 11,
-    fontWeight: '400' as const,
-    opacity: 0.6,
+    ...Typography.caption2,
+    fontSize: 12,
+    fontWeight: '500' as const,
+    opacity: 0.7,
+    letterSpacing: 0.2,
   },
   headerButtons: {
     flexDirection: 'row',
@@ -443,9 +447,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   currentCalories: {
-    fontSize: 52,
+    ...Typography.largeNumber,
+    fontSize: 56,
     fontWeight: '200' as const,
-    letterSpacing: -2.5,
+    letterSpacing: -2.8,
     marginBottom: 4,
     ...Platform.select({
       ios: {
@@ -454,16 +459,20 @@ const styles = StyleSheet.create({
     }),
   },
   calorieUnit: {
-    fontSize: 13,
-    fontWeight: '600' as const,
+    ...Typography.caption1Emphasized,
+    fontSize: 14,
+    fontWeight: '700' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+    opacity: 0.8,
   },
   goalText: {
+    ...Typography.caption1,
     fontSize: 13,
-    fontWeight: '400' as const,
+    fontWeight: '500' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
+    opacity: 0.8,
   },
   statusIndicator: {
     borderRadius: 24,
@@ -531,9 +540,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   progressPercentage: {
-    fontSize: 20,
-    fontWeight: '500' as const,
-    letterSpacing: -0.3,
+    ...Typography.smallNumber,
+    fontSize: 22,
+    fontWeight: '600' as const,
+    letterSpacing: -0.5,
+    ...Platform.select({
+      ios: {
+        fontFamily: 'System',
+      },
+    }),
   },
   progressBarTrack: {
     flex: 1,
@@ -598,10 +613,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statValue: {
-    fontSize: 22,
-    fontWeight: '400' as const,
+    ...Typography.smallNumber,
+    fontSize: 24,
+    fontWeight: '500' as const,
     marginBottom: 4,
-    letterSpacing: -0.5,
+    letterSpacing: -0.6,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -609,11 +625,12 @@ const styles = StyleSheet.create({
     }),
   },
   statLabel: {
+    ...Typography.caption2Emphasized,
     fontSize: 11,
-    fontWeight: '600' as const,
+    fontWeight: '700' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.5,
-    opacity: 0.6,
+    letterSpacing: 0.8,
+    opacity: 0.7,
   },
   statDivider: {
     width: 1,

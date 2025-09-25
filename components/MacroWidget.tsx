@@ -4,12 +4,14 @@ import {
   Text,
   View,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { Beef, Wheat, Droplets, TrendingUp } from 'lucide-react-native';
 import { BlurCard } from './BlurCard';
 import { FoodItem } from '@/types/food';
 import { useTheme } from '@/providers/ThemeProvider';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Typography } from '@/constants/typography';
 
 interface MacroWidgetProps {
   foods: FoodItem[];
@@ -80,7 +82,7 @@ export function MacroWidget({ foods, type, goal, onPress }: MacroWidgetProps) {
             <View style={[styles.iconContainer, { backgroundColor: config.color + '20' }]}>
               <IconComponent 
                 color={config.color} 
-                size={16} 
+                size={18} 
                 strokeWidth={2.5} 
               />
             </View>
@@ -113,7 +115,7 @@ export function MacroWidget({ foods, type, goal, onPress }: MacroWidgetProps) {
               />
             </View>
             <Text style={[styles.progressText, { color: colors.textTertiary }]}>
-              {percentage.toFixed(0)}% de {targetGoal}g
+              {percentage.toFixed(0)}% de {targetGoal}{config.unit}
             </Text>
           </View>
           
@@ -156,8 +158,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   gradientOverlay: {
-    padding: 16,
-    minHeight: 120,
+    padding: 18,
+    minHeight: 130,
   },
   header: {
     flexDirection: 'row',
@@ -166,17 +168,17 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   iconContainer: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...Typography.caption1Emphasized,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
+    opacity: 0.9,
   },
   valueContainer: {
     flexDirection: 'row',
@@ -185,13 +187,23 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   value: {
-    fontSize: 24,
+    ...Typography.mediumNumber,
+    fontSize: 28,
     fontWeight: '700',
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
+    ...Platform.select({
+      ios: {
+        fontFamily: 'System',
+      },
+    }),
   },
   unit: {
-    fontSize: 12,
-    fontWeight: '500',
+    ...Typography.caption1Emphasized,
+    fontSize: 13,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    opacity: 0.8,
   },
   progressContainer: {
     gap: 6,
@@ -210,9 +222,12 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   progressText: {
-    fontSize: 10,
+    ...Typography.caption2,
+    fontSize: 11,
     fontWeight: '500',
     textAlign: 'center',
+    letterSpacing: 0.2,
+    opacity: 0.8,
   },
   statusContainer: {
     flexDirection: 'row',
@@ -222,9 +237,10 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   statusText: {
+    ...Typography.caption2Emphasized,
     fontSize: 10,
-    fontWeight: '600',
+    fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
   },
 });
