@@ -509,7 +509,7 @@ export default function SupplementsScreen() {
     },
     supplementInfo: {
       flex: 1,
-      paddingRight: 110,
+      paddingRight: 16,
     },
     supplementName: {
       fontSize: 22,
@@ -709,16 +709,18 @@ export default function SupplementsScreen() {
       lineHeight: 22,
     },
     priorityBadge: {
-      alignSelf: 'center',
+      position: 'absolute',
+      top: 16,
+      right: 16,
       paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 16,
-      marginBottom: 16,
       shadowColor: 'rgba(0, 0, 0, 0.15)',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.8,
       shadowRadius: 4,
       elevation: 3,
+      zIndex: 2,
     },
     priorityText: {
       fontSize: 11,
