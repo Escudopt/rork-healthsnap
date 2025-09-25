@@ -33,12 +33,15 @@ export default function AnalysisScreen() {
   const { colors, isDark } = useTheme();
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [mealName, setMealName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [showEditMenu, setShowEditMenu] = useState(false);
   const [editingFood, setEditingFood] = useState<{ food: FoodItem; index: number } | null>(null);
   const [editedFoods, setEditedFoods] = useState<FoodItem[]>([]);
   const [editedMealType, setEditedMealType] = useState<string>('');
   const [showMealTypeModal, setShowMealTypeModal] = useState(false);
+  const [showMealNameModal, setShowMealNameModal] = useState(false);
+  const [tempMealName, setTempMealName] = useState<string>('');
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
@@ -60,6 +63,7 @@ export default function AnalysisScreen() {
       const startTime = Date.now();
 
       const analysisSchema = z.object({
+        mealName: z.string().describe('Nome automático gerado para a refeição'),
         foods: z.array(z.object({
           name: z.string(),
           weightInGrams: z.number(),
@@ -92,22 +96,32 @@ export default function AnalysisScreen() {
             content: [
               {
                 type: 'text',
-                text: `Analise esta imagem de comida e identifique CADA INGREDIENTE SEPARADAMENTE com informações nutricionais precisas em português.
+                text: `Analise esta imagem de comida e identifique CADA INGREDIENTE SEPARADAMENTE com informações nutricionais precisas em português. Também gere um NOME AUTOMÁTICO para a refeição.
                 
-                REGRAS CRÍTICAS:
+                REGRAS CRÍTICAS PARA SEPARAÇÃO DE INGREDIENTES:
                 - Separe CADA ingrediente individualmente (ex: se vê arroz com feijão, liste "Arroz branco" e "Feijão preto" separadamente)
                 - Estime o peso em GRAMAS para cada ingrediente (muito importante!)
                 - Use estimativas realistas baseadas no tamanho visual
                 - Calcule valores nutricionais por 100g e ajuste para o peso estimado
-                - Identifique 3-8 ingredientes diferentes quando possível
+                - Identifique 4-10 ingredientes diferentes quando possível
                 - Seja específico: "Peito de frango grelhado", não apenas "Frango"
                 - Inclua temperos e molhos visíveis se significativos
                 - Para vegetais, estime peso individual (ex: "Tomate" 80g, "Alface" 30g)
                 - Para carnes, estime porções realistas (ex: "Peito de frango" 120g)
                 - Para carboidratos, use medidas precisas (ex: "Arroz cozido" 150g)
+                - Separe até mesmo ingredientes pequenos como cebola, alho, azeite se visíveis
+                - Para pratos compostos, decomponha em ingredientes básicos
+                
+                REGRAS PARA NOME AUTOMÁTICO DA REFEIÇÃO:
+                - Crie um nome atrativo e descritivo baseado nos ingredientes principais
+                - Use nomes brasileiros típicos (ex: "Frango com Arroz e Brócolis", "Salada Tropical", "Bowl Proteico")
+                - Seja criativo mas realista
+                - Máximo 4-5 palavras
+                - Evite nomes genéricos como "Refeição" ou "Prato"
                 
                 Exemplo de resposta detalhada:
                 {
+                  "mealName": "Frango Grelhado com Arroz e Brócolis",
                   "foods": [
                     {
                       "name": "Peito de frango grelhado",
@@ -138,10 +152,20 @@ export default function AnalysisScreen() {
                       "fat": 0,
                       "fiber": 2,
                       "portion": "80g"
+                    },
+                    {
+                      "name": "Azeite de oliva",
+                      "weightInGrams": 10,
+                      "calories": 88,
+                      "protein": 0,
+                      "carbs": 0,
+                      "fat": 10,
+                      "fiber": 0,
+                      "portion": "1 colher de sopa"
                     }
                   ],
-                  "totalCalories": 415,
-                  "totalWeight": 350,
+                  "totalCalories": 503,
+                  "totalWeight": 360,
                   "mealType": "Almoço",
                   "confidence": "high"
                 }`
@@ -240,6 +264,7 @@ export default function AnalysisScreen() {
       setAnalysisResult(result);
       setEditedFoods(result.foods);
       setEditedMealType(result.mealType);
+      setMealName(result.mealName || 'Refeição Personalizada');
       
       Animated.parallel([
         Animated.timing(fadeAnim, {
@@ -289,6 +314,7 @@ export default function AnalysisScreen() {
       if (retryCount >= maxRetries) {
         console.log('All retries failed, creating fallback analysis...');
         const fallbackResult = {
+          mealName: 'Refeição Mista',
           foods: [{
             name: 'Refeição mista (análise manual necessária)',
             weightInGrams: 200,
@@ -314,6 +340,7 @@ export default function AnalysisScreen() {
         setAnalysisResult(fallbackResult);
         setEditedFoods(fallbackResult.foods);
         setEditedMealType(fallbackResult.mealType);
+        setMealName(fallbackResult.mealName);
         
         Animated.parallel([
           Animated.timing(fadeAnim, {
@@ -380,6 +407,7 @@ export default function AnalysisScreen() {
         totalCalories: totalCalories,
         mealType: editedMealType,
         imageBase64: imageBase64,
+        mealName: mealName,
       });
 
 
@@ -527,7 +555,7 @@ export default function AnalysisScreen() {
               <View style={styles.sparkleRow}>
                 <Sparkles color="#FFD700" size={20} />
                 <Text style={[styles.loadingSubtext, { color: colors.textSecondary }]}>
-                  Processamento inteligente em andamento
+                  Separando ingredientes automaticamente
                 </Text>
                 <Sparkles color="#FFD700" size={20} />
               </View>
@@ -538,7 +566,7 @@ export default function AnalysisScreen() {
                 <Text style={[styles.progressText, { color: colors.textSecondary }]}>85% concluído</Text>
               </View>
               <Text style={[styles.loadingTip, { color: colors.textTertiary }]}>
-                ✨ Identificando nutrientes e calculando valores...
+                ✨ Gerando nome automático e separando cada ingrediente...
               </Text>
             </BlurCard>
           ) : error ? (
@@ -558,6 +586,16 @@ export default function AnalysisScreen() {
               }
             ]}>
               <BlurCard style={styles.totalCard}>
+                <View style={styles.mealNameContainer}>
+                  <Sparkles color="#FFD700" size={20} />
+                  <Text style={[styles.mealNameText, { color: colors.text }]}>{mealName}</Text>
+                  <TouchableOpacity onPress={() => {
+                    setTempMealName(mealName);
+                    setShowMealNameModal(true);
+                  }} style={styles.editMealNameButton}>
+                    <Edit3 color={colors.textSecondary} size={16} />
+                  </TouchableOpacity>
+                </View>
                 <View style={styles.totalHeader}>
                   <Award color="#FFD700" size={24} />
                   <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>Total de Calorias</Text>
@@ -587,7 +625,7 @@ export default function AnalysisScreen() {
               <View style={styles.foodsHeader}>
                 <View style={styles.foodsTitleContainer}>
                   <TrendingUp color="#4ECDC4" size={20} />
-                  <Text style={[styles.foodsTitle, { color: colors.text }]}>Ingredientes Separados</Text>
+                  <Text style={[styles.foodsTitle, { color: colors.text }]}>Ingredientes Identificados ({editedFoods.length})</Text>
                 </View>
                 <View style={styles.totalWeightContainer}>
                   <Text style={[styles.totalWeightText, { color: colors.textSecondary }]}>⚖️ {editedFoods.reduce((sum, food) => sum + food.weightInGrams, 0)}g total</Text>
@@ -957,6 +995,58 @@ export default function AnalysisScreen() {
                 >
                   <Text style={styles.mealTypeModalCloseText}>Fechar</Text>
                 </TouchableOpacity>
+              </LinearGradient>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Meal Name Edit Modal */}
+        <Modal
+          visible={showMealNameModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowMealNameModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.mealNameModalContainer}>
+              <LinearGradient
+                colors={['#667eea', '#764ba2']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.mealNameModalGradient}
+              >
+                <Text style={styles.mealNameModalTitle}>Nome da Refeição</Text>
+                
+                <TextInput
+                  style={styles.mealNameInput}
+                  value={tempMealName}
+                  onChangeText={setTempMealName}
+                  placeholder="Digite um nome para a refeição"
+                  placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                  maxLength={50}
+                  autoFocus
+                />
+                
+                <View style={styles.mealNameModalButtons}>
+                  <TouchableOpacity
+                    style={styles.mealNameCancelButton}
+                    onPress={() => setShowMealNameModal(false)}
+                  >
+                    <Text style={styles.mealNameCancelText}>Cancelar</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={styles.mealNameSaveButton}
+                    onPress={() => {
+                      if (tempMealName.trim()) {
+                        setMealName(tempMealName.trim());
+                      }
+                      setShowMealNameModal(false);
+                    }}
+                  >
+                    <Text style={styles.mealNameSaveText}>Salvar</Text>
+                  </TouchableOpacity>
+                </View>
               </LinearGradient>
             </View>
           </View>
@@ -1575,5 +1665,79 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: 'rgba(255, 255, 255, 0.8)',
+  },
+  mealNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    marginBottom: 20,
+    paddingHorizontal: 16,
+  },
+  mealNameText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    flex: 1,
+  },
+  editMealNameButton: {
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+  },
+  mealNameModalContainer: {
+    width: '85%',
+    maxWidth: 350,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  mealNameModalGradient: {
+    padding: 24,
+  },
+  mealNameModalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  mealNameInput: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: 'white',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  mealNameModalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  mealNameCancelButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  mealNameCancelText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  mealNameSaveButton: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  mealNameSaveText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

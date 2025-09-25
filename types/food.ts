@@ -12,6 +12,7 @@ export interface FoodItem {
 }
 
 export interface AnalysisResult {
+  mealName?: string;
   foods: FoodItem[];
   totalCalories: number;
   totalWeight?: number;
@@ -23,6 +24,7 @@ export interface AnalysisResult {
 export interface Meal {
   id: string;
   name?: string;
+  mealName?: string;
   foods: FoodItem[];
   totalCalories: number;
   mealType?: string;
