@@ -578,12 +578,14 @@ export default function HomeScreen() {
       <LinearGradient
         colors={isDark ? [
           '#000000',
+          '#0A0A0B',
           '#1C1C1E',
           '#2C2C2E'
         ] : [
-          '#F2F2F7',
-          '#FAFAFA',
-          '#F2F2F7'
+          '#FAFBFF',
+          '#F8F9FE',
+          '#F2F4F8',
+          '#EBEEF5'
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -609,9 +611,28 @@ export default function HomeScreen() {
           ]}>
             <View style={styles.headerTop}>
               <View style={styles.headerLeft}>
-                <Text style={[styles.greeting, { color: colors.text }]}>
-                  {userProfile?.name ? `Olá, ${userProfile.name}` : 'Resumo'}
-                </Text>
+                <View style={styles.greetingContainer}>
+                  <Text style={[styles.greeting, { color: colors.text }]}>
+                    {userProfile?.name ? `Olá, ${userProfile.name}` : 'Resumo'}
+                  </Text>
+                  <Animated.View style={[
+                    styles.sparkleIcon,
+                    {
+                      opacity: sparkleAnim.interpolate({
+                        inputRange: [0, 0.5, 1],
+                        outputRange: [0.4, 1, 0.4],
+                      }),
+                      transform: [{
+                        rotate: sparkleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '180deg'],
+                        })
+                      }]
+                    }
+                  ]}>
+                    <Sparkles color={colors.primary} size={24} strokeWidth={2} />
+                  </Animated.View>
+                </View>
                 <Text style={[styles.date, { color: colors.textSecondary }]}>
                   {new Date().toLocaleDateString('pt-BR', { 
                     weekday: 'long', 
@@ -624,12 +645,12 @@ export default function HomeScreen() {
                     <View style={styles.userInfoRow}>
                       <View style={styles.userInfoItem}>
                         <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Idade</Text>
-                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.age} anos</Text>
+                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.age}</Text>
                       </View>
                       <View style={styles.userInfoDivider} />
                       <View style={styles.userInfoItem}>
                         <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Altura</Text>
-                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.height} cm</Text>
+                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.height}cm</Text>
                       </View>
                       <View style={styles.userInfoDivider} />
                       <View style={styles.userInfoItem}>
@@ -639,7 +660,7 @@ export default function HomeScreen() {
                       <View style={styles.userInfoDivider} />
                       <View style={styles.userInfoItem}>
                         <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Peso</Text>
-                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.weight} kg</Text>
+                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.weight}kg</Text>
                       </View>
                     </View>
                     <Text style={[styles.bmiCategory, { color: colors.textSecondary }]}>
@@ -655,14 +676,14 @@ export default function HomeScreen() {
                   style={[styles.headerIconButton, { backgroundColor: colors.surfaceElevated }]}
                   activeOpacity={0.6}
                 >
-                  <Settings color={colors.text} size={20} strokeWidth={2} />
+                  <Settings color={colors.text} size={18} strokeWidth={2} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => router.push('/profile')}
                   style={[styles.headerIconButton, { backgroundColor: colors.surfaceElevated }]}
                   activeOpacity={0.6}
                 >
-                  <User color={colors.text} size={20} strokeWidth={2} />
+                  <User color={colors.text} size={18} strokeWidth={2} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -678,79 +699,81 @@ export default function HomeScreen() {
               ]
             }
           ]}>
-            <CalorieProgressBar 
-              currentCalories={todayCalories}
-              dailyGoal={dailyGoal}
-              onGoalPress={handleGoalPress}
-              onCameraPress={handleCameraPress}
-            />
-            
-            {/* Enhanced Achievement Badge */}
-            {todayCalories >= dailyGoal && (
-              <Animated.View style={[
-                styles.achievementBadge,
-                {
-                  opacity: motivationAnim.interpolate({
-                    inputRange: [0, 0.5, 1],
-                    outputRange: [0.8, 1, 0.8],
-                  }),
-                  transform: [{
-                    scale: motivationAnim.interpolate({
+            <View style={styles.mainContentContainer}>
+              <CalorieProgressBar 
+                currentCalories={todayCalories}
+                dailyGoal={dailyGoal}
+                onGoalPress={handleGoalPress}
+                onCameraPress={handleCameraPress}
+              />
+              
+              {/* Enhanced Achievement Badge */}
+              {todayCalories >= dailyGoal && (
+                <Animated.View style={[
+                  styles.achievementBadge,
+                  {
+                    opacity: motivationAnim.interpolate({
                       inputRange: [0, 0.5, 1],
-                      outputRange: [0.95, 1.05, 0.95],
-                    })
-                  }]
-                }
-              ]}>
-                <LinearGradient
-                  colors={['#FFD700', '#FFA500', '#FF6B35']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.achievementGradient}
-                >
-                  <Trophy color="white" size={20} strokeWidth={2.5} />
-                  <Text style={styles.achievementText}>Meta Diária Alcançada!</Text>
-                  <Star color="white" size={16} strokeWidth={2} />
-                </LinearGradient>
-              </Animated.View>
-            )}
-            
-            {/* Macro Widgets */}
-            {todayFoods.length > 0 && (
-              <View style={styles.macroWidgetsSection}>
-                <Text style={[styles.macroSectionTitle, { color: colors.text }]}>
-                  Macronutrientes
-                </Text>
-                <View style={styles.macroWidgetsGrid}>
-                  <MacroWidget 
+                      outputRange: [0.8, 1, 0.8],
+                    }),
+                    transform: [{
+                      scale: motivationAnim.interpolate({
+                        inputRange: [0, 0.5, 1],
+                        outputRange: [0.95, 1.05, 0.95],
+                      })
+                    }]
+                  }
+                ]}>
+                  <LinearGradient
+                    colors={['#FFD700', '#FFA500', '#FF6B35']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.achievementGradient}
+                  >
+                    <Trophy color="white" size={18} strokeWidth={2.5} />
+                    <Text style={styles.achievementText}>Meta Diária Alcançada!</Text>
+                    <Star color="white" size={14} strokeWidth={2} />
+                  </LinearGradient>
+                </Animated.View>
+              )}
+              
+              {/* Macro Widgets */}
+              {todayFoods.length > 0 && (
+                <View style={styles.macroWidgetsSection}>
+                  <Text style={[styles.macroSectionTitle, { color: colors.text }]}>
+                    Macronutrientes
+                  </Text>
+                  <View style={styles.macroWidgetsGrid}>
+                    <MacroWidget 
+                      foods={todayFoods} 
+                      type="protein"
+                      goal={userProfile?.weight ? userProfile.weight * 1.2 : 120}
+                    />
+                    <MacroWidget 
+                      foods={todayFoods} 
+                      type="carbs"
+                      goal={200}
+                    />
+                    <MacroWidget 
+                      foods={todayFoods} 
+                      type="fat"
+                      goal={70}
+                    />
+                  </View>
+                </View>
+              )}
+              
+              {/* Macro Distribution Chart */}
+              {todayFoods.length > 0 && (
+                <View style={styles.macroChartsSection}>
+                  <MacroChart 
                     foods={todayFoods} 
-                    type="protein"
-                    goal={userProfile?.weight ? userProfile.weight * 1.2 : 120}
-                  />
-                  <MacroWidget 
-                    foods={todayFoods} 
-                    type="carbs"
-                    goal={200}
-                  />
-                  <MacroWidget 
-                    foods={todayFoods} 
-                    type="fat"
-                    goal={70}
+                    title="Distribuição de Macronutrientes" 
+                    chartType="bar" 
                   />
                 </View>
-              </View>
-            )}
-            
-            {/* Macro Distribution Chart */}
-            {todayFoods.length > 0 && (
-              <View style={styles.macroChartsSection}>
-                <MacroChart 
-                  foods={todayFoods} 
-                  title="Distribuição de Macronutrientes" 
-                  chartType="bar" 
-                />
-              </View>
-            )}
+              )}
+            </View>
           </Animated.View>
 
           <Animated.View style={[styles.mealsSection, { opacity: fadeAnim }]}>
@@ -1058,7 +1081,7 @@ export default function HomeScreen() {
 const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isDark ? '#000000' : '#F2F2F7',
+    backgroundColor: isDark ? '#000000' : '#FAFBFF',
   },
   safeArea: {
     flex: 1,
@@ -1067,9 +1090,9 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     paddingBottom: 120,
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 20,
   },
   headerTop: {
     flexDirection: 'row',
@@ -1080,19 +1103,24 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     flex: 1,
   },
   userInfoContainer: {
-    marginTop: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
-    borderWidth: isDark ? 0 : 0.5,
-    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.08)',
+    marginTop: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 16,
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(255, 255, 255, 0.8)',
+    borderWidth: isDark ? 0 : 1,
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.06)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.2 : 0.04,
+    shadowRadius: isDark ? 4 : 8,
+    elevation: isDark ? 2 : 2,
   },
   userInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 6,
+    marginBottom: 8,
   },
   userInfoItem: {
     alignItems: 'center',
@@ -1100,34 +1128,42 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     minWidth: 0,
   },
   userInfoLabel: {
-    fontSize: 11,
-    fontWeight: '500' as const,
+    fontSize: 10,
+    fontWeight: '600' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.5,
-    marginBottom: 2,
+    letterSpacing: 0.8,
+    marginBottom: 3,
+    opacity: 0.8,
   },
   userInfoValue: {
-    fontSize: 16,
-    fontWeight: '600' as const,
-    letterSpacing: -0.2,
+    fontSize: 17,
+    fontWeight: '700' as const,
+    letterSpacing: -0.3,
+    ...Platform.select({
+      ios: {
+        fontFamily: 'System',
+      },
+    }),
   },
   userInfoDivider: {
     width: 1,
-    height: 20,
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-    marginHorizontal: 8,
+    height: 24,
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+    marginHorizontal: 12,
+    borderRadius: 0.5,
   },
   bmiCategory: {
-    fontSize: 12,
-    fontWeight: '500' as const,
+    fontSize: 13,
+    fontWeight: '600' as const,
     textAlign: 'center' as const,
-    opacity: 0.7,
+    opacity: 0.8,
+    letterSpacing: 0.2,
   },
   greeting: {
-    fontSize: 34,
-    fontWeight: '700' as const,
-    marginBottom: 2,
-    letterSpacing: -0.4,
+    fontSize: 32,
+    fontWeight: '800' as const,
+    marginBottom: 4,
+    letterSpacing: -0.6,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -1135,11 +1171,12 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     }),
   },
   date: {
-    fontSize: 17,
-    fontWeight: '400' as const,
+    fontSize: 16,
+    fontWeight: '500' as const,
     textTransform: 'capitalize' as const,
-    lineHeight: 22,
-    opacity: 0.6,
+    lineHeight: 20,
+    opacity: 0.7,
+    letterSpacing: 0.1,
   },
   headerButtons: {
     flexDirection: 'row',
@@ -1147,17 +1184,19 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 8,
   },
   headerIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: isDark ? 0 : 0.1,
-    shadowRadius: 2,
-    elevation: isDark ? 0 : 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.2 : 0.08,
+    shadowRadius: isDark ? 4 : 6,
+    elevation: isDark ? 2 : 3,
+    borderWidth: isDark ? 0 : 1,
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
   },
   addButton: {
     width: 44,
@@ -1212,8 +1251,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     position: 'relative',
   },
   statsContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    paddingHorizontal: 24,
+    marginBottom: 28,
+  },
+  mainContentContainer: {
+    gap: 4,
   },
   summaryCards: {
     flexDirection: 'row',
@@ -1410,7 +1452,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     marginTop: 4,
   },
   mealsSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   sectionTitle: {
     fontSize: 20,
@@ -1809,11 +1851,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   greetingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
+    gap: 12,
+    marginBottom: 2,
   },
   sparkleIcon: {
-    opacity: 0.8,
+    opacity: 0.9,
   },
   motivationBadge: {
     marginTop: 8,
@@ -1904,29 +1946,34 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   
   // Achievement badge styles
   achievementBadge: {
-    marginTop: 16,
+    marginTop: 12,
     marginBottom: 8,
     alignSelf: 'center',
-    borderRadius: 20,
+    borderRadius: 24,
     overflow: 'hidden',
     shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 10,
   },
   achievementGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    gap: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    gap: 10,
   },
   achievementText: {
     color: 'white',
-    fontSize: 14,
-    fontWeight: '700' as const,
-    letterSpacing: 0.3,
+    fontSize: 15,
+    fontWeight: '800' as const,
+    letterSpacing: 0.2,
+    ...Platform.select({
+      ios: {
+        fontFamily: 'System',
+      },
+    }),
   },
   
   // Quick goal modal styles
@@ -2228,16 +2275,14 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   
   // Macro Widgets Styles
   macroWidgetsSection: {
-    marginTop: 16,
-    marginBottom: 8,
-    paddingHorizontal: 40,
+    marginTop: 20,
+    marginBottom: 12,
   },
   macroSectionTitle: {
-    fontSize: 18,
-    fontWeight: '700' as const,
+    fontSize: 20,
+    fontWeight: '800' as const,
     marginBottom: 16,
-    paddingHorizontal: 0,
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
     textTransform: 'capitalize' as const,
     ...Platform.select({
       ios: {
@@ -2247,12 +2292,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   macroWidgetsGrid: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 14,
   },
   
   // Macro Chart Styles
   macroChartsSection: {
-    marginTop: 8,
-    paddingHorizontal: 20,
+    marginTop: 12,
   },
 });
