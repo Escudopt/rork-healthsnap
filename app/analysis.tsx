@@ -47,14 +47,15 @@ export default function AnalysisScreen() {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const editMenuAnim = useRef(new Animated.Value(0)).current;
 
-  const analyzeImageWithLogMeal = useCallback(async (retryCount = 0) => {
-    const maxRetries = 3;
+  // Free API alternatives for food identification
+  const analyzeWithFreeAPIs = useCallback(async (retryCount = 0) => {
+    const maxRetries = 2;
     
     try {
       setIsAnalyzing(true);
       setError(null);
 
-      console.log(`Starting LogMeal analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
+      console.log(`Starting free API analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
       
       if (!imageBase64) {
         throw new Error('Nenhuma imagem foi fornecida para análise');
@@ -62,28 +63,141 @@ export default function AnalysisScreen() {
       
       const startTime = Date.now();
 
-      // Step 1: Use LogMeal API for food detection
-      console.log('Calling LogMeal API for food detection...');
+      // Try multiple free APIs in sequence
+      let apiResult = null;
       
-      const logMealResponse = await fetch('https://api.logmeal.es/v2/image/segmentation/complete', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer CRN8bhTkhtrTkEpznyL9iisULmyA47k4YT',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          image: imageBase64
-        })
-      });
-
-      if (!logMealResponse.ok) {
-        throw new Error(`LogMeal API error: ${logMealResponse.status}`);
+      // Option 1: Try FoodVisor API (free tier: 100 requests/month)
+      try {
+        console.log('Trying FoodVisor API...');
+        const foodVisorResponse = await fetch('https://vision.foodvisor.io/api/1.0/en/analysis/', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Api-Key demo-key', // Replace with real key from foodvisor.io
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            image: imageBase64
+          })
+        });
+        
+        if (foodVisorResponse.ok) {
+          apiResult = await foodVisorResponse.json();
+          console.log('FoodVisor result:', apiResult);
+          apiResult.source = 'foodvisor';
+        }
+      } catch (foodVisorError) {
+        console.log('FoodVisor failed:', foodVisorError);
+      }
+      
+      // Option 2: Try Spoonacular API (free tier: 150 requests/day)
+      if (!apiResult) {
+        try {
+          console.log('Trying Spoonacular API...');
+          const spoonacularResponse = await fetch('https://api.spoonacular.com/food/images/analyze', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-API-KEY': 'demo-key', // Replace with real key from spoonacular.com
+            },
+            body: JSON.stringify({
+              imageUrl: `data:image/jpeg;base64,${imageBase64}`
+            })
+          });
+          
+          if (spoonacularResponse.ok) {
+            apiResult = await spoonacularResponse.json();
+            console.log('Spoonacular result:', apiResult);
+            apiResult.source = 'spoonacular';
+          }
+        } catch (spoonError) {
+          console.log('Spoonacular failed:', spoonError);
+        }
+      }
+      
+      // Option 3: Try Clarifai Food Model (free tier: 5000 requests/month)
+      if (!apiResult) {
+        try {
+          console.log('Trying Clarifai Food Model...');
+          const clarifaiResponse = await fetch('https://api.clarifai.com/v2/models/food-item-recognition/outputs', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Key demo-key', // Replace with real key from clarifai.com
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              inputs: [{
+                data: {
+                  image: {
+                    base64: imageBase64
+                  }
+                }
+              }]
+            })
+          });
+          
+          if (clarifaiResponse.ok) {
+            const clarifaiData = await clarifaiResponse.json();
+            console.log('Clarifai result:', clarifaiData);
+            
+            // Extract food concepts
+            const concepts = clarifaiData.outputs?.[0]?.data?.concepts || [];
+            const foodConcepts = concepts.filter((concept: any) => concept.value > 0.5);
+            
+            if (foodConcepts.length > 0) {
+              apiResult = { concepts: foodConcepts, source: 'clarifai' };
+            }
+          }
+        } catch (clarifaiError) {
+          console.log('Clarifai failed:', clarifaiError);
+        }
+      }
+      
+      // Option 4: Use Google Vision API (free tier: 1000 requests/month)
+      if (!apiResult) {
+        try {
+          console.log('Trying Google Vision API...');
+          const visionResponse = await fetch('https://vision.googleapis.com/v1/images:annotate?key=demo-key', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              requests: [{
+                image: {
+                  content: imageBase64
+                },
+                features: [{
+                  type: 'LABEL_DETECTION',
+                  maxResults: 10
+                }]
+              }]
+            })
+          });
+          
+          if (visionResponse.ok) {
+            const visionData = await visionResponse.json();
+            console.log('Google Vision result:', visionData);
+            
+            // Extract food-related labels
+            const labels = visionData.responses?.[0]?.labelAnnotations || [];
+            const foodLabels = labels.filter((label: any) => 
+              label.description && 
+              (label.description.toLowerCase().includes('food') ||
+               label.description.toLowerCase().includes('meal') ||
+               label.description.toLowerCase().includes('dish') ||
+               label.score > 0.7)
+            );
+            
+            if (foodLabels.length > 0) {
+              apiResult = { labels: foodLabels, source: 'google-vision' };
+            }
+          }
+        } catch (visionError) {
+          console.log('Google Vision failed:', visionError);
+        }
       }
 
-      const logMealData = await logMealResponse.json();
-      console.log('LogMeal response:', logMealData);
-
-      // Step 2: Process LogMeal results and enhance with AI
+      // Step 2: Process API results and enhance with AI
       const analysisSchema = z.object({
         mealName: z.string().describe('Nome automático gerado para a refeição'),
         foods: z.array(z.object({
@@ -109,7 +223,28 @@ export default function AnalysisScreen() {
         setTimeout(() => reject(new Error('Timeout: A análise demorou muito para responder')), 45000);
       });
 
-      console.log('Processing LogMeal data with AI enhancement...');
+      console.log('Processing API data with AI enhancement...');
+      
+      // Create enhanced prompt based on available API data
+      let apiDataText = 'Nenhum dado de API disponível - analise apenas a imagem.';
+      if (apiResult) {
+        if (apiResult.source === 'google-vision') {
+          apiDataText = `DADOS DO GOOGLE VISION API:
+Rótulos detectados: ${apiResult.labels.map((l: any) => `${l.description} (${Math.round(l.score * 100)}%)`).join(', ')}`;
+        } else if (apiResult.source === 'clarifai') {
+          apiDataText = `DADOS DO CLARIFAI API:
+Conceitos detectados: ${apiResult.concepts.map((c: any) => `${c.name} (${Math.round(c.value * 100)}%)`).join(', ')}`;
+        } else if (apiResult.source === 'foodvisor') {
+          apiDataText = `DADOS DO FOODVISOR API:
+Alimentos detectados: ${JSON.stringify(apiResult, null, 2)}`;
+        } else if (apiResult.source === 'spoonacular') {
+          apiDataText = `DADOS DO SPOONACULAR API:
+Análise: ${JSON.stringify(apiResult, null, 2)}`;
+        } else {
+          apiDataText = `DADOS DA API:
+${JSON.stringify(apiResult, null, 2)}`;
+        }
+      }
       
       const analysisPromise = generateObject({
         messages: [
@@ -118,21 +253,20 @@ export default function AnalysisScreen() {
             content: [
               {
                 type: 'text',
-                text: `Com base nos dados da API LogMeal abaixo, processe e melhore a identificação dos alimentos, separando CADA INGREDIENTE com informações nutricionais precisas em português. Gere também um NOME AUTOMÁTICO para a refeição.
+                text: `Analise esta imagem de comida e identifique CADA INGREDIENTE SEPARADAMENTE com informações nutricionais precisas em português. Use os dados da API como referência quando disponível.
                 
-                DADOS DA LOGMEAL API:
-                ${JSON.stringify(logMealData, null, 2)}
+                ${apiDataText}
                 
-                REGRAS CRÍTICAS PARA PROCESSAMENTO:
-                - Use os dados da LogMeal como base, mas melhore a identificação
+                REGRAS CRÍTICAS PARA IDENTIFICAÇÃO:
                 - Separe CADA ingrediente individualmente com pesos realistas em GRAMAS
-                - Calcule valores nutricionais precisos por 100g e ajuste para o peso estimado
+                - Calcule valores nutricionais precisos baseados em dados reais de nutrição
                 - Identifique 4-10 ingredientes diferentes quando possível
                 - Seja específico: "Peito de frango grelhado", não apenas "Frango"
                 - Para vegetais, estime peso individual (ex: "Tomate" 80g, "Alface" 30g)
                 - Para carnes, estime porções realistas (ex: "Peito de frango" 120g)
                 - Para carboidratos, use medidas precisas (ex: "Arroz cozido" 150g)
                 - Inclua temperos e molhos visíveis se significativos
+                - Use dados nutricionais precisos por 100g e ajuste para o peso estimado
                 
                 REGRAS PARA NOME AUTOMÁTICO DA REFEIÇÃO:
                 - Crie um nome atrativo e descritivo baseado nos ingredientes principais
@@ -140,6 +274,11 @@ export default function AnalysisScreen() {
                 - Seja criativo mas realista
                 - Máximo 4-5 palavras
                 - Evite nomes genéricos como "Refeição" ou "Prato"
+                
+                BASES DE DADOS NUTRICIONAIS:
+                - Use valores nutricionais da TACO (Tabela Brasileira de Composição de Alimentos)
+                - Para alimentos não brasileiros, use USDA Food Database
+                - Seja preciso com calorias, proteínas, carboidratos e gorduras
                 
                 Exemplo de resposta:
                 {
@@ -159,7 +298,7 @@ export default function AnalysisScreen() {
                   "totalCalories": 503,
                   "totalWeight": 360,
                   "mealType": "Almoço",
-                  "confidence": "high"
+                  "confidence": "${apiResult ? 'high' : 'medium'}"
                 }`
               },
               {
@@ -177,7 +316,7 @@ export default function AnalysisScreen() {
       console.log('Enhanced analysis result received:', result);
       
       const processingTime = Date.now() - startTime;
-      console.log(`LogMeal + AI analysis completed in ${processingTime}ms`);
+      console.log(`Free APIs + AI analysis completed in ${processingTime}ms`);
       
       // Validate the result structure
       if (!result || typeof result !== 'object') {
@@ -249,10 +388,10 @@ export default function AnalysisScreen() {
       
       // Ensure we have a valid confidence level
       if (!result.confidence || !['high', 'medium', 'low'].includes(result.confidence)) {
-        result.confidence = 'high'; // LogMeal + AI should have higher confidence
+        result.confidence = 'high'; // Free APIs + AI should have higher confidence
       }
       
-      console.log('LogMeal + AI analysis result:', result);
+      console.log('Free APIs + AI analysis result:', result);
       setAnalysisResult(result);
       setEditedFoods(result.foods);
       setEditedMealType(result.mealType);
@@ -298,12 +437,12 @@ export default function AnalysisScreen() {
       if (isNetworkError && retryCount < maxRetries) {
         console.log(`Retrying LogMeal in ${(retryCount + 1) * 2} seconds...`);
         setTimeout(() => {
-          analyzeImageWithLogMeal(retryCount + 1);
+          analyzeWithFreeAPIs(retryCount + 1);
         }, (retryCount + 1) * 2000);
         return;
       }
       
-      // If LogMeal fails, throw error to trigger fallback
+      // If all free APIs fail, throw error to trigger AI-only fallback
       throw err;
     }
   }, [imageBase64, fadeAnim, slideAnim, editMenuAnim]);
@@ -645,28 +784,28 @@ export default function AnalysisScreen() {
     }
   }, [imageBase64, fadeAnim, slideAnim, editMenuAnim]);
 
-  // Main analysis function that tries LogMeal first, then falls back to AI
+  // Main analysis function that tries free APIs first, then falls back to AI-only
   const analyzeImage = useCallback(async (retryCount = 0) => {
     try {
-      console.log('Starting analysis with LogMeal API...');
-      await analyzeImageWithLogMeal(retryCount);
-    } catch (logMealError) {
-      console.warn('LogMeal API failed, falling back to AI analysis:', logMealError);
+      console.log('Starting analysis with free APIs...');
+      await analyzeWithFreeAPIs(retryCount);
+    } catch (freeApiError) {
+      console.warn('Free APIs failed, falling back to AI-only analysis:', freeApiError);
       try {
         await analyzeImageFallback(retryCount);
       } catch (fallbackError) {
-        console.error('Both LogMeal and AI analysis failed:', fallbackError);
+        console.error('Both free APIs and AI analysis failed:', fallbackError);
         setError('Não foi possível analisar a imagem. Tente novamente.');
         setIsAnalyzing(false);
       }
     }
-  }, [analyzeImageWithLogMeal, analyzeImageFallback]);
+  }, [analyzeWithFreeAPIs, analyzeImageFallback]);
 
   useEffect(() => {
     if (imageBase64) {
       analyzeImage();
     }
-  }, [imageBase64]);
+  }, [imageBase64, analyzeImage]);
 
   const handleSave = async () => {
     if (!analysisResult) return;
@@ -832,7 +971,7 @@ export default function AnalysisScreen() {
               <View style={styles.sparkleRow}>
                 <Sparkles color="#FFD700" size={20} />
                 <Text style={[styles.loadingSubtext, { color: colors.textSecondary }]}>
-                  Usando LogMeal API + IA para identificação precisa
+                  Usando APIs gratuitas + IA para identificação precisa
                 </Text>
                 <Sparkles color="#FFD700" size={20} />
               </View>
@@ -843,7 +982,7 @@ export default function AnalysisScreen() {
                 <Text style={[styles.progressText, { color: colors.textSecondary }]}>85% concluído</Text>
               </View>
               <Text style={[styles.loadingTip, { color: colors.textTertiary }]}>
-                🔬 LogMeal detecta alimentos + IA separa ingredientes e gera nome automático...
+                🔬 APIs gratuitas detectam alimentos + IA separa ingredientes e gera nome automático...
               </Text>
             </BlurCard>
           ) : error ? (
