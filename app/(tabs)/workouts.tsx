@@ -626,7 +626,7 @@ export default function WorkoutsScreen() {
 
   // Generate AI-powered workout recommendations based on user profile
   const generateWorkoutRecommendations = useCallback(async () => {
-    console.log('Generating workout recommendations...');
+    console.log('🏋️ Generating workout recommendations...');
     console.log('User profile:', userProfile);
     console.log('Health metrics:', healthMetrics);
     
@@ -634,65 +634,49 @@ export default function WorkoutsScreen() {
     const defaultWorkouts = getDefaultWorkouts();
     
     if (!userProfile || !healthMetrics) {
-      console.log('No user profile or health metrics, returning default workouts');
+      console.log('❌ No user profile or health metrics, returning default workouts');
       return defaultWorkouts;
     }
     
     // Skip AI generation if user profile is incomplete
     if (!userProfile.name || !userProfile.age || !userProfile.weight || !userProfile.height) {
-      console.log('User profile incomplete, returning default workouts');
+      console.log('⚠️ User profile incomplete, returning default workouts');
       return defaultWorkouts;
     }
 
     setIsLoading(true);
-    try {
-      const calorieDeficit = dailyGoal - todayCalories;
-      const activityLevel = userProfile.activityLevel;
-      const goal = userProfile.goal;
-      const age = userProfile.age;
-      const bmi = healthMetrics.bmi;
-      
-      const prompt = `
-Crie 6 recomendações de treino personalizadas DETALHADAS em português baseadas no perfil:
+    
+    // Add timeout and retry logic
+    const MAX_RETRIES = 2;
+    const TIMEOUT_MS = 15000;
+    
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        console.log(`🔄 Attempt ${attempt}/${MAX_RETRIES} to generate AI workouts`);
+        
+        const calorieDeficit = dailyGoal - todayCalories;
+        const activityLevel = userProfile.activityLevel;
+        const goal = userProfile.goal;
+        const age = userProfile.age;
+        const bmi = healthMetrics.bmi;
+        
+        const prompt = `Crie 6 recomendações de treino personalizadas em português baseadas no perfil:
 
-Perfil do Usuário:
+Perfil:
 - Idade: ${age} anos
 - IMC: ${bmi}
-- Nível de atividade: ${activityLevel}
+- Atividade: ${activityLevel}
 - Objetivo: ${goal === 'lose' ? 'Perder peso' : goal === 'gain' ? 'Ganhar peso' : 'Manter peso'}
-- Déficit calórico hoje: ${calorieDeficit} kcal
+- Déficit calórico: ${calorieDeficit} kcal
 - TMB: ${healthMetrics.bmr} kcal/dia
-- TDEE: ${healthMetrics.tdee} kcal/dia
 
-Crie 2 treinos para cada local (Casa, Rua, Ginásio) com informações DETALHADAS:
+Crie 2 treinos para cada local (Casa, Rua, Ginásio). Responda APENAS com JSON válido:
 
-1. Título atrativo
-2. Descrição breve (1-2 frases)
-3. Duração (15-60 min)
-4. Dificuldade (Iniciante/Intermédio/Avançado)
-5. Calorias queimadas estimadas
-6. Lista de 4-6 exercícios DETALHADOS com:
-   - Nome do exercício
-   - Séries (se aplicável)
-   - Repetições ou duração
-   - Tempo de descanso
-   - Instruções passo-a-passo (4-6 passos)
-   - Músculos trabalhados
-   - Modificações para iniciantes/avançados
-7. Equipamentos necessários
-8. Benefícios principais
-9. Dicas importantes
-10. Aquecimento sugerido
-11. Arrefecimento sugerido
-12. Dicas de progressão
-13. Avisos de segurança
-
-Formato JSON (IMPORTANTE - siga exatamente esta estrutura):
 {
   "workouts": [
     {
       "title": "Nome do Treino",
-      "description": "Descrição",
+      "description": "Descrição breve",
       "duration": "30 min",
       "difficulty": "Intermédio",
       "location": "Casa",
@@ -702,122 +686,156 @@ Formato JSON (IMPORTANTE - siga exatamente esta estrutura):
           "name": "Nome do Exercício",
           "sets": "3",
           "reps": "12-15",
-          "duration": "30s",
           "rest": "30s",
-          "instructions": [
-            "Passo 1 detalhado",
-            "Passo 2 detalhado",
-            "Passo 3 detalhado",
-            "Passo 4 detalhado"
-          ],
+          "instructions": ["Passo 1", "Passo 2", "Passo 3"],
           "targetMuscles": ["Músculo 1", "Músculo 2"],
-          "modifications": ["Modificação 1", "Modificação 2"]
+          "modifications": ["Modificação 1"]
         }
       ],
-      "equipment": ["Equipamento 1", ...] ou [],
-      "benefits": ["Benefício 1", "Benefício 2", ...],
-      "tips": ["Dica 1", "Dica 2", ...],
-      "warmup": ["Aquecimento 1", "Aquecimento 2", ...],
-      "cooldown": ["Arrefecimento 1", "Arrefecimento 2", ...],
-      "progression": ["Progressão 1", "Progressão 2", ...],
-      "safety": ["Segurança 1", "Segurança 2", ...],
+      "equipment": [],
+      "benefits": ["Benefício 1", "Benefício 2"],
+      "tips": ["Dica 1", "Dica 2"],
+      "warmup": ["Aquecimento 1"],
+      "cooldown": ["Arrefecimento 1"],
+      "progression": ["Progressão 1"],
+      "safety": ["Segurança 1"],
       "totalSets": 3,
       "restBetweenSets": "60s"
     }
   ]
-}
+}`;
 
-Personalize baseado no objetivo e condição física:
-- Para perda de peso: foque em cardio, HIIT, exercícios compostos
-- Para ganho: foque em força, hipertrofia, exercícios com resistência
-- Para manutenção: combine cardio e força
+        // Create timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Request timeout')), TIMEOUT_MS);
+        });
 
-Seja muito detalhado nas instruções e certifique-se de que cada exercício tem informações completas.`;
-
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: prompt
-            }
-          ]
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        try {
-          // Ensure data.completion exists and is a string
-          if (!data.completion || typeof data.completion !== 'string') {
-            console.error('Invalid AI response format:', data);
-            return defaultWorkouts;
-          }
-          
-          // Clean the AI response to extract valid JSON
-          let cleanedResponse = data.completion;
-          
-          // Remove markdown code blocks if present
-          cleanedResponse = cleanedResponse.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-          
-          // Find JSON object boundaries more carefully
-          const startIndex = cleanedResponse.indexOf('{');
-          const lastIndex = cleanedResponse.lastIndexOf('}');
-          
-          if (startIndex !== -1 && lastIndex !== -1 && lastIndex > startIndex) {
-            const jsonString = cleanedResponse.substring(startIndex, lastIndex + 1);
-            
-            try {
-              const workoutData = JSON.parse(jsonString);
-              if (workoutData && workoutData.workouts && Array.isArray(workoutData.workouts)) {
-                const workouts = workoutData.workouts.map((workout: any, index: number) => ({
-                  id: `ai_workout_${index}`,
-                  title: workout.title || 'Treino Personalizado',
-                  description: workout.description || 'Descrição não disponível',
-                  duration: workout.duration || '30 min',
-                  difficulty: workout.difficulty || 'Intermédio',
-                  location: workout.location || 'Casa',
-                  calories: workout.calories || '200-300 kcal',
-                  exercises: workout.exercises || [],
-                  equipment: workout.equipment || [],
-                  benefits: workout.benefits || [],
-                  tips: workout.tips || [],
-                  warmup: workout.warmup || [],
-                  cooldown: workout.cooldown || [],
-                  progression: workout.progression || [],
-                  safety: workout.safety || [],
-                  totalSets: workout.totalSets || 3,
-                  restBetweenSets: workout.restBetweenSets || '60s'
-                }));
-                console.log('✅ Successfully parsed AI workouts:', workouts.length);
-                return workouts;
-              } else {
-                console.error('Invalid workout data structure:', workoutData);
+        // Create fetch promise
+        const fetchPromise = fetch('https://toolkit.rork.com/text/llm/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              {
+                role: 'user',
+                content: prompt
               }
-            } catch (jsonParseError) {
-              console.error('JSON parse error in workout data:', jsonParseError);
-              console.error('Attempted to parse:', jsonString.substring(0, 200) + '...');
-            }
-          } else {
-            console.error('No valid JSON boundaries found in AI response');
-            console.error('Response preview:', data.completion.substring(0, 200) + '...');
-          }
-        } catch (parseError) {
-          console.error('Error processing AI workout response:', parseError);
-        }
-      }
-    } catch (error) {
-      console.error('Error generating workout recommendations:', error);
-    } finally {
-      setIsLoading(false);
-    }
+            ]
+          })
+        });
 
-    // Fallback recommendations
-    console.log('AI generation failed, returning default workouts');
+        // Race between fetch and timeout
+        const response = await Promise.race([fetchPromise, timeoutPromise]) as Response;
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data.completion || typeof data.completion !== 'string') {
+          throw new Error('Invalid AI response format');
+        }
+        
+        // Multiple JSON cleaning strategies
+        let cleanedResponse = data.completion.trim();
+        
+        // Remove markdown code blocks
+        cleanedResponse = cleanedResponse.replace(/```json\s*/gi, '').replace(/```\s*/g, '');
+        
+        // Remove any text before first { and after last }
+        const firstBrace = cleanedResponse.indexOf('{');
+        const lastBrace = cleanedResponse.lastIndexOf('}');
+        
+        if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+          throw new Error('No valid JSON structure found');
+        }
+        
+        const jsonString = cleanedResponse.substring(firstBrace, lastBrace + 1);
+        
+        // Additional cleaning for common JSON issues
+        let finalJson = jsonString
+          .replace(/,\s*}/g, '}')  // Remove trailing commas
+          .replace(/,\s*]/g, ']')  // Remove trailing commas in arrays
+          .replace(/\n/g, ' ')     // Replace newlines with spaces
+          .replace(/\s+/g, ' ')    // Normalize whitespace
+          .trim();
+        
+        console.log('🧹 Cleaned JSON preview:', finalJson.substring(0, 200) + '...');
+        
+        const workoutData = JSON.parse(finalJson);
+        
+        if (!workoutData || !workoutData.workouts || !Array.isArray(workoutData.workouts)) {
+          throw new Error('Invalid workout data structure');
+        }
+        
+        if (workoutData.workouts.length === 0) {
+          throw new Error('No workouts in response');
+        }
+        
+        const workouts = workoutData.workouts.map((workout: any, index: number) => {
+          // Validate required fields
+          if (!workout.title || !workout.location) {
+            console.warn(`⚠️ Workout ${index} missing required fields, using defaults`);
+          }
+          
+          return {
+            id: `ai_workout_${Date.now()}_${index}`,
+            title: workout.title || `Treino Personalizado ${index + 1}`,
+            description: workout.description || 'Treino personalizado baseado no seu perfil',
+            duration: workout.duration || '30 min',
+            difficulty: ['Iniciante', 'Intermédio', 'Avançado'].includes(workout.difficulty) 
+              ? workout.difficulty : 'Intermédio',
+            location: ['Casa', 'Rua', 'Ginásio'].includes(workout.location) 
+              ? workout.location : 'Casa',
+            calories: workout.calories || '200-300 kcal',
+            exercises: Array.isArray(workout.exercises) ? workout.exercises.map((ex: any) => ({
+              name: ex.name || 'Exercício',
+              sets: ex.sets,
+              reps: ex.reps,
+              duration: ex.duration,
+              rest: ex.rest || '30s',
+              instructions: Array.isArray(ex.instructions) ? ex.instructions : ['Siga as instruções básicas'],
+              targetMuscles: Array.isArray(ex.targetMuscles) ? ex.targetMuscles : ['Corpo inteiro'],
+              modifications: Array.isArray(ex.modifications) ? ex.modifications : []
+            })) : [],
+            equipment: Array.isArray(workout.equipment) ? workout.equipment : [],
+            benefits: Array.isArray(workout.benefits) ? workout.benefits : ['Melhora condição física'],
+            tips: Array.isArray(workout.tips) ? workout.tips : ['Mantenha boa forma'],
+            warmup: Array.isArray(workout.warmup) ? workout.warmup : ['Aquecimento de 5 minutos'],
+            cooldown: Array.isArray(workout.cooldown) ? workout.cooldown : ['Alongamento de 5 minutos'],
+            progression: Array.isArray(workout.progression) ? workout.progression : ['Aumente gradualmente'],
+            safety: Array.isArray(workout.safety) ? workout.safety : ['Pare se sentir dor'],
+            totalSets: typeof workout.totalSets === 'number' ? workout.totalSets : 3,
+            restBetweenSets: workout.restBetweenSets || '60s'
+          };
+        });
+        
+        console.log(`✅ Successfully generated ${workouts.length} AI workouts on attempt ${attempt}`);
+        setIsLoading(false);
+        return workouts;
+        
+      } catch (error) {
+        console.error(`❌ Attempt ${attempt} failed:`, error);
+        
+        if (attempt === MAX_RETRIES) {
+          console.log('🔄 All attempts failed, returning default workouts');
+          setIsLoading(false);
+          return defaultWorkouts;
+        }
+        
+        // Wait before retry with proper validation
+        await new Promise((resolve) => {
+          if (typeof resolve === 'function') {
+            setTimeout(resolve, 1000 * attempt);
+          }
+        });
+      }
+    }
+    
+    setIsLoading(false);
     return defaultWorkouts;
   }, [userProfile, healthMetrics, todayCalories, dailyGoal, getDefaultWorkouts]);
 
@@ -827,31 +845,45 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
   useEffect(() => {
     const loadRecommendations = async () => {
       try {
-        console.log('Loading workout recommendations...');
+        console.log('🔄 Loading workout recommendations...');
         
         // Always start with default workouts for immediate display
         const defaultWorkouts = getDefaultWorkouts();
-        console.log('Setting default workouts:', defaultWorkouts.length);
+        console.log(`📋 Setting ${defaultWorkouts.length} default workouts`);
         setWorkoutRecommendations(defaultWorkouts);
         
         // Then try to generate AI recommendations if profile is complete
-        if (userProfile && healthMetrics) {
-          console.log('User profile complete, generating AI recommendations...');
-          const aiRecommendations = await generateWorkoutRecommendations();
-          if (aiRecommendations && aiRecommendations.length > 0) {
-            console.log('AI recommendations loaded:', aiRecommendations.length);
-            setWorkoutRecommendations(aiRecommendations);
-          } else {
-            console.log('AI recommendations failed, keeping default workouts');
-          }
+        if (userProfile && healthMetrics && userProfile.name && userProfile.age && userProfile.weight && userProfile.height) {
+          console.log('👤 User profile complete, generating AI recommendations...');
+          
+          // Add a small delay to show default workouts first
+          const timeoutId = setTimeout(async () => {
+            try {
+              const aiRecommendations = await generateWorkoutRecommendations();
+              if (aiRecommendations && aiRecommendations.length > 0) {
+                console.log(`🤖 AI recommendations loaded: ${aiRecommendations.length}`);
+                setWorkoutRecommendations(aiRecommendations);
+              } else {
+                console.log('⚠️ AI recommendations failed, keeping default workouts');
+              }
+            } catch (aiError) {
+              console.error('🚨 AI generation error:', aiError);
+              // Keep default workouts on AI failure
+            }
+          }, 500);
+          
+          // Return cleanup function
+          return () => {
+            clearTimeout(timeoutId);
+          };
         } else {
-          console.log('User profile incomplete, using default workouts only');
+          console.log('📝 User profile incomplete, using default workouts only');
         }
       } catch (error) {
-        console.error('Error loading recommendations:', error);
+        console.error('🚨 Error loading recommendations:', error);
         // Ensure we always have default workouts as fallback
         const defaultWorkouts = getDefaultWorkouts();
-        console.log('Error fallback - using default workouts:', defaultWorkouts.length);
+        console.log(`🔧 Error fallback - using ${defaultWorkouts.length} default workouts`);
         setWorkoutRecommendations(defaultWorkouts);
       }
     };
@@ -1283,7 +1315,21 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
                 !userProfile.goal ? 'Defina seu objetivo no perfil' :
                 'Complete as informações restantes no perfil'}
             </Text>
+            <Text style={[styles.promptSubtext, { color: colors.textSecondary }]}>
+              Treinos básicos estão disponíveis. Complete o perfil para recomendações personalizadas com IA.
+            </Text>
           </BlurCard>
+        )}
+        
+        {/* System Status */}
+        {workoutRecommendations.length > 0 && (
+          <View style={styles.statusContainer}>
+            <Text style={[styles.statusText, { color: colors.textSecondary }]}>
+              {workoutRecommendations.some(w => w.id.startsWith('ai_workout_')) 
+                ? '🤖 Treinos personalizados com IA carregados' 
+                : '📋 Treinos básicos carregados'}
+            </Text>
+          </View>
         )}
       </ScrollView>
     </View>
@@ -1480,6 +1526,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
+    marginBottom: 8,
+  },
+  promptSubtext: {
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 16,
+    opacity: 0.8,
+  },
+  statusContainer: {
+    alignItems: 'center',
+    paddingVertical: 8,
+    marginTop: 16,
+  },
+  statusText: {
+    fontSize: 12,
+    opacity: 0.7,
   },
   
   // Exercise detail styles
