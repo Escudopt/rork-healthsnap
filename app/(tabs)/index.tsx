@@ -641,28 +641,43 @@ export default function HomeScreen() {
                   })}
                 </Text>
                 {userProfile && healthMetrics && (
-                  <View style={styles.userInfoContainer}>
-                    <View style={styles.userInfoRow}>
-                      <View style={styles.userInfoItem}>
-                        <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Idade</Text>
-                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.age}</Text>
+                  <View style={styles.userMetricsContainer}>
+                    <View style={styles.userMetricsGrid}>
+                      <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
+                        <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
+                          <User color={colors.primary} size={16} strokeWidth={2} />
+                        </View>
+                        <Text style={[styles.userMetricValue, { color: colors.text }]}>{userProfile.age}</Text>
+                        <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>Idade</Text>
                       </View>
-                      <View style={[styles.userInfoDivider, { backgroundColor: colors.border }]} />
-                      <View style={styles.userInfoItem}>
-                        <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Altura</Text>
-                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.height}cm</Text>
-                      </View>
-                      <View style={[styles.userInfoDivider, { backgroundColor: colors.border }]} />
-                      <View style={styles.userInfoItem}>
-                        <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>IMC</Text>
-                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{healthMetrics.bmi}</Text>
-                      </View>
-                      <View style={[styles.userInfoDivider, { backgroundColor: colors.border }]} />
-                      <View style={styles.userInfoItem}>
-                        <Text style={[styles.userInfoLabel, { color: colors.textTertiary }]}>Peso</Text>
-                        <Text style={[styles.userInfoValue, { color: colors.text }]}>{userProfile.weight}kg</Text>
+                      
+                      <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
+                        <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
+                          <Activity color={colors.primary} size={16} strokeWidth={2} />
+                        </View>
+                        <Text style={[styles.userMetricValue, { color: colors.text }]}>{userProfile.height}cm</Text>
+                        <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>Altura</Text>
                       </View>
                     </View>
+                    
+                    <View style={styles.userMetricsGrid}>
+                      <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
+                        <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
+                          <Target color={colors.primary} size={16} strokeWidth={2} />
+                        </View>
+                        <Text style={[styles.userMetricValue, { color: colors.text }]}>{healthMetrics.bmi}</Text>
+                        <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>IMC</Text>
+                      </View>
+                      
+                      <View style={[styles.userMetricCard, { backgroundColor: colors.surfaceElevated }]}>
+                        <View style={[styles.userMetricIcon, { backgroundColor: colors.primary + '15' }]}>
+                          <Heart color={colors.primary} size={16} strokeWidth={2} />
+                        </View>
+                        <Text style={[styles.userMetricValue, { color: colors.text }]}>{userProfile.weight}kg</Text>
+                        <Text style={[styles.userMetricLabel, { color: colors.textSecondary }]}>Peso</Text>
+                      </View>
+                    </View>
+                    
                     <Text style={[styles.bmiCategory, { color: colors.textSecondary }]}>
                       {healthMetrics.bmiCategory}
                     </Text>
@@ -1102,56 +1117,53 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   headerLeft: {
     flex: 1,
   },
-  userInfoContainer: {
+  userMetricsContainer: {
     marginTop: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.95)',
+    gap: 12,
+  },
+  userMetricsGrid: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  userMetricCard: {
+    flex: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    alignItems: 'center',
     borderWidth: isDark ? 0 : 0.5,
     borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
     shadowColor: isDark ? 'rgba(255, 255, 255, 0.1)' : '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: isDark ? 0.15 : 0.06,
-    shadowRadius: isDark ? 8 : 12,
-    elevation: isDark ? 3 : 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.1 : 0.04,
+    shadowRadius: isDark ? 4 : 8,
+    elevation: isDark ? 2 : 3,
   },
-  userInfoRow: {
-    flexDirection: 'row',
+  userMetricIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 8,
   },
-  userInfoItem: {
-    alignItems: 'center',
-    flex: 1,
-    minWidth: 0,
-    paddingVertical: 4,
-  },
-  userInfoLabel: {
-    fontSize: 11,
-    fontWeight: '600' as const,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 0.8,
-    marginBottom: 4,
-    opacity: 0.7,
-  },
-  userInfoValue: {
+  userMetricValue: {
     fontSize: 18,
     fontWeight: '700' as const,
     letterSpacing: -0.4,
+    marginBottom: 4,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
       },
     }),
   },
-  userInfoDivider: {
-    width: 1,
-    height: 28,
-    marginHorizontal: 16,
-    borderRadius: 0.5,
-    opacity: isDark ? 0.15 : 0.12,
+  userMetricLabel: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.8,
+    opacity: 0.7,
   },
   bmiCategory: {
     fontSize: 13,
@@ -1159,7 +1171,12 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     textAlign: 'center' as const,
     opacity: 0.7,
     letterSpacing: 0.2,
-    marginTop: 2,
+    marginTop: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
+    borderRadius: 12,
+    alignSelf: 'center',
   },
   greeting: {
     fontSize: 26,
