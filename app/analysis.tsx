@@ -23,6 +23,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { BlurCard } from '@/components/BlurCard';
 import * as Haptics from 'expo-haptics';
 import { AnalysisResult, FoodItem } from '@/types/food';
+import { generateText } from '@rork/toolkit-sdk';
 
 export default function AnalysisScreen() {
   const { imageBase64 } = useLocalSearchParams<{ imageBase64: string }>();
@@ -52,77 +53,62 @@ export default function AnalysisScreen() {
       // Feedback imediato - sem delay
       const startTime = Date.now();
 
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: `You are a fast food analysis AI. Analyze quickly and return ONLY valid JSON.
-              
-              ULTRA SPEED MODE: Analyze instantly. Return JSON only.
-              
-              JSON format:
+      const completion = await generateText({
+        messages: [
+          {
+            role: 'user',
+            content: [
               {
-                "foods": [
-                  {
-                    "name": "Food name in Portuguese",
-                    "calories": number,
-                    "protein": number,
-                    "carbs": number,
-                    "fat": number,
-                    "portion": "portion in Portuguese"
-                  }
-                ],
-                "totalCalories": number,
-                "mealType": "Café da Manhã" | "Almoço" | "Jantar" | "Lanche",
-                "confidence": "high" | "medium" | "low"
-              }
-              
-              Quick rules:
-              - Identify 1-3 main foods
-              - Use common portions
-              - Fast calorie estimates
-              - Return JSON now`
-            },
-            {
-              role: 'user',
-              content: [
+                type: 'text',
+                text: `You are a fast food analysis AI. Analyze quickly and return ONLY valid JSON.
+                
+                ULTRA SPEED MODE: Analyze instantly. Return JSON only.
+                
+                JSON format:
                 {
-                  type: 'text',
-                  text: 'Fast analysis. JSON only.'
-                },
-                {
-                  type: 'image',
-                  image: imageBase64
+                  "foods": [
+                    {
+                      "name": "Food name in Portuguese",
+                      "calories": number,
+                      "protein": number,
+                      "carbs": number,
+                      "fat": number,
+                      "portion": "portion in Portuguese"
+                    }
+                  ],
+                  "totalCalories": number,
+                  "mealType": "Café da Manhã" | "Almoço" | "Jantar" | "Lanche",
+                  "confidence": "high" | "medium" | "low"
                 }
-              ]
-            }
-          ]
-        })
+                
+                Quick rules:
+                - Identify 1-3 main foods
+                - Use common portions
+                - Fast calorie estimates
+                - Return JSON now
+                
+                Fast analysis. JSON only.`
+              },
+              {
+                type: 'image',
+                image: imageBase64
+              }
+            ]
+          }
+        ]
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error:', response.status, errorText);
-        throw new Error(`Erro na análise: ${response.status}`);
-      }
-
-      const data = await response.json();
       const processingTime = Date.now() - startTime;
       console.log(`API response received in ${processingTime}ms`);
       
-      if (!data.completion) {
+      if (!completion) {
         throw new Error('Resposta inválida da API');
       }
 
       let result;
       try {
         // Processamento mais rápido do JSON
-        let cleanedResponse = data.completion.trim();
+        let cleanedResponse = completion.trim();
         
         // Extração rápida do JSON
         const jsonStart = cleanedResponse.indexOf('{');
@@ -137,7 +123,7 @@ export default function AnalysisScreen() {
         
       } catch (parseError: unknown) {
         console.error('JSON Parse Error:', parseError);
-        console.error('Raw completion that failed:', data.completion);
+        console.error('Raw completion that failed:', completion);
         
         // Provide more specific error messages based on the error
         if (parseError instanceof SyntaxError) {
