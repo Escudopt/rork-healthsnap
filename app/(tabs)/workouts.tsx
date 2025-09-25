@@ -535,7 +535,18 @@ Personalize baseado no objetivo e condição física. Para perda de peso, foque 
           <BlurCard style={styles.emptyState}>
             <Heart size={48} color={colors.textSecondary} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhum treino encontrado</Text>
-            <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>Complete seu perfil para receber recomendações personalizadas</Text>
+            <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
+              {!userProfile ? 
+                'Complete seu perfil para receber recomendações personalizadas' :
+                !userProfile.name ? 'Adicione seu nome no perfil' :
+                !userProfile.age || userProfile.age === 0 ? 'Adicione sua idade no perfil' :
+                !userProfile.weight || userProfile.weight === 0 ? 'Adicione seu peso no perfil' :
+                !userProfile.height || userProfile.height === 0 ? 'Adicione sua altura no perfil' :
+                !userProfile.gender ? 'Selecione seu sexo no perfil' :
+                !userProfile.activityLevel ? 'Selecione seu nível de atividade no perfil' :
+                !userProfile.goal ? 'Defina seu objetivo no perfil' :
+                'Gerando recomendações personalizadas...'}
+            </Text>
           </BlurCard>
         )}
       </ScrollView>
