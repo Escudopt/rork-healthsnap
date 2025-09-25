@@ -2230,12 +2230,13 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   macroWidgetsSection: {
     marginTop: 16,
     marginBottom: 8,
+    paddingHorizontal: 20,
   },
   macroSectionTitle: {
     fontSize: 18,
     fontWeight: '700' as const,
     marginBottom: 16,
-    paddingHorizontal: 4,
+    paddingHorizontal: 0,
     letterSpacing: -0.3,
     textTransform: 'capitalize' as const,
     ...Platform.select({
@@ -2252,5 +2253,6 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   // Macro Chart Styles
   macroChartsSection: {
     marginTop: 8,
+    paddingHorizontal: 20,
   },
 });
