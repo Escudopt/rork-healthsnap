@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
-import { Appearance, StatusBar } from 'react-native';
+import { Appearance, StatusBar, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Typography, getTypographyStyle } from '@/constants/typography';
 
