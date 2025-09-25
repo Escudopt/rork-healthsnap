@@ -199,7 +199,7 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                 style={styles.cameraButtonGradient}
               >
                 <View style={styles.cameraIconContainer}>
-                  <Camera color="white" size={20} strokeWidth={2.8} />
+                  <Camera color="white" size={18} strokeWidth={2.8} />
                   <View style={styles.cameraIconHighlight} />
                 </View>
               </LinearGradient>
@@ -305,7 +305,7 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    padding: 16,
     marginBottom: 0,
     borderRadius: 16,
     shadowColor: '#000',
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 18,
+    marginBottom: 12,
   },
   titleContainer: {
     flex: 1,
@@ -387,11 +387,11 @@ const styles = StyleSheet.create({
   },
   cameraButtonGlow: {
     position: 'absolute',
-    top: -8,
-    left: -8,
-    right: -8,
-    bottom: -8,
-    borderRadius: 24,
+    top: -6,
+    left: -6,
+    right: -6,
+    bottom: -6,
+    borderRadius: 21,
     backgroundColor: '#007AFF',
     shadowColor: '#007AFF',
     shadowOffset: { width: 0, height: 0 },
@@ -400,9 +400,9 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   cameraButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -440,18 +440,18 @@ const styles = StyleSheet.create({
 
   caloriesSection: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   caloriesContainer: {
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   currentCalories: {
     ...Typography.largeNumber,
-    fontSize: 52,
+    fontSize: 42,
     fontWeight: '200' as const,
-    letterSpacing: -2.6,
-    marginBottom: 4,
+    letterSpacing: -2.1,
+    marginBottom: 3,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -494,34 +494,34 @@ const styles = StyleSheet.create({
   },
   progressSection: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   circularProgressContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   circularProgress: {
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
   },
   circularProgressBackground: {
     position: 'absolute',
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 5,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 4,
     borderColor: 'rgba(0, 0, 0, 0.08)',
   },
   circularProgressFill: {
     position: 'absolute',
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    borderWidth: 5,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 4,
     borderColor: 'transparent',
   },
   circularProgressLeft: {
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
   },
   progressPercentage: {
     ...Typography.smallNumber,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600' as const,
     letterSpacing: -0.4,
     ...Platform.select({
@@ -607,16 +607,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 28,
+    gap: 24,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
     ...Typography.smallNumber,
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '500' as const,
-    marginBottom: 3,
+    marginBottom: 2,
     letterSpacing: -0.5,
     ...Platform.select({
       ios: {
