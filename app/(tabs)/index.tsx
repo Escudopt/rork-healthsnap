@@ -27,6 +27,7 @@ import { BlurCard } from '@/components/BlurCard';
 import { CalorieProgressBar } from '@/components/CalorieProgressBar';
 import { MealCard } from '@/components/MealCard';
 import { MacroChart } from '@/components/MacroChart';
+import { MacroWidget } from '@/components/MacroWidget';
 import { Meal } from '@/types/food';
 import * as Haptics from 'expo-haptics';
 
@@ -684,6 +685,32 @@ export default function HomeScreen() {
                   <Star color="white" size={16} strokeWidth={2} />
                 </LinearGradient>
               </Animated.View>
+            )}
+            
+            {/* Macro Widgets */}
+            {todayFoods.length > 0 && (
+              <View style={styles.macroWidgetsSection}>
+                <Text style={[styles.macroSectionTitle, { color: colors.text }]}>
+                  Macronutrientes
+                </Text>
+                <View style={styles.macroWidgetsGrid}>
+                  <MacroWidget 
+                    foods={todayFoods} 
+                    type="protein"
+                    goal={userProfile?.weight ? userProfile.weight * 1.2 : 120}
+                  />
+                  <MacroWidget 
+                    foods={todayFoods} 
+                    type="carbs"
+                    goal={200}
+                  />
+                  <MacroWidget 
+                    foods={todayFoods} 
+                    type="fat"
+                    goal={70}
+                  />
+                </View>
+              </View>
             )}
             
             {/* Macro Distribution Chart */}
@@ -2125,6 +2152,23 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 0.5,
     opacity: 0.2,
     marginHorizontal: 8,
+  },
+  
+  // Macro Widgets Styles
+  macroWidgetsSection: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  macroSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    paddingHorizontal: 4,
+    letterSpacing: -0.2,
+  },
+  macroWidgetsGrid: {
+    flexDirection: 'row',
+    gap: 12,
   },
   
   // Macro Chart Styles
