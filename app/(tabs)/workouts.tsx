@@ -1564,21 +1564,22 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   exerciseHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: 'column',
+    alignItems: 'center',
     marginBottom: 12,
   },
   exerciseName: {
     fontSize: 16,
     fontWeight: 'bold',
-    flex: 1,
-    marginRight: 12,
+    textAlign: 'center',
+    marginBottom: 8,
+    width: '100%',
   },
   exerciseMeta: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    justifyContent: 'center',
   },
   exerciseMetaText: {
     fontSize: 12,
