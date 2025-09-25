@@ -23,6 +23,8 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { BlurCard } from '@/components/BlurCard';
 import * as Haptics from 'expo-haptics';
 import { AnalysisResult, FoodItem } from '@/types/food';
+import { generateObject } from '@rork/toolkit-sdk';
+import { z } from 'zod';
 
 export default function AnalysisScreen() {
   const { imageBase64 } = useLocalSearchParams<{ imageBase64: string }>();
@@ -52,126 +54,61 @@ export default function AnalysisScreen() {
       // Feedback imediato - sem delay
       const startTime = Date.now();
 
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: `You are a fast food analysis AI. Analyze quickly and return ONLY valid JSON.
-              
-              ULTRA SPEED MODE: Analyze instantly. Return JSON only.
-              
-              JSON format:
-              {
-                "foods": [
-                  {
-                    "name": "Food name in Portuguese",
-                    "calories": number,
-                    "protein": number,
-                    "carbs": number,
-                    "fat": number,
-                    "portion": "portion in Portuguese"
-                  }
-                ],
-                "totalCalories": number,
-                "mealType": "Café da Manhã" | "Almoço" | "Jantar" | "Lanche",
-                "confidence": "high" | "medium" | "low"
-              }
-              
-              Quick rules:
-              - Identify 1-3 main foods
-              - Use common portions
-              - Fast calorie estimates
-              - Return JSON now`
-            },
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: 'Fast analysis. JSON only.'
-                },
-                {
-                  type: 'image',
-                  image: imageBase64
-                }
-              ]
-            }
-          ]
-        })
+      const analysisSchema = z.object({
+        foods: z.array(z.object({
+          name: z.string(),
+          calories: z.number(),
+          protein: z.number(),
+          carbs: z.number(),
+          fat: z.number(),
+          portion: z.string()
+        })),
+        totalCalories: z.number(),
+        mealType: z.enum(['Café da Manhã', 'Almoço', 'Jantar', 'Lanche']),
+        confidence: z.enum(['high', 'medium', 'low'])
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error:', response.status, errorText);
-        throw new Error(`Erro na análise: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const processingTime = Date.now() - startTime;
-      console.log(`API response received in ${processingTime}ms`);
-      
-      if (!data.completion) {
-        throw new Error('Resposta inválida da API');
-      }
-
-      let result;
-      try {
-        // Processamento mais rápido do JSON
-        let cleanedResponse = data.completion.trim();
-        
-        // Extração rápida do JSON
-        const jsonStart = cleanedResponse.indexOf('{');
-        const jsonEnd = cleanedResponse.lastIndexOf('}');
-        
-        if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-          cleanedResponse = cleanedResponse.substring(jsonStart, jsonEnd + 1);
-        }
-        
-        result = JSON.parse(cleanedResponse);
-        console.log(`JSON parsed successfully in ${Date.now() - startTime}ms total`);
-        
-      } catch (parseError: unknown) {
-        console.error('JSON Parse Error:', parseError);
-        console.error('Raw completion that failed:', data.completion);
-        
-        // Provide more specific error messages based on the error
-        if (parseError instanceof SyntaxError) {
-          console.error('Parse error details:', parseError.message);
-          const errorMsg = parseError.message || '';
-          if (errorMsg.includes('Unexpected character')) {
-            throw new Error('A IA retornou uma resposta com caracteres inválidos. Tente tirar outra foto com melhor iluminação.');
-          } else if (errorMsg.includes('Unexpected token')) {
-            throw new Error('A IA retornou uma resposta mal estruturada. Tente novamente.');
-          } else {
-            throw new Error('A IA retornou uma resposta mal formatada. Tente tirar outra foto.');
+      const result = await generateObject({
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Analise esta imagem de comida e identifique os alimentos com informações nutricionais em português.
+                
+                Regras:
+                - Identifique 1-3 alimentos principais
+                - Use porções comuns (ex: "1 prato", "100g", "1 xícara")
+                - Estime calorias com precisão
+                - Determine o tipo de refeição baseado nos alimentos
+                - Calcule proteínas, carboidratos e gorduras em gramas`
+              },
+              {
+                type: 'image',
+                image: imageBase64
+              }
+            ]
           }
-        } else if (parseError instanceof Error) {
-          console.error('Parse error details:', parseError.message);
-          throw new Error('Erro ao processar resposta da análise. Tente novamente.');
-        } else {
-          console.error('Unknown parse error type:', typeof parseError);
-          throw new Error('Erro desconhecido ao processar resposta da análise. Tente novamente.');
-        }
-      }
+        ],
+        schema: analysisSchema
+      });
+      
+      const processingTime = Date.now() - startTime;
+      console.log(`Analysis completed in ${processingTime}ms`);
       
       // Validate the result structure
-      if (!result.foods || !Array.isArray(result.foods) || result.foods.length === 0) {
+      if (!result.foods || result.foods.length === 0) {
         throw new Error('Nenhum alimento foi identificado na imagem');
       }
       
       // Calculate the correct total calories from individual foods
       const calculatedTotal = result.foods.reduce((sum: number, food: any) => {
-        const calories = typeof food.calories === 'number' ? food.calories : 0;
-        return sum + calories;
+        return sum + food.calories;
       }, 0);
       
       // Fix the totalCalories if it doesn't match the sum
-      if (typeof result.totalCalories !== 'number' || result.totalCalories !== calculatedTotal) {
+      if (result.totalCalories !== calculatedTotal) {
         console.log(`Fixing totalCalories: AI said ${result.totalCalories}, calculated ${calculatedTotal}`);
         result.totalCalories = calculatedTotal;
       }
