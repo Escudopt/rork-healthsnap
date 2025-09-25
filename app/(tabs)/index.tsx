@@ -35,7 +35,7 @@ const { width: screenWidth } = Dimensions.get('window');
 
 
 export default function HomeScreen() {
-  const { meals, todayCalories, weeklyAverage, dailyGoal, isLoading, resetData, addManualCalories, setDailyGoal, userProfile } = useCalorieTracker();
+  const { meals, todayCalories, weeklyAverage, dailyGoal, isLoading, resetData, addManualCalories, setDailyGoal, userProfile, healthMetrics } = useCalorieTracker();
   const { colors, isDark, getTypographyStyle } = useTheme();
   const { t } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -610,7 +610,7 @@ export default function HomeScreen() {
             <View style={styles.headerTop}>
               <View style={styles.headerLeft}>
                 <Text style={[styles.greeting, { color: colors.text }]}>
-                  Resumo
+                  {userProfile?.name ? `Olá, ${userProfile.name}` : 'Resumo'}
                 </Text>
                 <Text style={[styles.date, { color: colors.textSecondary }]}>
                   {new Date().toLocaleDateString('pt-BR', { 
@@ -619,6 +619,13 @@ export default function HomeScreen() {
                     month: 'long' 
                   })}
                 </Text>
+                {userProfile && healthMetrics && (
+                  <View style={styles.userInfoContainer}>
+                    <Text style={[styles.userInfo, { color: colors.textSecondary }]}>
+                      {userProfile.age} anos • IMC: {healthMetrics.bmi}
+                    </Text>
+                  </View>
+                )}
               </View>
               <View style={styles.headerButtons}>
                 <FloatingAIChat isHeaderButton={true} />
@@ -1050,6 +1057,14 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
+  },
+  userInfoContainer: {
+    marginTop: 4,
+  },
+  userInfo: {
+    fontSize: 14,
+    fontWeight: '500' as const,
+    opacity: 0.8,
   },
   greeting: {
     fontSize: 34,
