@@ -13,18 +13,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, router } from 'expo-router';
 import {
   Settings,
-  Moon,
-  Sun,
   Bell,
   Shield,
   HelpCircle,
   Info,
   ChevronRight,
-  Palette,
-  Globe,
-  Database,
   User,
-
 } from 'lucide-react-native';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useLanguage } from '@/providers/LanguageProvider';
@@ -32,21 +26,33 @@ import { useLanguage } from '@/providers/LanguageProvider';
 
 import { BlurCard } from '@/components/BlurCard';
 
+type ToggleOption = {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: any;
+  type: 'toggle';
+  value: boolean;
+  onToggle: () => void;
+};
+
+type NavigationOption = {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: any;
+  type: 'navigation';
+  onPress: () => void;
+};
+
+type SettingOption = ToggleOption | NavigationOption;
+
 export default function SettingsScreen() {
-  const { colors, isDark, toggleTheme } = useTheme();
-  const { t, language } = useLanguage();
+  const { colors, isDark } = useTheme();
+  const { t } = useLanguage();
 
 
   const settingsOptions = [
-    {
-      id: 'theme',
-      title: t('theme'),
-      subtitle: isDark ? t('darkModeActive') : t('lightModeActive'),
-      icon: isDark ? Moon : Sun,
-      type: 'toggle' as const,
-      value: isDark,
-      onToggle: toggleTheme,
-    },
     {
       id: 'notifications',
       title: t('notifications'),
@@ -55,22 +61,6 @@ export default function SettingsScreen() {
       type: 'toggle' as const,
       value: true,
       onToggle: () => {},
-    },
-    {
-      id: 'language',
-      title: t('language'),
-      subtitle: language === 'pt' ? t('portuguese') : t('english'),
-      icon: Globe,
-      type: 'navigation' as const,
-      onPress: () => router.push('/language-selection'),
-    },
-    {
-      id: 'appearance',
-      title: t('appearance'),
-      subtitle: t('customizeColors'),
-      icon: Palette,
-      type: 'navigation' as const,
-      onPress: () => {},
     },
   ];
 
@@ -91,25 +81,9 @@ export default function SettingsScreen() {
       type: 'navigation' as const,
       onPress: () => router.push('/help'),
     },
-    {
-      id: 'about',
-      title: t('about'),
-      subtitle: t('version'),
-      icon: Info,
-      type: 'navigation' as const,
-      onPress: () => {},
-    },
-    {
-      id: 'data',
-      title: t('data'),
-      subtitle: t('backupSync'),
-      icon: Database,
-      type: 'navigation' as const,
-      onPress: () => {},
-    },
   ];
 
-  const renderSettingItem = (item: typeof settingsOptions[0]) => {
+  const renderSettingItem = (item: SettingOption) => {
     const IconComponent = item.icon;
     
     return (
@@ -247,21 +221,30 @@ export default function SettingsScreen() {
                   <Info color={colors.primary} size={20} strokeWidth={2} />
                 </View>
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                  Informações da App
+                  Sobre a Aplicação
                 </Text>
               </View>
               <View style={styles.appInfoContent}>
+                <View style={styles.appInfoRow}>
+                  <Text style={[styles.appInfoLabel, { color: colors.textSecondary }]}>Desenvolvedor</Text>
+                  <Text style={[styles.appInfoValue, { color: colors.text }]}>Tomé Teixeira</Text>
+                </View>
+                <View style={styles.appInfoRow}>
+                  <Text style={[styles.appInfoLabel, { color: colors.textSecondary }]}>Tipo</Text>
+                  <Text style={[styles.appInfoValue, { color: colors.text }]}>Projeto Informativo</Text>
+                </View>
                 <View style={styles.appInfoRow}>
                   <Text style={[styles.appInfoLabel, { color: colors.textSecondary }]}>Versão</Text>
                   <Text style={[styles.appInfoValue, { color: colors.text }]}>1.0.0</Text>
                 </View>
                 <View style={styles.appInfoRow}>
-                  <Text style={[styles.appInfoLabel, { color: colors.textSecondary }]}>Build</Text>
-                  <Text style={[styles.appInfoValue, { color: colors.text }]}>2025.01</Text>
-                </View>
-                <View style={styles.appInfoRow}>
                   <Text style={[styles.appInfoLabel, { color: colors.textSecondary }]}>Plataforma</Text>
                   <Text style={[styles.appInfoValue, { color: colors.text }]}>React Native</Text>
+                </View>
+                <View style={styles.appInfoDescription}>
+                  <Text style={[styles.appInfoDescriptionText, { color: colors.textSecondary }]}>
+                    Esta aplicação foi desenvolvida como um projeto informativo para demonstrar funcionalidades de rastreamento nutricional e fitness.
+                  </Text>
                 </View>
               </View>
             </BlurCard>
@@ -404,6 +387,18 @@ const styles = StyleSheet.create({
   appInfoValue: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  appInfoDescription: {
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0, 0, 0, 0.08)',
+  },
+  appInfoDescriptionText: {
+    fontSize: 13,
+    fontWeight: '400',
+    lineHeight: 18,
+    textAlign: 'center',
   },
 
 });
