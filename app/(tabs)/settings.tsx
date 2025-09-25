@@ -120,7 +120,7 @@ export default function SettingsScreen() {
         disabled={item.type === 'toggle'}
         style={styles.settingItemContainer}
       >
-        <View style={[styles.settingContent, { backgroundColor: colors.surfaceSecondary + '40' }]}>
+        <View style={[styles.settingContent, { backgroundColor: colors.surfaceSecondary }]}>
           <View style={[styles.settingIcon, { backgroundColor: colors.primary + '20' }]}>
             <IconComponent color={colors.primary} size={18} strokeWidth={2} />
           </View>
@@ -158,43 +158,28 @@ export default function SettingsScreen() {
 
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={isDark ? [
+          '#000000',
+          '#1C1C1E',
+          '#2C2C2E'
+        ] : [
+          '#F2F2F7',
+          '#FAFAFA',
+          '#F2F2F7'
+        ]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={StyleSheet.absoluteFillObject}
+      />
+      
       <Stack.Screen
         options={{
           title: t('settingsTitle'),
           headerShown: false,
         }}
       />
-      
-      {isDark && (
-        <>
-          <LinearGradient
-            colors={[
-              '#000000',
-              '#0A0A0F',
-              '#0F0F1A',
-              '#1A1A2E',
-              '#16213E',
-              '#0F3460',
-              '#1E3A8A'
-            ]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFillObject}
-          />
-          <LinearGradient
-            colors={[
-              'rgba(102, 126, 234, 0.08)',
-              'transparent',
-              'rgba(118, 75, 162, 0.06)',
-              'transparent'
-            ]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={StyleSheet.absoluteFillObject}
-          />
-        </>
-      )}
       
       <StatusBar 
         barStyle={isDark ? 'light-content' : 'dark-content'} 
@@ -290,21 +275,29 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F2F2F7',
   },
   safeArea: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100, // Add extra padding for tab bar
+    paddingBottom: 120,
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 32,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
   headerCard: {
     padding: 24,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
   headerIcon: {
     width: 80,
@@ -333,6 +326,13 @@ const styles = StyleSheet.create({
   },
   sectionCard: {
     padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
   sectionHeader: {
     flexDirection: 'row',
