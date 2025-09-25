@@ -27,6 +27,17 @@ import {
 
 
 
+interface Exercise {
+  name: string;
+  sets?: string;
+  reps?: string;
+  duration?: string;
+  rest?: string;
+  instructions: string[];
+  targetMuscles?: string[];
+  modifications?: string[];
+}
+
 interface WorkoutRecommendation {
   id: string;
   title: string;
@@ -35,10 +46,16 @@ interface WorkoutRecommendation {
   difficulty: 'Iniciante' | 'Intermédio' | 'Avançado';
   location: 'Casa' | 'Rua' | 'Ginásio';
   calories: string;
-  exercises: string[];
+  exercises: Exercise[];
   equipment?: string[];
   benefits: string[];
   tips: string[];
+  warmup?: string[];
+  cooldown?: string[];
+  progression?: string[];
+  safety?: string[];
+  totalSets?: number;
+  restBetweenSets?: string;
 }
 
 interface WorkoutCategory {
@@ -72,10 +89,91 @@ export default function WorkoutsScreen() {
         difficulty: 'Intermédio',
         location: 'Casa',
         calories: '200-250 kcal',
-        exercises: ['Burpees', 'Mountain Climbers', 'Jumping Jacks', 'Agachamentos', 'Flexões'],
+        exercises: [
+          {
+            name: 'Burpees',
+            sets: '3',
+            reps: '8-12',
+            rest: '30s',
+            instructions: [
+              'Comece em pé, pés afastados na largura dos ombros',
+              'Agache e coloque as mãos no chão',
+              'Salte os pés para trás numa posição de prancha',
+              'Faça uma flexão (opcional)',
+              'Salte os pés de volta para a posição de agachamento',
+              'Salte para cima com os braços estendidos'
+            ],
+            targetMuscles: ['Corpo inteiro', 'Cardio'],
+            modifications: ['Sem flexão para iniciantes', 'Sem salto final']
+          },
+          {
+            name: 'Mountain Climbers',
+            sets: '3',
+            duration: '30s',
+            rest: '15s',
+            instructions: [
+              'Comece numa posição de prancha',
+              'Mantenha o core contraído',
+              'Alterne trazendo os joelhos ao peito rapidamente',
+              'Mantenha os quadris estáveis'
+            ],
+            targetMuscles: ['Core', 'Ombros', 'Cardio'],
+            modifications: ['Ritmo mais lento', 'Mãos elevadas']
+          },
+          {
+            name: 'Jumping Jacks',
+            sets: '3',
+            duration: '45s',
+            rest: '15s',
+            instructions: [
+              'Comece em pé com pés juntos e braços ao lado',
+              'Salte abrindo as pernas e levantando os braços',
+              'Salte de volta à posição inicial',
+              'Mantenha um ritmo constante'
+            ],
+            targetMuscles: ['Cardio', 'Pernas', 'Ombros'],
+            modifications: ['Step touch sem salto', 'Braços apenas']
+          },
+          {
+            name: 'Agachamentos',
+            sets: '3',
+            reps: '12-15',
+            rest: '30s',
+            instructions: [
+              'Pés afastados na largura dos ombros',
+              'Desça como se fosse sentar numa cadeira',
+              'Mantenha o peito erguido e joelhos alinhados',
+              'Desça até as coxas ficarem paralelas ao chão',
+              'Suba contraindo os glúteos'
+            ],
+            targetMuscles: ['Glúteos', 'Quadríceps', 'Core'],
+            modifications: ['Agachamento parcial', 'Com apoio na parede']
+          },
+          {
+            name: 'Flexões',
+            sets: '3',
+            reps: '8-12',
+            rest: '30s',
+            instructions: [
+              'Posição de prancha com mãos ligeiramente mais largas que os ombros',
+              'Desça o corpo mantendo-o reto',
+              'Toque o peito no chão',
+              'Empurre de volta à posição inicial',
+              'Mantenha o core contraído'
+            ],
+            targetMuscles: ['Peitorais', 'Tríceps', 'Ombros', 'Core'],
+            modifications: ['Flexões de joelhos', 'Flexões inclinadas']
+          }
+        ],
         equipment: [],
         benefits: ['Queima muitas calorias', 'Melhora resistência cardiovascular', 'Fortalece músculos'],
-        tips: ['Mantenha boa forma', 'Descanse 30s entre exercícios', 'Hidrate-se bem']
+        tips: ['Mantenha boa forma', 'Descanse 30s entre exercícios', 'Hidrate-se bem'],
+        warmup: ['5 min de marcha no local', 'Rotações de braços e pernas', 'Alongamentos dinâmicos'],
+        cooldown: ['5 min de caminhada lenta', 'Alongamentos estáticos', 'Respiração profunda'],
+        progression: ['Aumente 1 repetição por semana', 'Reduza o tempo de descanso', 'Adicione mais séries'],
+        safety: ['Pare se sentir dor', 'Mantenha boa postura', 'Aqueça sempre antes'],
+        totalSets: 3,
+        restBetweenSets: '60s'
       },
       {
         id: 'casa_2',
@@ -85,10 +183,88 @@ export default function WorkoutsScreen() {
         difficulty: 'Iniciante',
         location: 'Casa',
         calories: '100-150 kcal',
-        exercises: ['Saudação ao Sol', 'Postura do Guerreiro', 'Postura da Árvore', 'Prancha', 'Relaxamento'],
+        exercises: [
+          {
+            name: 'Saudação ao Sol',
+            sets: '3',
+            duration: '5 min',
+            instructions: [
+              'Comece em pé com palmas juntas no peito',
+              'Inspire e estenda os braços para cima',
+              'Expire e dobre para a frente',
+              'Inspire e estenda uma perna para trás',
+              'Continue a sequência fluida'
+            ],
+            targetMuscles: ['Corpo inteiro', 'Flexibilidade'],
+            modifications: ['Versão mais lenta', 'Sem dobrar completamente']
+          },
+          {
+            name: 'Postura do Guerreiro',
+            sets: '2',
+            duration: '1 min cada lado',
+            instructions: [
+              'Passo largo com uma perna à frente',
+              'Dobre o joelho da frente a 90 graus',
+              'Estenda os braços para cima',
+              'Mantenha o olhar para a frente',
+              'Respire profundamente'
+            ],
+            targetMuscles: ['Pernas', 'Core', 'Equilíbrio'],
+            modifications: ['Mãos na cintura', 'Apoio na parede']
+          },
+          {
+            name: 'Postura da Árvore',
+            sets: '2',
+            duration: '30s cada lado',
+            instructions: [
+              'Equilibre-se numa perna',
+              'Coloque o pé da outra perna na coxa ou panturrilha',
+              'Junte as palmas no peito ou estenda para cima',
+              'Fixe o olhar num ponto',
+              'Respire calmamente'
+            ],
+            targetMuscles: ['Equilíbrio', 'Core', 'Pernas'],
+            modifications: ['Pé no tornozelo', 'Apoio na parede']
+          },
+          {
+            name: 'Prancha',
+            sets: '3',
+            duration: '30-60s',
+            rest: '30s',
+            instructions: [
+              'Posição de flexão com antebraços no chão',
+              'Corpo reto da cabeça aos pés',
+              'Contraia o core e glúteos',
+              'Respire normalmente',
+              'Mantenha a posição'
+            ],
+            targetMuscles: ['Core', 'Ombros', 'Glúteos'],
+            modifications: ['Prancha de joelhos', 'Prancha inclinada']
+          },
+          {
+            name: 'Relaxamento',
+            sets: '1',
+            duration: '5 min',
+            instructions: [
+              'Deite-se de costas confortavelmente',
+              'Feche os olhos e relaxe todos os músculos',
+              'Respire profunda e lentamente',
+              'Concentre-se na respiração',
+              'Permita que o corpo descanse completamente'
+            ],
+            targetMuscles: ['Relaxamento', 'Mente'],
+            modifications: ['Posição sentada', 'Com música relaxante']
+          }
+        ],
         equipment: ['Tapete de yoga'],
         benefits: ['Melhora flexibilidade', 'Reduz stress', 'Fortalece core'],
-        tips: ['Respire profundamente', 'Não force as posturas', 'Pratique regularmente']
+        tips: ['Respire profundamente', 'Não force as posturas', 'Pratique regularmente'],
+        warmup: ['Respiração consciente', 'Movimentos suaves do pescoço', 'Rotações dos ombros'],
+        cooldown: ['Postura da criança', 'Torção suave da coluna', 'Meditação de 2 min'],
+        progression: ['Mantenha posturas por mais tempo', 'Tente variações mais avançadas', 'Adicione novas posturas'],
+        safety: ['Nunca force uma postura', 'Escute seu corpo', 'Use props se necessário'],
+        totalSets: 1,
+        restBetweenSets: 'Transição suave'
       },
       {
         id: 'rua_1',
@@ -98,10 +274,53 @@ export default function WorkoutsScreen() {
         difficulty: 'Intermédio',
         location: 'Rua',
         calories: '300-400 kcal',
-        exercises: ['Aquecimento caminhada', 'Corrida 2 min', 'Caminhada 1 min', 'Repetir ciclo', 'Arrefecimento'],
+        exercises: [
+          {
+            name: 'Aquecimento',
+            duration: '5 min',
+            instructions: [
+              'Comece com caminhada lenta',
+              'Aumente gradualmente o ritmo',
+              'Faça rotações de braços e pernas',
+              'Prepare o corpo para o exercício'
+            ],
+            targetMuscles: ['Aquecimento geral']
+          },
+          {
+            name: 'Corrida Intervalada',
+            sets: '8',
+            duration: '2 min corrida + 1 min caminhada',
+            instructions: [
+              'Corra em ritmo moderado por 2 minutos',
+              'Caminhe em ritmo lento por 1 minuto',
+              'Repita o ciclo 8 vezes',
+              'Mantenha postura ereta',
+              'Respire de forma controlada'
+            ],
+            targetMuscles: ['Cardio', 'Pernas', 'Resistência'],
+            modifications: ['Reduza para 1 min corrida', 'Aumente tempo de caminhada']
+          },
+          {
+            name: 'Arrefecimento',
+            duration: '5 min',
+            instructions: [
+              'Reduza gradualmente o ritmo',
+              'Caminhe lentamente',
+              'Faça alongamentos das pernas',
+              'Respire profundamente'
+            ],
+            targetMuscles: ['Recuperação']
+          }
+        ],
         equipment: ['Ténis de corrida'],
         benefits: ['Melhora capacidade cardíaca', 'Queima gordura', 'Fortalece pernas'],
-        tips: ['Use ténis adequados', 'Mantenha postura ereta', 'Hidrate-se durante']
+        tips: ['Use ténis adequados', 'Mantenha postura ereta', 'Hidrate-se durante'],
+        warmup: ['Caminhada lenta 5 min', 'Rotações de tornozelos', 'Alongamento dinâmico das pernas'],
+        cooldown: ['Caminhada lenta', 'Alongamentos estáticos', 'Hidratação'],
+        progression: ['Aumente tempo de corrida', 'Reduza tempo de caminhada', 'Adicione mais intervalos'],
+        safety: ['Use calçado adequado', 'Evite superfícies irregulares', 'Pare se sentir dor'],
+        totalSets: 8,
+        restBetweenSets: '1 min caminhada'
       },
       {
         id: 'rua_2',
@@ -111,10 +330,69 @@ export default function WorkoutsScreen() {
         difficulty: 'Iniciante',
         location: 'Rua',
         calories: '200-300 kcal',
-        exercises: ['Caminhada rápida', 'Agachamentos no banco', 'Flexões na parede', 'Alongamentos', 'Respiração'],
+        exercises: [
+          {
+            name: 'Caminhada Rápida',
+            duration: '20 min',
+            instructions: [
+              'Mantenha ritmo acelerado mas confortável',
+              'Balance os braços naturalmente',
+              'Mantenha postura ereta',
+              'Respire de forma ritmada'
+            ],
+            targetMuscles: ['Cardio', 'Pernas'],
+            modifications: ['Reduza ritmo se necessário', 'Faça pausas curtas']
+          },
+          {
+            name: 'Agachamentos no Banco',
+            sets: '3',
+            reps: '10-15',
+            rest: '30s',
+            instructions: [
+              'Sente e levante do banco sem usar as mãos',
+              'Desça controladamente',
+              'Suba contraindo glúteos e pernas',
+              'Mantenha peito erguido'
+            ],
+            targetMuscles: ['Glúteos', 'Quadríceps'],
+            modifications: ['Use apoio das mãos', 'Banco mais alto']
+          },
+          {
+            name: 'Flexões na Parede',
+            sets: '3',
+            reps: '10-15',
+            rest: '30s',
+            instructions: [
+              'Fique a um braço de distância da parede',
+              'Coloque palmas na parede na altura dos ombros',
+              'Empurre e puxe o corpo da parede',
+              'Mantenha corpo reto'
+            ],
+            targetMuscles: ['Peitorais', 'Tríceps', 'Ombros'],
+            modifications: ['Mais próximo da parede', 'Mãos mais baixas']
+          },
+          {
+            name: 'Alongamentos',
+            duration: '10 min',
+            instructions: [
+              'Alongue panturrilhas, quadríceps e isquiotibiais',
+              'Mantenha cada posição por 30 segundos',
+              'Respire profundamente',
+              'Não force o alongamento'
+            ],
+            targetMuscles: ['Flexibilidade'],
+            modifications: ['Alongamentos mais suaves', 'Menos tempo']
+          }
+        ],
         equipment: [],
         benefits: ['Baixo impacto', 'Melhora humor', 'Fortalece músculos'],
-        tips: ['Mantenha ritmo constante', 'Use roupa confortável', 'Escolha percursos seguros']
+        tips: ['Mantenha ritmo constante', 'Use roupa confortável', 'Escolha percursos seguros'],
+        warmup: ['Caminhada lenta', 'Rotações de articulações', 'Movimentos suaves'],
+        cooldown: ['Caminhada lenta', 'Alongamentos completos', 'Respiração relaxante'],
+        progression: ['Aumente duração da caminhada', 'Adicione mais exercícios', 'Aumente repetições'],
+        safety: ['Mantenha-se hidratado', 'Use protetor solar', 'Evite horários de pico'],
+        totalSets: 1,
+        restBetweenSets: 'Transição suave'
       },
       {
         id: 'ginasio_1',
@@ -124,10 +402,106 @@ export default function WorkoutsScreen() {
         difficulty: 'Avançado',
         location: 'Ginásio',
         calories: '400-500 kcal',
-        exercises: ['Agachamento com barra', 'Supino', 'Remada', 'Desenvolvimento', 'Deadlift', 'Abdominais'],
+        exercises: [
+          {
+            name: 'Agachamento com Barra',
+            sets: '4',
+            reps: '8-12',
+            rest: '90s',
+            instructions: [
+              'Posicione a barra nos trapézios',
+              'Pés afastados na largura dos ombros',
+              'Desça até coxas paralelas ao chão',
+              'Suba empurrando pelos calcanhares',
+              'Mantenha core contraído'
+            ],
+            targetMuscles: ['Quadríceps', 'Glúteos', 'Core'],
+            modifications: ['Agachamento livre', 'Smith machine', 'Peso reduzido']
+          },
+          {
+            name: 'Supino',
+            sets: '4',
+            reps: '8-12',
+            rest: '90s',
+            instructions: [
+              'Deite no banco com pés firmes no chão',
+              'Pegada ligeiramente mais larga que ombros',
+              'Desça a barra controladamente ao peito',
+              'Empurre explosivamente para cima',
+              'Mantenha escápulas retraídas'
+            ],
+            targetMuscles: ['Peitorais', 'Tríceps', 'Ombros'],
+            modifications: ['Halteres', 'Máquina', 'Inclinado']
+          },
+          {
+            name: 'Remada Curvada',
+            sets: '4',
+            reps: '8-12',
+            rest: '90s',
+            instructions: [
+              'Curve o tronco mantendo costas retas',
+              'Puxe a barra em direção ao abdômen',
+              'Contraia as escápulas',
+              'Desça controladamente',
+              'Mantenha core estável'
+            ],
+            targetMuscles: ['Dorsais', 'Romboides', 'Bíceps'],
+            modifications: ['Halteres', 'Máquina', 'Cabo']
+          },
+          {
+            name: 'Desenvolvimento',
+            sets: '3',
+            reps: '10-15',
+            rest: '60s',
+            instructions: [
+              'Sente com costas apoiadas',
+              'Empurre halteres para cima',
+              'Desça controladamente',
+              'Não trave completamente os cotovelos',
+              'Mantenha core contraído'
+            ],
+            targetMuscles: ['Ombros', 'Tríceps'],
+            modifications: ['Máquina', 'Barra', 'Unilateral']
+          },
+          {
+            name: 'Deadlift',
+            sets: '3',
+            reps: '6-10',
+            rest: '2 min',
+            instructions: [
+              'Pés afastados na largura dos quadris',
+              'Pegada mista ou dupla',
+              'Levante mantendo barra próxima ao corpo',
+              'Estenda quadris e joelhos simultaneamente',
+              'Mantenha costas neutras'
+            ],
+            targetMuscles: ['Posterior', 'Glúteos', 'Trapézio'],
+            modifications: ['Trap bar', 'Sumo', 'Peso reduzido']
+          },
+          {
+            name: 'Abdominais',
+            sets: '3',
+            reps: '15-20',
+            rest: '45s',
+            instructions: [
+              'Varie entre crunch, prancha e bicicleta',
+              'Contraia o core em todos os movimentos',
+              'Respire corretamente',
+              'Foque na qualidade, não quantidade'
+            ],
+            targetMuscles: ['Core', 'Abdominais'],
+            modifications: ['Joelhos elevados', 'Apoio', 'Isométrico']
+          }
+        ],
         equipment: ['Barras', 'Halteres', 'Máquinas'],
         benefits: ['Aumenta massa muscular', 'Melhora metabolismo', 'Fortalece ossos'],
-        tips: ['Aqueça bem antes', 'Use técnica correta', 'Aumente peso gradualmente']
+        tips: ['Aqueça bem antes', 'Use técnica correta', 'Aumente peso gradualmente'],
+        warmup: ['10 min cardio leve', 'Aquecimento articular', 'Séries de aquecimento'],
+        cooldown: ['5 min cardio leve', 'Alongamentos estáticos', 'Relaxamento'],
+        progression: ['Aumente peso 2.5-5kg por semana', 'Adicione repetições', 'Melhore técnica'],
+        safety: ['Sempre use spotter', 'Técnica antes de peso', 'Descanse adequadamente'],
+        totalSets: 4,
+        restBetweenSets: '90-120s'
       },
       {
         id: 'ginasio_2',
@@ -137,10 +511,86 @@ export default function WorkoutsScreen() {
         difficulty: 'Intermédio',
         location: 'Ginásio',
         calories: '350-450 kcal',
-        exercises: ['Passadeira 10 min', 'Kettlebell swings', 'Box jumps', 'Battle ropes', 'Bicicleta 10 min'],
+        exercises: [
+          {
+            name: 'Passadeira',
+            duration: '10 min',
+            instructions: [
+              'Comece com ritmo moderado',
+              'Varie a velocidade a cada 2 minutos',
+              'Mantenha postura ereta',
+              'Use os braços naturalmente'
+            ],
+            targetMuscles: ['Cardio', 'Pernas'],
+            modifications: ['Inclinação variável', 'Intervalos']
+          },
+          {
+            name: 'Kettlebell Swings',
+            sets: '4',
+            reps: '15-20',
+            rest: '45s',
+            instructions: [
+              'Pés afastados, kettlebell entre as pernas',
+              'Movimento explosivo dos quadris',
+              'Kettlebell sobe até altura dos ombros',
+              'Controle a descida',
+              'Core sempre contraído'
+            ],
+            targetMuscles: ['Glúteos', 'Core', 'Ombros'],
+            modifications: ['Peso menor', 'Halteres', 'Amplitude reduzida']
+          },
+          {
+            name: 'Box Jumps',
+            sets: '3',
+            reps: '10-15',
+            rest: '60s',
+            instructions: [
+              'Salte explosivamente para cima da caixa',
+              'Aterrisse suavemente com ambos os pés',
+              'Estenda completamente quadris e joelhos',
+              'Desça controladamente',
+              'Reset entre repetições'
+            ],
+            targetMuscles: ['Pernas', 'Potência', 'Cardio'],
+            modifications: ['Caixa mais baixa', 'Step ups', 'Saltos no lugar']
+          },
+          {
+            name: 'Battle Ropes',
+            sets: '4',
+            duration: '30s',
+            rest: '30s',
+            instructions: [
+              'Segure uma corda em cada mão',
+              'Alterne movimentos ondulatórios',
+              'Mantenha core estável',
+              'Varie padrões de movimento',
+              'Intensidade alta'
+            ],
+            targetMuscles: ['Cardio', 'Core', 'Braços'],
+            modifications: ['Tempo reduzido', 'Movimentos mais lentos']
+          },
+          {
+            name: 'Bicicleta Estática',
+            duration: '10 min',
+            instructions: [
+              'Ajuste altura do selim',
+              'Varie resistência a cada 2 minutos',
+              'Mantenha ritmo constante',
+              'Postura ereta'
+            ],
+            targetMuscles: ['Cardio', 'Pernas'],
+            modifications: ['Resistência menor', 'Intervalos']
+          }
+        ],
         equipment: ['Passadeira', 'Kettlebells', 'Box', 'Cordas'],
         benefits: ['Melhora resistência', 'Queima calorias', 'Trabalha corpo todo'],
-        tips: ['Varie intensidade', 'Mantenha hidratação', 'Escute seu corpo']
+        tips: ['Varie intensidade', 'Mantenha hidratação', 'Escute seu corpo'],
+        warmup: ['5 min cardio leve', 'Mobilidade articular', 'Ativação muscular'],
+        cooldown: ['5 min cardio leve', 'Alongamentos dinâmicos', 'Respiração'],
+        progression: ['Aumente intensidade', 'Reduza descanso', 'Adicione exercícios'],
+        safety: ['Hidrate-se regularmente', 'Técnica correta', 'Não exagere na intensidade'],
+        totalSets: 1,
+        restBetweenSets: 'Transição rápida'
       }
     ];
 
@@ -189,7 +639,7 @@ export default function WorkoutsScreen() {
       const bmi = healthMetrics.bmi;
       
       const prompt = `
-Crie 6 recomendações de treino personalizadas em português baseadas no perfil:
+Crie 6 recomendações de treino personalizadas DETALHADAS em português baseadas no perfil:
 
 Perfil do Usuário:
 - Idade: ${age} anos
@@ -200,18 +650,30 @@ Perfil do Usuário:
 - TMB: ${healthMetrics.bmr} kcal/dia
 - TDEE: ${healthMetrics.tdee} kcal/dia
 
-Crie 2 treinos para cada local (Casa, Rua, Ginásio) com:
+Crie 2 treinos para cada local (Casa, Rua, Ginásio) com informações DETALHADAS:
+
 1. Título atrativo
 2. Descrição breve (1-2 frases)
 3. Duração (15-60 min)
 4. Dificuldade (Iniciante/Intermédio/Avançado)
 5. Calorias queimadas estimadas
-6. Lista de 4-6 exercícios específicos
-7. Equipamentos necessários (se aplicável)
-8. 2-3 benefícios principais
-9. 2-3 dicas importantes
+6. Lista de 4-6 exercícios DETALHADOS com:
+   - Nome do exercício
+   - Séries (se aplicável)
+   - Repetições ou duração
+   - Tempo de descanso
+   - Instruções passo-a-passo (4-6 passos)
+   - Músculos trabalhados
+   - Modificações para iniciantes/avançados
+7. Equipamentos necessários
+8. Benefícios principais
+9. Dicas importantes
+10. Aquecimento sugerido
+11. Arrefecimento sugerido
+12. Dicas de progressão
+13. Avisos de segurança
 
-Formato JSON:
+Formato JSON (IMPORTANTE - siga exatamente esta estrutura):
 {
   "workouts": [
     {
@@ -221,15 +683,42 @@ Formato JSON:
       "difficulty": "Intermédio",
       "location": "Casa",
       "calories": "250-300 kcal",
-      "exercises": ["Exercício 1", "Exercício 2", ...],
-      "equipment": ["Equipamento 1", ...] ou null,
+      "exercises": [
+        {
+          "name": "Nome do Exercício",
+          "sets": "3",
+          "reps": "12-15",
+          "duration": "30s",
+          "rest": "30s",
+          "instructions": [
+            "Passo 1 detalhado",
+            "Passo 2 detalhado",
+            "Passo 3 detalhado",
+            "Passo 4 detalhado"
+          ],
+          "targetMuscles": ["Músculo 1", "Músculo 2"],
+          "modifications": ["Modificação 1", "Modificação 2"]
+        }
+      ],
+      "equipment": ["Equipamento 1", ...] ou [],
       "benefits": ["Benefício 1", "Benefício 2", ...],
-      "tips": ["Dica 1", "Dica 2", ...]
+      "tips": ["Dica 1", "Dica 2", ...],
+      "warmup": ["Aquecimento 1", "Aquecimento 2", ...],
+      "cooldown": ["Arrefecimento 1", "Arrefecimento 2", ...],
+      "progression": ["Progressão 1", "Progressão 2", ...],
+      "safety": ["Segurança 1", "Segurança 2", ...],
+      "totalSets": 3,
+      "restBetweenSets": "60s"
     }
   ]
 }
 
-Personalize baseado no objetivo e condição física. Para perda de peso, foque em cardio e HIIT. Para ganho, foque em força. Para manutenção, combine ambos.`;
+Personalize baseado no objetivo e condição física:
+- Para perda de peso: foque em cardio, HIIT, exercícios compostos
+- Para ganho: foque em força, hipertrofia, exercícios com resistência
+- Para manutenção: combine cardio e força
+
+Seja muito detalhado nas instruções e certifique-se de que cada exercício tem informações completas.`;
 
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
@@ -393,9 +882,71 @@ Personalize baseado no objetivo e condição física. Para perda de peso, foque 
                 <Text style={[styles.sectionTitle, { color: colors.text }]}>Exercícios</Text>
               </View>
               {workout.exercises.map((exercise, index) => (
-                <Text key={`exercise-${workout.id}-${index}`} style={[styles.listItem, { color: colors.textSecondary }]}>
-                  • {exercise}
-                </Text>
+                <View key={`exercise-${workout.id}-${index}`} style={styles.exerciseItem}>
+                  <View style={styles.exerciseHeader}>
+                    <Text style={[styles.exerciseName, { color: colors.text }]}>
+                      {exercise.name}
+                    </Text>
+                    <View style={styles.exerciseMeta}>
+                      {exercise.sets && (
+                        <Text style={[styles.exerciseMetaText, { color: colors.textSecondary }]}>
+                          {exercise.sets} séries
+                        </Text>
+                      )}
+                      {exercise.reps && (
+                        <Text style={[styles.exerciseMetaText, { color: colors.textSecondary }]}>
+                          {exercise.reps} reps
+                        </Text>
+                      )}
+                      {exercise.duration && (
+                        <Text style={[styles.exerciseMetaText, { color: colors.textSecondary }]}>
+                          {exercise.duration}
+                        </Text>
+                      )}
+                      {exercise.rest && (
+                        <Text style={[styles.exerciseMetaText, { color: colors.textSecondary }]}>
+                          {exercise.rest} descanso
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                  
+                  {/* Instructions */}
+                  <View style={styles.instructionsContainer}>
+                    <Text style={[styles.instructionsTitle, { color: colors.text }]}>Instruções:</Text>
+                    {exercise.instructions.map((instruction, instrIndex) => (
+                      <Text key={`instruction-${index}-${instrIndex}`} style={[styles.instructionText, { color: colors.textSecondary }]}>
+                        {instrIndex + 1}. {instruction}
+                      </Text>
+                    ))}
+                  </View>
+                  
+                  {/* Target Muscles */}
+                  {exercise.targetMuscles && exercise.targetMuscles.length > 0 && (
+                    <View style={styles.targetMusclesContainer}>
+                      <Text style={[styles.targetMusclesTitle, { color: colors.text }]}>Músculos:</Text>
+                      <View style={styles.muscleTagsContainer}>
+                        {exercise.targetMuscles.map((muscle, muscleIndex) => (
+                          <View key={`muscle-${index}-${muscleIndex}`} style={[styles.muscleTag, { backgroundColor: colors.primary + '20' }]}>
+                            <Text style={[styles.muscleTagText, { color: colors.primary }]}>{muscle}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+                  
+                  {/* Modifications */}
+                  {exercise.modifications && exercise.modifications.length > 0 && (
+                    <View style={styles.modificationsContainer}>
+                      <Text style={[styles.modificationsTitle, { color: colors.text }]}>Modificações:</Text>
+                      {exercise.modifications.map((modification, modIndex) => (
+                        <Text key={`modification-${index}-${modIndex}`} style={[styles.modificationText, { color: colors.textSecondary }]}>
+                          • {modification}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
+                </View>
               ))}
             </View>
             
@@ -427,6 +978,21 @@ Personalize baseado no objetivo e condição física. Para perda de peso, foque 
               ))}
             </View>
             
+            {/* Warmup */}
+            {workout.warmup && workout.warmup.length > 0 && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Activity size={18} color={colors.warning} />
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Aquecimento</Text>
+                </View>
+                {workout.warmup.map((warmupItem, index) => (
+                  <Text key={`warmup-${workout.id}-${index}`} style={[styles.listItem, { color: colors.textSecondary }]}>
+                    • {warmupItem}
+                  </Text>
+                ))}
+              </View>
+            )}
+            
             {/* Tips */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
@@ -439,6 +1005,71 @@ Personalize baseado no objetivo e condição física. Para perda de peso, foque 
                 </Text>
               ))}
             </View>
+            
+            {/* Cooldown */}
+            {workout.cooldown && workout.cooldown.length > 0 && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Heart size={18} color={colors.success} />
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Arrefecimento</Text>
+                </View>
+                {workout.cooldown.map((cooldownItem, index) => (
+                  <Text key={`cooldown-${workout.id}-${index}`} style={[styles.listItem, { color: colors.textSecondary }]}>
+                    • {cooldownItem}
+                  </Text>
+                ))}
+              </View>
+            )}
+            
+            {/* Progression */}
+            {workout.progression && workout.progression.length > 0 && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <TrendingUp size={18} color={colors.success} />
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Progressão</Text>
+                </View>
+                {workout.progression.map((progressionItem, index) => (
+                  <Text key={`progression-${workout.id}-${index}`} style={[styles.listItem, { color: colors.textSecondary }]}>
+                    • {progressionItem}
+                  </Text>
+                ))}
+              </View>
+            )}
+            
+            {/* Safety */}
+            {workout.safety && workout.safety.length > 0 && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Heart size={18} color={colors.error || '#F44336'} />
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Segurança</Text>
+                </View>
+                {workout.safety.map((safetyItem, index) => (
+                  <Text key={`safety-${workout.id}-${index}`} style={[styles.listItem, { color: colors.textSecondary }]}>
+                    • {safetyItem}
+                  </Text>
+                ))}
+              </View>
+            )}
+            
+            {/* Workout Summary */}
+            {(workout.totalSets || workout.restBetweenSets) && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Clock size={18} color={colors.primary} />
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>Resumo do Treino</Text>
+                </View>
+                {workout.totalSets && (
+                  <Text style={[styles.listItem, { color: colors.textSecondary }]}>
+                    • Total de séries: {workout.totalSets}
+                  </Text>
+                )}
+                {workout.restBetweenSets && (
+                  <Text style={[styles.listItem, { color: colors.textSecondary }]}>
+                    • Descanso entre séries: {workout.restBetweenSets}
+                  </Text>
+                )}
+              </View>
+            )}
           </View>
         )}
       </BlurCard>
@@ -735,6 +1366,91 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  
+  // Exercise detail styles
+  exerciseItem: {
+    marginBottom: 20,
+    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  exerciseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  exerciseName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    flex: 1,
+    marginRight: 12,
+  },
+  exerciseMeta: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  exerciseMetaText: {
+    fontSize: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  instructionsContainer: {
+    marginBottom: 12,
+  },
+  instructionsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  instructionText: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 4,
+    paddingLeft: 8,
+  },
+  targetMusclesContainer: {
+    marginBottom: 12,
+  },
+  targetMusclesTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  muscleTagsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  muscleTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  muscleTagText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  modificationsContainer: {
+    marginTop: 8,
+  },
+  modificationsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  modificationText: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 2,
+    paddingLeft: 8,
   },
 
 });
