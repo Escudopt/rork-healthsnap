@@ -806,9 +806,18 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
 
   // Filter workouts by selected category
   const filteredWorkouts = useMemo(() => {
-    return workoutRecommendations.filter(workout => 
+    console.log('Filtering workouts:', {
+      total: workoutRecommendations.length,
+      selectedCategory,
+      workouts: workoutRecommendations.map(w => ({ id: w.id, location: w.location }))
+    });
+    
+    const filtered = workoutRecommendations.filter(workout => 
       workout.location.toLowerCase() === selectedCategory.toLowerCase()
     );
+    
+    console.log('Filtered workouts:', filtered.length);
+    return filtered;
   }, [workoutRecommendations, selectedCategory]);
 
   // Workout categories
@@ -818,21 +827,21 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
       name: 'Casa',
       icon: <Home size={24} color={colors.primary} />,
       color: colors.primary,
-      workouts: filteredWorkouts.filter(w => w.location === 'Casa')
+      workouts: workoutRecommendations.filter(w => w.location === 'Casa')
     },
     {
       id: 'rua',
       name: 'Rua',
       icon: <Activity size={24} color={colors.warning} />,
       color: colors.warning,
-      workouts: filteredWorkouts.filter(w => w.location === 'Rua')
+      workouts: workoutRecommendations.filter(w => w.location === 'Rua')
     },
     {
       id: 'ginasio',
       name: 'Ginásio',
       icon: <Building size={24} color={colors.success} />,
       color: colors.success,
-      workouts: filteredWorkouts.filter(w => w.location === 'Ginásio')
+      workouts: workoutRecommendations.filter(w => w.location === 'Ginásio')
     }
   ];
 
@@ -1201,7 +1210,7 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
         )}
 
         {/* Empty State */}
-        {!isLoading && filteredWorkouts.length === 0 && (
+        {!isLoading && workoutRecommendations.length === 0 && (
           <BlurCard style={styles.emptyState}>
             <Heart size={48} color={colors.textSecondary} />
             <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhum treino encontrado</Text>
