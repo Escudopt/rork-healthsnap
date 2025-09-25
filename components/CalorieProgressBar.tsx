@@ -306,7 +306,7 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    marginBottom: 16,
+    marginBottom: 0,
     borderRadius: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

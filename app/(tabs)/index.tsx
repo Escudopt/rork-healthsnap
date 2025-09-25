@@ -1256,6 +1256,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   mainContentContainer: {
     gap: 16,
+    paddingHorizontal: 0,
   },
   summaryCards: {
     flexDirection: 'row',
@@ -2293,6 +2294,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginHorizontal: 0,
+    paddingHorizontal: 0,
   },
   
   // Macro Chart Styles
