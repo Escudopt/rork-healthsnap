@@ -2230,7 +2230,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   macroWidgetsSection: {
     marginTop: 16,
     marginBottom: 8,
-    paddingHorizontal: 20,
+    paddingHorizontal: 40,
   },
   macroSectionTitle: {
     fontSize: 18,
