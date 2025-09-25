@@ -9,21 +9,30 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { Trash2, Clock, Utensils } from 'lucide-react-native';
+import { Trash2, Clock, Utensils, ChevronRight } from 'lucide-react-native';
 import { BlurCard } from './BlurCard';
 import { Meal } from '@/types/food';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme } from '@/providers/ThemeProvider';
+import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 interface MealCardProps {
   meal: Meal;
+  showDetailButton?: boolean;
 }
 
-export function MealCard({ meal }: MealCardProps) {
+export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
   const { deleteMeal } = useCalorieTracker();
   const { colors, isDark } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handleViewDetails = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push(`/meal-detail?id=${meal.id}`);
+  };
 
   const handleDelete = () => {
     if (Platform.OS !== 'web') {
@@ -123,11 +132,20 @@ export function MealCard({ meal }: MealCardProps) {
                 <Text style={[styles.calories, { color: colors.text }]}>{meal.totalCalories}</Text>
                 <Text style={[styles.caloriesUnit, { color: colors.textSecondary }]}>kcal</Text>
               </View>
-              <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-                <View style={styles.deleteButtonInner}>
-                  <Trash2 color={colors.error} size={18} strokeWidth={2} />
-                </View>
-              </TouchableOpacity>
+              <View style={styles.actionButtons}>
+                {showDetailButton && (
+                  <TouchableOpacity onPress={handleViewDetails} style={styles.detailButton}>
+                    <View style={styles.detailButtonInner}>
+                      <ChevronRight color={colors.primary} size={18} strokeWidth={2} />
+                    </View>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+                  <View style={styles.deleteButtonInner}>
+                    <Trash2 color={colors.error} size={18} strokeWidth={2} />
+                  </View>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -278,6 +296,23 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   deleteButton: {
     borderRadius: 12,
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  detailButton: {
+    borderRadius: 12,
+  },
+  detailButtonInner: {
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: colors.primary + '15',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   deleteButtonInner: {
     padding: 10,

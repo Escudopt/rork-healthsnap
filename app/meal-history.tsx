@@ -14,6 +14,7 @@ import { router, Stack } from 'expo-router';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { BlurCard } from '@/components/BlurCard';
 import { MealCard } from '@/components/MealCard';
+import { NutritionBreakdown } from '@/components/NutritionBreakdown';
 import { Meal } from '@/types/food';
 
 interface DayData {
@@ -193,10 +194,16 @@ export default function MealHistoryScreen() {
               </View>
             </BlurCard>
 
+            {/* Nutrition Breakdown */}
+            <NutritionBreakdown 
+              foods={selectedDayData.meals.flatMap(meal => meal.foods)}
+              title="Resumo Nutricional do Dia"
+            />
+
             <View style={styles.mealsSection}>
               <Text style={styles.sectionTitle}>Refeições do Dia</Text>
               {selectedDayData.meals.map((meal) => (
-                <MealCard key={meal.id} meal={meal} />
+                <MealCard key={meal.id} meal={meal} showDetailButton={true} />
               ))}
             </View>
           </ScrollView>
