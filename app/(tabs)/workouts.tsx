@@ -626,8 +626,16 @@ export default function WorkoutsScreen() {
 
   // Generate AI-powered workout recommendations based on user profile
   const generateWorkoutRecommendations = useCallback(async () => {
+    console.log('Generating workout recommendations...');
+    console.log('User profile:', userProfile);
+    console.log('Health metrics:', healthMetrics);
+    
+    // Always return default workouts as fallback, even without profile
+    const defaultWorkouts = getDefaultWorkouts();
+    
     if (!userProfile || !healthMetrics) {
-      return [];
+      console.log('No user profile or health metrics, returning default workouts');
+      return defaultWorkouts;
     }
 
     setIsLoading(true);
@@ -768,7 +776,8 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
     }
 
     // Fallback recommendations
-    return getDefaultWorkouts();
+    console.log('AI generation failed, returning default workouts');
+    return defaultWorkouts;
   }, [userProfile, healthMetrics, todayCalories, dailyGoal, getDefaultWorkouts]);
 
 
@@ -776,12 +785,22 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
   // Load workout recommendations on component mount
   useEffect(() => {
     const loadRecommendations = async () => {
-      const recommendations = await generateWorkoutRecommendations();
-      setWorkoutRecommendations(recommendations);
+      try {
+        console.log('Loading workout recommendations...');
+        const recommendations = await generateWorkoutRecommendations();
+        console.log('Loaded recommendations:', recommendations.length);
+        setWorkoutRecommendations(recommendations);
+      } catch (error) {
+        console.error('Error loading recommendations:', error);
+        // Fallback to default workouts
+        const defaultWorkouts = getDefaultWorkouts();
+        console.log('Using default workouts:', defaultWorkouts.length);
+        setWorkoutRecommendations(defaultWorkouts);
+      }
     };
     
     loadRecommendations();
-  }, [generateWorkoutRecommendations]);
+  }, [generateWorkoutRecommendations, getDefaultWorkouts]);
 
 
 
@@ -1162,12 +1181,22 @@ Seja muito detalhado nas instruções e certifique-se de que cada exercício tem
 
 
         {/* Workout Recommendations */}
-        {!isLoading && filteredWorkouts.length > 0 && (
+        {!isLoading && (
           <View style={styles.workoutsContainer}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
-              Recomendações para {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
+              Treinos para {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}
             </Text>
-            {filteredWorkouts.map(renderWorkoutCard)}
+            {filteredWorkouts.length > 0 ? (
+              filteredWorkouts.map(renderWorkoutCard)
+            ) : (
+              <BlurCard style={styles.emptyState}>
+                <Dumbbell size={48} color={colors.textSecondary} />
+                <Text style={[styles.emptyTitle, { color: colors.text }]}>Carregando treinos...</Text>
+                <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
+                  Preparando treinos personalizados para {selectedCategory}
+                </Text>
+              </BlurCard>
+            )}
           </View>
         )}
 
