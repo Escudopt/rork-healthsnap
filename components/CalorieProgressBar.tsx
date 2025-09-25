@@ -1,8 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Target, TrendingUp, Flame, Camera } from 'lucide-react-native';
-import { BlurCard } from './BlurCard';
+import { Camera } from 'lucide-react-native';
 import { useTheme } from '@/providers/ThemeProvider';
 import { Typography } from '@/constants/typography';
 
@@ -221,61 +220,50 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
           </Text>
         </View>
         
-        {/* Apple Health-style circular progress */}
+        {/* Horizontal progress bar */}
         <View style={styles.progressSection}>
-          <View style={styles.circularProgressContainer}>
-            <View style={[styles.circularProgress, { borderColor: colors.surfaceSecondary }]}>
-              {/* Background circle */}
-              <View style={[styles.circularProgressBackground, { borderColor: colors.surfaceSecondary }]} />
-              
-              {/* Progress circle - first half */}
+          <View style={styles.progressBarContainer}>
+            <View style={[styles.progressBarBackground, { backgroundColor }]}>
               <Animated.View 
                 style={[
-                  styles.circularProgressFill,
-                  styles.circularProgressLeft,
+                  styles.progressBar,
                   {
-                    borderTopColor: progressColor,
-                    borderRightColor: progressColor,
-                    transform: [{
-                      rotate: progressAnim.interpolate({
-                        inputRange: [0, 50, 100],
-                        outputRange: ['-90deg', '0deg', '0deg'],
-                        extrapolate: 'clamp',
-                      })
-                    }]
-                  }
-                ]}
-              />
-              
-              {/* Progress circle - second half */}
-              <Animated.View 
-                style={[
-                  styles.circularProgressFill,
-                  styles.circularProgressRight,
-                  {
-                    borderBottomColor: progressColor,
-                    borderRightColor: progressColor,
-                    opacity: progressAnim.interpolate({
-                      inputRange: [0, 50, 50.01, 100],
-                      outputRange: [0, 0, 1, 1],
+                    backgroundColor: progressColor,
+                    width: progressAnim.interpolate({
+                      inputRange: [0, 100],
+                      outputRange: ['0%', '100%'],
                       extrapolate: 'clamp',
-                    }),
-                    transform: [{
-                      rotate: progressAnim.interpolate({
-                        inputRange: [50, 100],
-                        outputRange: ['-90deg', '0deg'],
-                        extrapolate: 'clamp',
-                      })
-                    }]
+                    })
                   }
                 ]}
-              />
-              
-              <View style={styles.circularProgressCenter}>
-                <Text style={[styles.progressPercentage, { color: colors.text }]}>
-                  {Math.round(percentage)}%
-                </Text>
-              </View>
+              >
+                <Animated.View 
+                  style={[
+                    styles.progressBarShimmer,
+                    {
+                      opacity: shimmerAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.3, 0.8],
+                      }),
+                      transform: [{
+                        translateX: shimmerAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [-50, 50],
+                        })
+                      }]
+                    }
+                  ]}
+                />
+              </Animated.View>
+            </View>
+            <View style={styles.progressLabels}>
+              <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>0</Text>
+              <Text style={[styles.progressPercentage, { color: colors.text }]}>
+                {Math.round(percentage)}%
+              </Text>
+              <Text style={[styles.progressLabel, { color: colors.textSecondary }]}>
+                {dailyGoal.toLocaleString()}
+              </Text>
             </View>
           </View>
         </View>
@@ -305,14 +293,14 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: 12,
     marginBottom: 0,
-    borderRadius: 16,
+    borderRadius: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
     borderWidth: 0.5,
     borderColor: 'rgba(0, 0, 0, 0.04)',
   },
@@ -320,7 +308,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   titleContainer: {
     flex: 1,
@@ -440,7 +428,7 @@ const styles = StyleSheet.create({
 
   caloriesSection: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   caloriesContainer: {
     alignItems: 'center',
@@ -448,10 +436,10 @@ const styles = StyleSheet.create({
   },
   currentCalories: {
     ...Typography.largeNumber,
-    fontSize: 42,
-    fontWeight: '200' as const,
-    letterSpacing: -2.1,
-    marginBottom: 3,
+    fontSize: 32,
+    fontWeight: '300' as const,
+    letterSpacing: -1.6,
+    marginBottom: 2,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -493,86 +481,44 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   progressSection: {
-    alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
-  circularProgressContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  circularProgress: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  circularProgressBackground: {
-    position: 'absolute',
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 4,
-    borderColor: 'rgba(0, 0, 0, 0.08)',
-  },
-  circularProgressFill: {
-    position: 'absolute',
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 4,
-    borderColor: 'transparent',
-  },
-  circularProgressLeft: {
-    borderBottomColor: 'transparent',
-    borderLeftColor: 'transparent',
-    transform: [{ rotate: '-90deg' }],
-  },
-  circularProgressRight: {
-    borderTopColor: 'transparent',
-    borderLeftColor: 'transparent',
-    transform: [{ rotate: '-90deg' }],
-  },
-  circularProgressCenter: {
-    position: 'absolute',
-    justifyContent: 'center',
-    alignItems: 'center',
+  progressBarContainer: {
+    marginBottom: 8,
   },
   progressPercentage: {
     ...Typography.smallNumber,
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '600' as const,
-    letterSpacing: -0.4,
+    letterSpacing: -0.2,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
       },
     }),
   },
-  progressBarTrack: {
-    flex: 1,
-    position: 'relative',
-  },
   progressBarBackground: {
-    height: '100%',
-    borderRadius: 10,
+    height: 8,
+    borderRadius: 4,
     overflow: 'hidden',
+    marginBottom: 8,
   },
   progressBar: {
     height: '100%',
-    borderRadius: 12,
+    borderRadius: 4,
     position: 'relative',
     overflow: 'hidden',
+    minWidth: 2,
   },
   progressBarShimmer: {
     position: 'absolute',
-    top: 2,
+    top: 1,
     left: 0,
     right: 0,
-    height: 3,
+    height: 2,
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    borderRadius: 10,
+    borderRadius: 1,
+    width: 30,
   },
   progressGlow: {
     position: 'absolute',
@@ -597,27 +543,29 @@ const styles = StyleSheet.create({
   progressLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 8,
+    alignItems: 'center',
   },
   progressLabel: {
+    ...Typography.caption2,
+    fontSize: 11,
+    fontWeight: '500' as const,
     opacity: 0.6,
-    fontWeight: '500',
   },
   statsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
+    gap: 20,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
     ...Typography.smallNumber,
-    fontSize: 20,
-    fontWeight: '500' as const,
-    marginBottom: 2,
-    letterSpacing: -0.5,
+    fontSize: 16,
+    fontWeight: '600' as const,
+    marginBottom: 1,
+    letterSpacing: -0.3,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -626,15 +574,15 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     ...Typography.caption2Emphasized,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
     opacity: 0.6,
   },
   statDivider: {
     width: 1,
-    height: 20,
+    height: 16,
     borderRadius: 0.5,
     opacity: 0.15,
   },
