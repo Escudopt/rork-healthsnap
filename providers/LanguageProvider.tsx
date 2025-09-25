@@ -10,6 +10,7 @@ interface Translations {
   healthyFoods: string;
   nutritionTips: string;
   supplements: string;
+  workouts: string;
   profile: string;
   
   // Common
@@ -80,6 +81,7 @@ const translations: Record<Language, Translations> = {
     healthyFoods: 'Alimentos Saudáveis',
     nutritionTips: 'Dicas',
     supplements: 'Suplementos',
+    workouts: 'Treinos',
     profile: 'Perfil',
     
     // Common
@@ -250,6 +252,7 @@ Versão da aplicação: 1.0.0
     healthyFoods: 'Healthy Foods',
     nutritionTips: 'Nutrition Tips',
     supplements: 'Supplements',
+    workouts: 'Workouts',
     profile: 'Profile',
     
     // Common
