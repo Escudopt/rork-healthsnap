@@ -6,9 +6,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Platform,
-  Linking,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -16,7 +13,6 @@ import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { BlurCard } from '@/components/BlurCard';
 import {
   Home,
-  MapPin,
   Building,
   Dumbbell,
   Clock,
@@ -27,10 +23,6 @@ import {
   Zap,
   Heart,
   Flame,
-  Navigation,
-  Star,
-  Phone,
-  ExternalLink,
 } from 'lucide-react-native';
 
 
@@ -57,24 +49,7 @@ interface WorkoutCategory {
   workouts: WorkoutRecommendation[];
 }
 
-interface NearbyGym {
-  id: string;
-  name: string;
-  address: string;
-  distance: string;
-  rating: number;
-  priceLevel?: number;
-  isOpen?: boolean;
-  phoneNumber?: string;
-  website?: string;
-  latitude: number;
-  longitude: number;
-}
 
-interface UserLocation {
-  latitude: number;
-  longitude: number;
-}
 
 export default function WorkoutsScreen() {
   const { colors } = useTheme();
@@ -84,10 +59,7 @@ export default function WorkoutsScreen() {
   const [workoutRecommendations, setWorkoutRecommendations] = useState<WorkoutRecommendation[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
-  const [nearbyGyms, setNearbyGyms] = useState<NearbyGym[]>([]);
-  const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
-  const [isLoadingGyms, setIsLoadingGyms] = useState<boolean>(false);
-  const [locationPermissionGranted, setLocationPermissionGranted] = useState<boolean>(false);
+
 
   // Default workout recommendations as fallback
   const getDefaultWorkouts = useCallback((): WorkoutRecommendation[] => {
@@ -310,140 +282,7 @@ Personalize baseado no objetivo e condição física. Para perda de peso, foque 
     return getDefaultWorkouts();
   }, [userProfile, healthMetrics, todayCalories, dailyGoal, getDefaultWorkouts]);
 
-  // Get user location
-  const getUserLocation = useCallback(async () => {
-    if (Platform.OS === 'web') {
-      // Use web geolocation API
-      if ('geolocation' in navigator) {
-        try {
-          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              enableHighAccuracy: true,
-              timeout: 10000,
-              maximumAge: 300000, // 5 minutes
-            });
-          });
-          
-          const location = {
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-          };
-          
-          setUserLocation(location);
-          setLocationPermissionGranted(true);
-          return location;
-        } catch (error) {
-          console.error('Error getting web location:', error);
-          setLocationPermissionGranted(false);
-          return null;
-        }
-      } else {
-        console.log('Geolocation not supported');
-        setLocationPermissionGranted(false);
-        return null;
-      }
-    } else {
-      // For mobile, we'll use a mock location for now since expo-location isn't available
-      // In a real app, you would use expo-location here
-      const mockLocation = {
-        latitude: 38.7223, // Lisbon coordinates as default
-        longitude: -9.1393,
-      };
-      
-      setUserLocation(mockLocation);
-      setLocationPermissionGranted(true);
-      return mockLocation;
-    }
-  }, []);
 
-  // Find nearby gyms using mock data (in a real app, you'd use Google Places API)
-  const findNearbyGyms = useCallback(async (location: UserLocation) => {
-    setIsLoadingGyms(true);
-    
-    try {
-      // Mock gym data - in a real app, you'd call Google Places API
-      const mockGyms: NearbyGym[] = [
-        {
-          id: 'gym_1',
-          name: 'FitnesHut',
-          address: 'Av. da República, 1050-185 Lisboa',
-          distance: '0.8 km',
-          rating: 4.2,
-          priceLevel: 2,
-          isOpen: true,
-          phoneNumber: '+351 21 123 4567',
-          website: 'https://www.fitnesshut.pt',
-          latitude: location.latitude + 0.005,
-          longitude: location.longitude + 0.003,
-        },
-        {
-          id: 'gym_2',
-          name: 'Holmes Place',
-          address: 'Rua Castilho, 1250-066 Lisboa',
-          distance: '1.2 km',
-          rating: 4.5,
-          priceLevel: 3,
-          isOpen: true,
-          phoneNumber: '+351 21 987 6543',
-          website: 'https://www.holmesplace.com',
-          latitude: location.latitude - 0.008,
-          longitude: location.longitude + 0.007,
-        },
-        {
-          id: 'gym_3',
-          name: 'Solinca',
-          address: 'Centro Colombo, 1500-392 Lisboa',
-          distance: '2.1 km',
-          rating: 4.0,
-          priceLevel: 2,
-          isOpen: false,
-          phoneNumber: '+351 21 456 7890',
-          website: 'https://www.solinca.pt',
-          latitude: location.latitude + 0.012,
-          longitude: location.longitude - 0.005,
-        },
-        {
-          id: 'gym_4',
-          name: 'Virgin Active',
-          address: 'Av. de Roma, 1700-344 Lisboa',
-          distance: '1.7 km',
-          rating: 4.3,
-          priceLevel: 3,
-          isOpen: true,
-          phoneNumber: '+351 21 234 5678',
-          website: 'https://www.virginactive.pt',
-          latitude: location.latitude - 0.003,
-          longitude: location.longitude - 0.009,
-        },
-        {
-          id: 'gym_5',
-          name: 'Basic-Fit',
-          address: 'Rua Braamcamp, 1250-050 Lisboa',
-          distance: '0.5 km',
-          rating: 3.8,
-          priceLevel: 1,
-          isOpen: true,
-          phoneNumber: '+351 21 345 6789',
-          website: 'https://www.basic-fit.com',
-          latitude: location.latitude + 0.002,
-          longitude: location.longitude + 0.001,
-        },
-      ];
-      
-      // Sort by distance (in a real app, this would be calculated properly)
-      const sortedGyms = mockGyms.sort((a, b) => {
-        const distanceA = parseFloat(a.distance.replace(' km', ''));
-        const distanceB = parseFloat(b.distance.replace(' km', ''));
-        return distanceA - distanceB;
-      });
-      
-      setNearbyGyms(sortedGyms);
-    } catch (error) {
-      console.error('Error finding nearby gyms:', error);
-    } finally {
-      setIsLoadingGyms(false);
-    }
-  }, []);
 
   // Load workout recommendations on component mount
   useEffect(() => {
@@ -455,17 +294,7 @@ Personalize baseado no objetivo e condição física. Para perda de peso, foque 
     loadRecommendations();
   }, [generateWorkoutRecommendations]);
 
-  // Load user location and nearby gyms when component mounts
-  useEffect(() => {
-    const loadLocationAndGyms = async () => {
-      const location = await getUserLocation();
-      if (location) {
-        await findNearbyGyms(location);
-      }
-    };
-    
-    loadLocationAndGyms();
-  }, [getUserLocation, findNearbyGyms]);
+
 
   // Filter workouts by selected category
   const filteredWorkouts = useMemo(() => {
@@ -486,7 +315,7 @@ Personalize baseado no objetivo e condição física. Para perda de peso, foque 
     {
       id: 'rua',
       name: 'Rua',
-      icon: <MapPin size={24} color={colors.warning} />,
+      icon: <Activity size={24} color={colors.warning} />,
       color: colors.warning,
       workouts: filteredWorkouts.filter(w => w.location === 'Rua')
     },
@@ -508,156 +337,7 @@ Personalize baseado no objetivo e condição física. Para perda de peso, foque 
     }
   };
 
-  const openGymInMaps = (gym: NearbyGym) => {
-    const url = Platform.select({
-      ios: `maps:0,0?q=${gym.latitude},${gym.longitude}`,
-      android: `geo:0,0?q=${gym.latitude},${gym.longitude}(${encodeURIComponent(gym.name)})`,
-      web: `https://www.google.com/maps/search/?api=1&query=${gym.latitude},${gym.longitude}`,
-    });
-    
-    if (url) {
-      Linking.openURL(url).catch(() => {
-        // Fallback to Google Maps web
-        Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${gym.latitude},${gym.longitude}`);
-      });
-    }
-  };
 
-  const callGym = (phoneNumber: string) => {
-    const url = `tel:${phoneNumber}`;
-    Linking.openURL(url).catch(() => {
-      Alert.alert('Erro', 'Não foi possível fazer a chamada');
-    });
-  };
-
-  const openGymWebsite = (website: string) => {
-    Linking.openURL(website).catch(() => {
-      Alert.alert('Erro', 'Não foi possível abrir o website');
-    });
-  };
-
-  const renderStars = (rating: number) => {
-    const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 !== 0;
-    
-    for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <Star key={`star-${i}`} size={12} color="#FFD700" fill="#FFD700" />
-      );
-    }
-    
-    if (hasHalfStar) {
-      stars.push(
-        <Star key="half-star" size={12} color="#FFD700" fill="none" />
-      );
-    }
-    
-    const emptyStars = 5 - Math.ceil(rating);
-    for (let i = 0; i < emptyStars; i++) {
-      stars.push(
-        <Star key={`empty-${i}`} size={12} color="#E0E0E0" fill="none" />
-      );
-    }
-    
-    return stars;
-  };
-
-  const getPriceLevelText = (priceLevel?: number) => {
-    switch (priceLevel) {
-      case 1: return '€';
-      case 2: return '€€';
-      case 3: return '€€€';
-      case 4: return '€€€€';
-      default: return '';
-    }
-  };
-
-  const renderGymCard = (gym: NearbyGym) => {
-    return (
-      <BlurCard key={gym.id} style={styles.gymCard}>
-        <View style={styles.gymHeader}>
-          <View style={styles.gymTitleRow}>
-            <Building size={20} color={colors.success} />
-            <View style={styles.gymInfo}>
-              <Text style={[styles.gymName, { color: colors.text }]}>
-                {gym.name}
-              </Text>
-              <View style={styles.gymMeta}>
-                <View style={styles.ratingContainer}>
-                  {renderStars(gym.rating)}
-                  <Text style={[styles.ratingText, { color: colors.textSecondary }]}>
-                    {gym.rating}
-                  </Text>
-                </View>
-                {gym.priceLevel && (
-                  <Text style={[styles.priceLevel, { color: colors.success }]}>
-                    {getPriceLevelText(gym.priceLevel)}
-                  </Text>
-                )}
-              </View>
-            </View>
-          </View>
-          <View style={[
-            styles.statusBadge,
-            { backgroundColor: gym.isOpen ? '#4CAF50' : '#F44336' }
-          ]}>
-            <Text style={styles.statusText}>
-              {gym.isOpen ? 'Aberto' : 'Fechado'}
-            </Text>
-          </View>
-        </View>
-        
-        <View style={styles.gymDetails}>
-          <View style={styles.gymDetailRow}>
-            <MapPin size={16} color={colors.textSecondary} />
-            <Text style={[styles.gymAddress, { color: colors.textSecondary }]}>
-              {gym.address}
-            </Text>
-          </View>
-          <View style={styles.gymDetailRow}>
-            <Navigation size={16} color={colors.textSecondary} />
-            <Text style={[styles.gymDistance, { color: colors.textSecondary }]}>
-              {gym.distance}
-            </Text>
-          </View>
-        </View>
-        
-        <View style={styles.gymActions}>
-          <TouchableOpacity
-            style={[styles.gymActionButton, { backgroundColor: colors.primary + '20' }]}
-            onPress={() => openGymInMaps(gym)}
-            activeOpacity={0.7}
-          >
-            <Navigation size={16} color={colors.primary} />
-            <Text style={[styles.gymActionText, { color: colors.primary }]}>Direções</Text>
-          </TouchableOpacity>
-          
-          {gym.phoneNumber && (
-            <TouchableOpacity
-              style={[styles.gymActionButton, { backgroundColor: colors.success + '20' }]}
-              onPress={() => callGym(gym.phoneNumber!)}
-              activeOpacity={0.7}
-            >
-              <Phone size={16} color={colors.success} />
-              <Text style={[styles.gymActionText, { color: colors.success }]}>Ligar</Text>
-            </TouchableOpacity>
-          )}
-          
-          {gym.website && (
-            <TouchableOpacity
-              style={[styles.gymActionButton, { backgroundColor: colors.warning + '20' }]}
-              onPress={() => openGymWebsite(gym.website!)}
-              activeOpacity={0.7}
-            >
-              <ExternalLink size={16} color={colors.warning} />
-              <Text style={[styles.gymActionText, { color: colors.warning }]}>Website</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </BlurCard>
-    );
-  };
 
   const renderWorkoutCard = (workout: WorkoutRecommendation) => {
     const isExpanded = expandedWorkout === workout.id;
@@ -848,58 +528,7 @@ Personalize baseado no objetivo e condição física. Para perda de peso, foque 
           </View>
         )}
 
-        {/* Nearby Gyms (only show when Ginásio category is selected) */}
-        {selectedCategory === 'ginasio' && locationPermissionGranted && (
-          <View style={styles.gymsContainer}>
-            <View style={styles.gymsSectionHeader}>
-              <Building size={24} color={colors.success} />
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>
-                Ginásios Próximos
-              </Text>
-            </View>
-            
-            {isLoadingGyms ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={colors.success} />
-                <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
-                  Procurando ginásios próximos...
-                </Text>
-              </View>
-            ) : nearbyGyms.length > 0 ? (
-              <View style={styles.gymsGrid}>
-                {nearbyGyms.map(renderGymCard)}
-              </View>
-            ) : (
-              <BlurCard style={styles.emptyState}>
-                <Building size={48} color={colors.textSecondary} />
-                <Text style={[styles.emptyTitle, { color: colors.text }]}>Nenhum ginásio encontrado</Text>
-                <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
-                  Não foi possível encontrar ginásios próximos da sua localização.
-                </Text>
-              </BlurCard>
-            )}
-          </View>
-        )}
 
-        {/* Location Permission Request */}
-        {selectedCategory === 'ginasio' && !locationPermissionGranted && (
-          <BlurCard style={styles.locationPermissionCard}>
-            <MapPin size={48} color={colors.warning} />
-            <Text style={[styles.emptyTitle, { color: colors.text }]}>Localização Necessária</Text>
-            <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
-              Para mostrar ginásios próximos, precisamos aceder à sua localização.
-            </Text>
-            <TouchableOpacity
-              style={[styles.permissionButton, { backgroundColor: colors.primary }]}
-              onPress={getUserLocation}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.permissionButtonText, { color: 'white' }]}>
-                Permitir Localização
-              </Text>
-            </TouchableOpacity>
-          </BlurCard>
-        )}
 
         {/* Workout Recommendations */}
         {!isLoading && filteredWorkouts.length > 0 && (
@@ -1107,117 +736,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  gymsContainer: {
-    marginBottom: 24,
-  },
-  gymsSectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 8,
-  },
-  gymsGrid: {
-    gap: 16,
-  },
-  gymCard: {
-    padding: 16,
-  },
-  gymHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  gymTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    flex: 1,
-    gap: 8,
-  },
-  gymInfo: {
-    flex: 1,
-  },
-  gymName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  gymMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  ratingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  ratingText: {
-    fontSize: 12,
-    marginLeft: 4,
-  },
-  priceLevel: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: 'white',
-  },
-  gymDetails: {
-    marginBottom: 16,
-    gap: 8,
-  },
-  gymDetailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  gymAddress: {
-    fontSize: 14,
-    flex: 1,
-  },
-  gymDistance: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  gymActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  gymActionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    gap: 4,
-  },
-  gymActionText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  locationPermissionCard: {
-    alignItems: 'center',
-    padding: 32,
-    marginBottom: 24,
-  },
-  permissionButton: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginTop: 16,
-  },
-  permissionButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
+
 });
