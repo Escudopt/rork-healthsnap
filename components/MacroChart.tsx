@@ -79,27 +79,45 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
           return (
             <View key={macro.name} style={styles.barItem}>
               <View style={styles.barContainer}>
+                {/* Background bar */}
+                <View style={[styles.barBackground, { backgroundColor: colors.surfaceSecondary }]} />
+                {/* Animated bar with gradient effect */}
                 <View 
                   style={[
                     styles.bar,
                     {
                       height: barHeight,
                       backgroundColor: macro.color,
+                      shadowColor: macro.color,
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.3,
+                      shadowRadius: 4,
+                      elevation: 3,
                     }
                   ]}
-                />
+                >
+                  {/* Inner glow effect */}
+                  <View style={[
+                    styles.barGlow,
+                    { backgroundColor: macro.color + '40' }
+                  ]} />
+                </View>
               </View>
               <View style={styles.barLabel}>
-                <IconComponent color={macro.color} size={16} strokeWidth={2} />
+                <View style={[styles.barIconContainer, { backgroundColor: macro.color + '15' }]}>
+                  <IconComponent color={macro.color} size={14} strokeWidth={2.5} />
+                </View>
                 <Text style={[styles.barLabelText, { color: colors.text }]}>
                   {macro.name}
                 </Text>
                 <Text style={[styles.barValue, { color: colors.text }]}>
                   {macro.value.toFixed(1)}g
                 </Text>
-                <Text style={[styles.barPercentage, { color: colors.textSecondary }]}>
-                  {macro.percentage.toFixed(0)}%
-                </Text>
+                <View style={[styles.percentageBadge, { backgroundColor: macro.color }]}>
+                  <Text style={styles.percentageBadgeText}>
+                    {macro.percentage.toFixed(0)}%
+                  </Text>
+                </View>
               </View>
             </View>
           );
@@ -108,14 +126,14 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
     );
   };
 
-  const renderSimplePieChart = () => {
-    const size = 120;
-    const strokeWidth = 8;
+  const renderEnhancedPieChart = () => {
+    const size = 140;
+    const strokeWidth = 12;
     
     return (
-      <View style={styles.simplePieContainer}>
-        <View style={[styles.simplePieChart, { width: size, height: size }]}>
-          {/* Background circle */}
+      <View style={styles.enhancedPieContainer}>
+        <View style={[styles.enhancedPieChart, { width: size, height: size }]}>
+          {/* Background circle with subtle shadow */}
           <View 
             style={[
               styles.pieBackground,
@@ -123,20 +141,24 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
                 width: size,
                 height: size,
                 borderRadius: size / 2,
-                borderWidth: strokeWidth,
-                borderColor: colors.surfaceSecondary,
+                backgroundColor: colors.surfaceSecondary,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 2,
               }
             ]}
           />
           
-          {/* Simplified pie segments using border approach */}
+          {/* Enhanced pie segments with better visual representation */}
           {macros.map((macro, index) => {
             const cumulativePercentage = macros.slice(0, index).reduce((sum, m) => sum + m.percentage, 0);
             const rotation = (cumulativePercentage / 100) * 360;
-            const segmentSize = (macro.percentage / 100) * 360;
+            const segmentAngle = (macro.percentage / 100) * 360;
             
             // Only show segments that are large enough to be visible
-            if (macro.percentage < 5) return null;
+            if (macro.percentage < 3) return null;
             
             return (
               <View
@@ -149,43 +171,64 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
                     borderRadius: size / 2,
                     borderWidth: strokeWidth,
                     borderColor: 'transparent',
-                    borderTopColor: segmentSize >= 90 ? macro.color : 'transparent',
-                    borderRightColor: segmentSize >= 180 ? macro.color : (segmentSize >= 90 ? macro.color : 'transparent'),
-                    borderBottomColor: segmentSize >= 270 ? macro.color : (segmentSize >= 180 ? macro.color : 'transparent'),
-                    borderLeftColor: segmentSize >= 360 ? macro.color : (segmentSize >= 270 ? macro.color : 'transparent'),
                     position: 'absolute',
-                    transform: [
-                      { rotate: `${rotation}deg` }
-                    ],
+                    transform: [{ rotate: `${rotation}deg` }],
                   }
                 ]}
-              />
+              >
+                {/* Create segment using multiple borders for better control */}
+                <View style={[
+                  styles.pieSegmentInner,
+                  {
+                    width: size,
+                    height: size,
+                    borderRadius: size / 2,
+                    borderWidth: strokeWidth,
+                    borderColor: 'transparent',
+                    borderTopColor: segmentAngle >= 90 ? macro.color : 'transparent',
+                    borderRightColor: segmentAngle >= 180 ? macro.color : (segmentAngle >= 90 ? macro.color : 'transparent'),
+                    borderBottomColor: segmentAngle >= 270 ? macro.color : (segmentAngle >= 180 ? macro.color : 'transparent'),
+                    borderLeftColor: segmentAngle >= 360 ? macro.color : (segmentAngle >= 270 ? macro.color : 'transparent'),
+                  }
+                ]} />
+              </View>
             );
           })}
           
-          {/* Center content */}
-          <View style={styles.simplePieCenter}>
-            <Text style={[styles.simplePieCenterTitle, { color: colors.text }]}>Total</Text>
-            <Text style={[styles.simplePieCenterValue, { color: colors.text }]}>
-              {totalMacros.toFixed(0)}g
+          {/* Enhanced center content */}
+          <View style={[styles.enhancedPieCenter, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.pieCenterTitle, { color: colors.textSecondary }]}>Total</Text>
+            <Text style={[styles.pieCenterValue, { color: colors.text }]}>
+              {totalMacros.toFixed(0)}
             </Text>
+            <Text style={[styles.pieCenterUnit, { color: colors.textSecondary }]}>gramas</Text>
           </View>
         </View>
         
-        {/* Compact legend */}
-        <View style={styles.compactLegend}>
+        {/* Enhanced legend with better spacing */}
+        <View style={styles.enhancedLegend}>
           {macros.map((macro) => {
             const IconComponent = macro.icon;
             return (
-              <View key={macro.name} style={styles.compactLegendItem}>
-                <View style={[styles.legendDot, { backgroundColor: macro.color }]} />
-                <IconComponent color={macro.color} size={12} strokeWidth={2} />
-                <Text style={[styles.compactLegendText, { color: colors.text }]}>
-                  {macro.name.charAt(0)}
-                </Text>
-                <Text style={[styles.compactLegendValue, { color: colors.textSecondary }]}>
-                  {macro.percentage.toFixed(0)}%
-                </Text>
+              <View key={macro.name} style={[styles.legendItem, { backgroundColor: colors.surfaceSecondary }]}>
+                <View style={styles.legendItemContent}>
+                  <View style={[styles.legendIconContainer, { backgroundColor: macro.color }]}>
+                    <IconComponent color="white" size={12} strokeWidth={2.5} />
+                  </View>
+                  <View style={styles.legendTextContainer}>
+                    <Text style={[styles.legendItemName, { color: colors.text }]}>
+                      {macro.name}
+                    </Text>
+                    <View style={styles.legendItemStats}>
+                      <Text style={[styles.legendItemValue, { color: colors.text }]}>
+                        {macro.value.toFixed(1)}g
+                      </Text>
+                      <Text style={[styles.legendItemPercentage, { color: macro.color }]}>
+                        {macro.percentage.toFixed(0)}%
+                      </Text>
+                    </View>
+                  </View>
+                </View>
               </View>
             );
           })}
@@ -198,7 +241,7 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
     <BlurCard style={[styles.container, { backgroundColor: colors.surfaceElevated }]}>
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       
-      {chartType === 'bar' ? renderBarChart() : renderSimplePieChart()}
+      {chartType === 'bar' ? renderBarChart() : renderEnhancedPieChart()}
     </BlurCard>
   );
 }
@@ -224,53 +267,93 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   
-  // Bar Chart Styles
+  // Enhanced Bar Chart Styles
   barChartContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'flex-end',
-    height: 180,
-    paddingHorizontal: 8,
+    height: 200,
+    paddingHorizontal: 12,
+    paddingTop: 16,
   },
   barItem: {
     alignItems: 'center',
     flex: 1,
-    maxWidth: 80,
+    maxWidth: 90,
   },
   barContainer: {
     height: 120,
-    width: 24,
+    width: 28,
     justifyContent: 'flex-end',
-    marginBottom: 8,
+    marginBottom: 12,
+    position: 'relative',
+  },
+  barBackground: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    borderRadius: 14,
+    opacity: 0.2,
   },
   bar: {
     width: '100%',
-    borderRadius: 12,
-    minHeight: 4,
+    borderRadius: 14,
+    minHeight: 6,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  barGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '30%',
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
   },
   barLabel: {
     alignItems: 'center',
-    gap: 2,
+    gap: 4,
+  },
+  barIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 2,
   },
   barLabelText: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '600',
     textAlign: 'center',
+    letterSpacing: 0.2,
   },
   barValue: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 2,
   },
-  barPercentage: {
-    fontSize: 10,
+  percentageBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    marginTop: 4,
+  },
+  percentageBadgeText: {
+    color: 'white',
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   
-  // Simple Pie Chart Styles
-  simplePieContainer: {
+  // Enhanced Pie Chart Styles
+  enhancedPieContainer: {
     alignItems: 'center',
-    gap: 16,
+    gap: 20,
   },
-  simplePieChart: {
+  enhancedPieChart: {
     position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
@@ -279,42 +362,85 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   pieSegment: {
-    // Pie segment styles handled inline
+    position: 'absolute',
   },
-  simplePieCenter: {
+  pieSegmentInner: {
+    // Segment inner styles handled inline
+  },
+  enhancedPieCenter: {
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  simplePieCenterTitle: {
+  pieCenterTitle: {
+    fontSize: 10,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 2,
+  },
+  pieCenterValue: {
+    fontSize: 20,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  pieCenterUnit: {
+    fontSize: 9,
+    fontWeight: '500',
+    marginTop: 1,
+  },
+  enhancedLegend: {
+    width: '100%',
+    gap: 8,
+  },
+  legendItem: {
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  legendItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  legendIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  legendTextContainer: {
+    flex: 1,
+  },
+  legendItemName: {
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  legendItemStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  legendItemValue: {
     fontSize: 12,
     fontWeight: '500',
   },
-  simplePieCenterValue: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  compactLegend: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    maxWidth: 240,
-  },
-  compactLegendItem: {
-    alignItems: 'center',
-    gap: 2,
-    flex: 1,
-  },
-  legendDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  compactLegendText: {
-    fontSize: 10,
-    fontWeight: '500',
-  },
-  compactLegendValue: {
-    fontSize: 10,
+  legendItemPercentage: {
+    fontSize: 12,
+    fontWeight: '700',
   },
 });
