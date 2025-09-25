@@ -151,6 +151,7 @@ export const [ThemeProvider, useTheme] = createContextHook<ThemeContextType>(() 
   const [systemColorScheme, setSystemColorScheme] = useState<ColorScheme>(
     Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'
   );
+  const [hydrated, setHydrated] = useState(false);
 
   // Determine the actual color scheme based on theme mode
   const colorScheme: ColorScheme = themeMode === 'system' ? systemColorScheme : themeMode;
@@ -221,9 +222,19 @@ export const [ThemeProvider, useTheme] = createContextHook<ThemeContextType>(() 
     return () => subscription?.remove();
   }, []);
 
-  // Load theme mode on mount
+  // Load theme mode on mount with hydration handling
   useEffect(() => {
-    loadThemeMode();
+    const initializeTheme = async () => {
+      // For web, add a small delay to prevent hydration mismatch
+      if (Platform.OS === 'web') {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      
+      await loadThemeMode();
+      setHydrated(true);
+    };
+    
+    initializeTheme();
   }, [loadThemeMode]);
 
   // Update status bar style based on theme
@@ -232,15 +243,15 @@ export const [ThemeProvider, useTheme] = createContextHook<ThemeContextType>(() 
   }, [isDark]);
 
   return useMemo(() => ({
-    themeMode,
-    colorScheme,
-    colors,
+    themeMode: hydrated ? themeMode : 'system',
+    colorScheme: hydrated ? colorScheme : 'light',
+    colors: hydrated ? colors : lightTheme,
     typography: Typography,
-    isDark,
+    isDark: hydrated ? isDark : false,
     setThemeMode,
     toggleTheme,
     getTypographyStyle,
-  }), [themeMode, colorScheme, colors, isDark, setThemeMode, toggleTheme]);
+  }), [themeMode, colorScheme, colors, isDark, setThemeMode, toggleTheme, hydrated]);
 });
 
 // Helper hook for creating themed styles

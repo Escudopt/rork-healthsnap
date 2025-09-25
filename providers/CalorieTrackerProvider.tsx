@@ -4,6 +4,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Alert } from 'react-native';
 import { Meal, UserProfile, HealthMetrics } from '@/types/food';
 
+// Hydration state management
+let isHydrated = false;
+
 // Health sync types (mock implementation for demonstration)
 interface HealthRecord {
   value: number;
@@ -108,6 +111,7 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
   const [healthMetrics, setHealthMetrics] = useState<HealthMetrics | null>(null);
   const [isHealthSyncEnabled, setIsHealthSyncEnabled] = useState<boolean>(false);
   const [healthSyncStatus, setHealthSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [hydrated, setHydrated] = useState(false);
   
   console.log('🔢 Provider state - meals count:', meals.length, 'isInitialized:', isInitialized);
 
@@ -408,18 +412,27 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
     }
   }, []);
 
-  // Initialize app data
+  // Initialize app data with hydration handling
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        // For web, add a small delay to prevent hydration mismatch
+        if (Platform.OS === 'web' && !isHydrated) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          isHydrated = true;
+        }
+        
         await Promise.all([
           loadDailyGoal(),
           loadUserProfile(),
           loadMeals()
         ]);
+        
+        setHydrated(true);
       } catch (error) {
         console.error('❌ Error during app initialization:', error);
         setIsLoading(false);
+        setHydrated(true);
       }
     };
     
@@ -855,6 +868,11 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
   }, [emergencyCleanup]);
 
   const todayCalories = useMemo(() => {
+    // Prevent hydration mismatch by returning 0 until hydrated
+    if (!hydrated) {
+      return 0;
+    }
+    
     console.log('🧮 CALCULATING TODAY CALORIES - Starting from 0');
     console.log('Current meals array:', meals);
     console.log('Meals length:', meals?.length || 0);
@@ -896,10 +914,11 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
     const finalTotal = Math.max(0, Math.round(total));
     console.log(`📊 FINAL CALCULATION: ${todayMeals.length} meals = ${finalTotal} kcal`);
     return finalTotal;
-  }, [meals]);
+  }, [meals, hydrated]);
 
   const weeklyAverage = useMemo(() => {
-    if (!meals || meals.length === 0) return 0;
+    // Prevent hydration mismatch by returning 0 until hydrated
+    if (!hydrated || !meals || meals.length === 0) return 0;
     
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -920,7 +939,7 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
       return sum + calories;
     }, 0);
     return Math.round(totalCalories / 7);
-  }, [meals]);
+  }, [meals, hydrated]);
 
   // Auto-sync with health app when meals are added (if enabled)
   useEffect(() => {

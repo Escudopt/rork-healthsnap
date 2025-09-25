@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
 export type Language = 'pt' | 'en';
 
@@ -427,6 +428,7 @@ interface LanguageContextType {
 
 export const [LanguageProvider, useLanguage] = createContextHook<LanguageContextType>(() => {
   const [language, setLanguageState] = useState<Language>('pt');
+  const [hydrated, setHydrated] = useState(false);
 
   // Load language preference from AsyncStorage
   const loadLanguage = useCallback(async () => {
@@ -465,15 +467,25 @@ export const [LanguageProvider, useLanguage] = createContextHook<LanguageContext
     return translations[language][key] || key;
   }, [language]);
 
-  // Load language on mount
+  // Load language on mount with hydration handling
   useEffect(() => {
-    loadLanguage();
+    const initializeLanguage = async () => {
+      // For web, add a small delay to prevent hydration mismatch
+      if (Platform.OS === 'web') {
+        await new Promise(resolve => setTimeout(resolve, 25));
+      }
+      
+      await loadLanguage();
+      setHydrated(true);
+    };
+    
+    initializeLanguage();
   }, [loadLanguage]);
 
   return useMemo(() => ({
-    language,
-    translations: translations[language],
+    language: hydrated ? language : 'pt',
+    translations: translations[hydrated ? language : 'pt'],
     setLanguage,
     t,
-  }), [language, setLanguage, t]);
+  }), [language, setLanguage, t, hydrated]);
 });
