@@ -293,16 +293,16 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
 
 const styles = StyleSheet.create({
   container: {
-    padding: 12,
-    marginBottom: 0,
-    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
     borderWidth: 0.5,
-    borderColor: 'rgba(0, 0, 0, 0.04)',
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
   header: {
     flexDirection: 'row',
