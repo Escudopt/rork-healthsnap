@@ -53,6 +53,10 @@ export default function AnalysisScreen() {
 
       console.log(`Starting image analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
       
+      if (!imageBase64) {
+        throw new Error('Nenhuma imagem foi fornecida para análise');
+      }
+      
       const startTime = Date.now();
 
       const analysisSchema = z.object({
@@ -71,9 +75,11 @@ export default function AnalysisScreen() {
 
       // Add timeout to the request
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout: A análise demorou muito para responder')), 30000);
+        setTimeout(() => reject(new Error('Timeout: A análise demorou muito para responder')), 45000);
       });
 
+      console.log('Calling generateObject with image data...');
+      
       const analysisPromise = generateObject({
         messages: [
           {
@@ -83,12 +89,31 @@ export default function AnalysisScreen() {
                 type: 'text',
                 text: `Analise esta imagem de comida e identifique os alimentos com informações nutricionais em português.
                 
-                Regras:
-                - Identifique 1-3 alimentos principais
-                - Use porções comuns (ex: "1 prato", "100g", "1 xícara")
-                - Estime calorias com precisão
-                - Determine o tipo de refeição baseado nos alimentos
-                - Calcule proteínas, carboidratos e gorduras em gramas`
+                Regras importantes:
+                - Identifique 1-3 alimentos principais visíveis na imagem
+                - Use porções realistas (ex: "1 prato médio", "150g", "1 xícara")
+                - Estime calorias com base no tamanho das porções
+                - Determine o tipo de refeição baseado nos alimentos e horário
+                - Calcule proteínas, carboidratos e gorduras em gramas
+                - Se não conseguir identificar claramente, use confidence: 'low'
+                - Sempre retorne pelo menos 1 alimento, mesmo que seja genérico
+                
+                Exemplo de resposta:
+                {
+                  "foods": [
+                    {
+                      "name": "Arroz branco",
+                      "calories": 200,
+                      "protein": 4,
+                      "carbs": 45,
+                      "fat": 1,
+                      "portion": "1 xícara"
+                    }
+                  ],
+                  "totalCalories": 200,
+                  "mealType": "Almoço",
+                  "confidence": "medium"
+                }`
               },
               {
                 type: 'image',
@@ -100,19 +125,47 @@ export default function AnalysisScreen() {
         schema: analysisSchema
       });
 
+      console.log('Waiting for analysis result...');
       const result = await Promise.race([analysisPromise, timeoutPromise]) as any;
+      console.log('Analysis result received:', result);
       
       const processingTime = Date.now() - startTime;
       console.log(`Analysis completed in ${processingTime}ms`);
       
       // Validate the result structure
-      if (!result.foods || result.foods.length === 0) {
-        throw new Error('Nenhum alimento foi identificado na imagem');
+      if (!result || typeof result !== 'object') {
+        throw new Error('Resposta inválida da análise');
       }
+      
+      if (!result.foods || !Array.isArray(result.foods) || result.foods.length === 0) {
+        console.warn('No foods detected, creating fallback food item');
+        result.foods = [{
+          name: 'Alimento não identificado',
+          calories: 150,
+          protein: 5,
+          carbs: 20,
+          fat: 5,
+          portion: '1 porção'
+        }];
+        result.confidence = 'low';
+      }
+      
+      // Validate and fix each food item
+      result.foods = result.foods.map((food: any, index: number) => {
+        const validFood = {
+          name: food.name || `Alimento ${index + 1}`,
+          calories: Math.max(0, Number(food.calories) || 100),
+          protein: Math.max(0, Number(food.protein) || 0),
+          carbs: Math.max(0, Number(food.carbs) || 0),
+          fat: Math.max(0, Number(food.fat) || 0),
+          portion: food.portion || '1 porção'
+        };
+        return validFood;
+      });
       
       // Calculate the correct total calories from individual foods
       const calculatedTotal = result.foods.reduce((sum: number, food: any) => {
-        return sum + food.calories;
+        return sum + (Number(food.calories) || 0);
       }, 0);
       
       // Fix the totalCalories if it doesn't match the sum
@@ -121,8 +174,28 @@ export default function AnalysisScreen() {
         result.totalCalories = calculatedTotal;
       }
       
+      // Ensure we have a valid total
       if (result.totalCalories <= 0) {
-        throw new Error('Calorias não puderam ser calculadas');
+        result.totalCalories = calculatedTotal > 0 ? calculatedTotal : 150;
+      }
+      
+      // Ensure we have a valid meal type
+      if (!result.mealType || !['Café da Manhã', 'Almoço', 'Jantar', 'Lanche'].includes(result.mealType)) {
+        const currentHour = new Date().getHours();
+        if (currentHour < 10) {
+          result.mealType = 'Café da Manhã';
+        } else if (currentHour < 15) {
+          result.mealType = 'Almoço';
+        } else if (currentHour < 19) {
+          result.mealType = 'Lanche';
+        } else {
+          result.mealType = 'Jantar';
+        }
+      }
+      
+      // Ensure we have a valid confidence level
+      if (!result.confidence || !['high', 'medium', 'low'].includes(result.confidence)) {
+        result.confidence = 'medium';
       }
       
       console.log('Analysis result:', result);
@@ -161,7 +234,9 @@ export default function AnalysisScreen() {
         err.message.includes('Network request failed') ||
         err.message.includes('fetch') ||
         err.message.includes('Timeout') ||
-        err.message.includes('Failed to fetch')
+        err.message.includes('Failed to fetch') ||
+        err.message.includes('NetworkError') ||
+        err.message.includes('TypeError')
       );
       
       if (isNetworkError && retryCount < maxRetries) {
@@ -172,13 +247,69 @@ export default function AnalysisScreen() {
         return;
       }
       
+      // If all retries failed, create a fallback result
+      if (retryCount >= maxRetries) {
+        console.log('All retries failed, creating fallback analysis...');
+        const fallbackResult = {
+          foods: [{
+            name: 'Refeição (análise manual necessária)',
+            calories: 300,
+            protein: 15,
+            carbs: 35,
+            fat: 10,
+            portion: '1 porção'
+          }],
+          totalCalories: 300,
+          mealType: (() => {
+            const currentHour = new Date().getHours();
+            if (currentHour < 10) return 'Café da Manhã';
+            if (currentHour < 15) return 'Almoço';
+            if (currentHour < 19) return 'Lanche';
+            return 'Jantar';
+          })() as 'Café da Manhã' | 'Almoço' | 'Jantar' | 'Lanche',
+          confidence: 'low' as 'high' | 'medium' | 'low'
+        };
+        
+        setAnalysisResult(fallbackResult);
+        setEditedFoods(fallbackResult.foods);
+        setEditedMealType(fallbackResult.mealType);
+        
+        Animated.parallel([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            friction: 12,
+            tension: 80,
+            useNativeDriver: true,
+          }),
+        ]).start();
+        
+        setTimeout(() => {
+          setShowEditMenu(true);
+          Animated.timing(editMenuAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }).start();
+        }, 200);
+        
+        setIsAnalyzing(false);
+        return;
+      }
+      
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      let userFriendlyMessage = 'Não foi possível analisar a imagem';
+      let userFriendlyMessage = 'Não foi possível analisar a imagem automaticamente';
       
       if (isNetworkError) {
         userFriendlyMessage = 'Erro de conexão. Verifique sua internet e tente novamente';
       } else if (errorMessage.includes('Timeout')) {
         userFriendlyMessage = 'A análise demorou muito. Tente novamente';
+      } else if (errorMessage.includes('generateObject')) {
+        userFriendlyMessage = 'Serviço de análise temporariamente indisponível';
       }
       
       setError(userFriendlyMessage);
