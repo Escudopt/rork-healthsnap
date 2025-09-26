@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,24 +8,34 @@ import {
   Animated,
   Alert,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { Trash2, Clock, Utensils, ChevronRight } from 'lucide-react-native';
+import { Trash2, Clock, Utensils, ChevronRight, Brain, ThumbsUp, AlertTriangle } from 'lucide-react-native';
 import { BlurCard } from './BlurCard';
 import { Meal } from '@/types/food';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme } from '@/providers/ThemeProvider';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { generateText } from '@rork/toolkit-sdk';
 
 interface MealCardProps {
   meal: Meal;
   showDetailButton?: boolean;
 }
 
+interface MealAnalysis {
+  pros: string[];
+  cons: string[];
+}
+
 export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
   const { deleteMeal } = useCalorieTracker();
   const { colors, isDark } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const [analysis, setAnalysis] = useState<MealAnalysis | null>(null);
+  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
 
   const handleViewDetails = () => {
     if (Platform.OS !== 'web') {
@@ -85,6 +95,73 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
     });
   };
 
+  const generateMealAnalysis = useCallback(async () => {
+    if (analysis || isLoadingAnalysis) return;
+    
+    setIsLoadingAnalysis(true);
+    try {
+      const foodList = meal.foods.map(f => `${f.name} (${f.portion})`).join(', ');
+      const totalNutrition = {
+        calories: meal.totalCalories,
+        protein: meal.foods.reduce((sum, f) => sum + (f.protein || 0), 0),
+        carbs: meal.foods.reduce((sum, f) => sum + (f.carbs || 0), 0),
+        fat: meal.foods.reduce((sum, f) => sum + (f.fat || 0), 0),
+      };
+      
+      const prompt = `Analise esta refeição (${meal.mealType}):
+
+Alimentos: ${foodList}
+
+Informação nutricional:
+- Calorias: ${totalNutrition.calories} kcal
+- Proteínas: ${totalNutrition.protein.toFixed(1)}g
+- Carboidratos: ${totalNutrition.carbs.toFixed(1)}g
+- Gorduras: ${totalNutrition.fat.toFixed(1)}g
+
+Por favor, forneça uma análise concisa em português com:
+1. 2-3 pontos positivos (prós)
+2. 2-3 pontos de atenção ou melhorias (contras)
+
+Formato da resposta:
+PRÓS:
+- [ponto positivo 1]
+- [ponto positivo 2]
+- [ponto positivo 3]
+
+CONTRAS:
+- [ponto de atenção 1]
+- [ponto de atenção 2]
+- [ponto de atenção 3]`;
+      
+      const response = await generateText(prompt);
+      
+      // Parse the response
+      const prosMatch = response.match(/PRÓS:\s*([\s\S]*?)(?=CONTRAS:|$)/);
+      const consMatch = response.match(/CONTRAS:\s*([\s\S]*)/);
+      
+      const pros = prosMatch ? prosMatch[1].split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, '').trim()) : [];
+      const cons = consMatch ? consMatch[1].split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, '').trim()) : [];
+      
+      setAnalysis({ pros, cons });
+    } catch (error) {
+      console.error('Error generating meal analysis:', error);
+    } finally {
+      setIsLoadingAnalysis(false);
+    }
+  }, [meal.foods, meal.totalCalories, meal.mealType, analysis, isLoadingAnalysis]);
+
+  useEffect(() => {
+    // Generate analysis automatically when component mounts
+    generateMealAnalysis();
+  }, [generateMealAnalysis]);
+
+  const toggleAnalysis = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    setShowAnalysis(!showAnalysis);
+  };
+
   const styles = createStyles(colors, isDark);
 
   return (
@@ -133,6 +210,15 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
                 <Text style={[styles.caloriesUnit, { color: colors.textSecondary }]}>kcal</Text>
               </View>
               <View style={styles.actionButtons}>
+                <TouchableOpacity onPress={toggleAnalysis} style={styles.analysisButton}>
+                  <View style={styles.analysisButtonInner}>
+                    {isLoadingAnalysis ? (
+                      <ActivityIndicator size={16} color={colors.secondary} />
+                    ) : (
+                      <Brain color={colors.secondary} size={18} strokeWidth={2} />
+                    )}
+                  </View>
+                </TouchableOpacity>
                 {showDetailButton && (
                   <TouchableOpacity onPress={handleViewDetails} style={styles.detailButton}>
                     <View style={styles.detailButtonInner}>
@@ -149,6 +235,43 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
             </View>
           </View>
         </View>
+        
+        {/* AI Analysis Section */}
+        {showAnalysis && analysis && (
+          <View style={styles.analysisSection}>
+            <View style={styles.analysisDivider} />
+            <View style={styles.analysisContent}>
+              <View style={styles.analysisHeader}>
+                <Brain color={colors.secondary} size={16} strokeWidth={2} />
+                <Text style={[styles.analysisTitle, { color: colors.text }]}>Análise IA</Text>
+              </View>
+              
+              {analysis.pros.length > 0 && (
+                <View style={styles.analysisGroup}>
+                  <View style={styles.analysisGroupHeader}>
+                    <ThumbsUp color="#4CAF50" size={14} strokeWidth={2} />
+                    <Text style={[styles.analysisGroupTitle, { color: '#4CAF50' }]}>Pontos Positivos</Text>
+                  </View>
+                  {analysis.pros.map((pro, index) => (
+                    <Text key={`pro-${index}`} style={[styles.analysisPoint, { color: colors.textSecondary }]}>• {pro}</Text>
+                  ))}
+                </View>
+              )}
+              
+              {analysis.cons.length > 0 && (
+                <View style={styles.analysisGroup}>
+                  <View style={styles.analysisGroupHeader}>
+                    <AlertTriangle color="#FF9800" size={14} strokeWidth={2} />
+                    <Text style={[styles.analysisGroupTitle, { color: '#FF9800' }]}>Pontos de Atenção</Text>
+                  </View>
+                  {analysis.cons.map((con, index) => (
+                    <Text key={`con-${index}`} style={[styles.analysisPoint, { color: colors.textSecondary }]}>• {con}</Text>
+                  ))}
+                </View>
+              )}
+            </View>
+          </View>
+        )}
       </BlurCard>
     </Animated.View>
   );
@@ -323,5 +446,76 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 2,
+  },
+  analysisButton: {
+    borderRadius: 12,
+  },
+  analysisButtonInner: {
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: colors.secondary + '15',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  analysisSection: {
+    marginTop: 16,
+  },
+  analysisDivider: {
+    height: 1,
+    backgroundColor: colors.border + '30',
+    marginBottom: 16,
+  },
+  analysisContent: {
+    gap: 12,
+  },
+  analysisHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  analysisTitle: {
+    fontSize: 14,
+    fontWeight: '600' as const,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+    ...Platform.select({
+      ios: {
+        fontFamily: 'System',
+      },
+    }),
+  },
+  analysisGroup: {
+    gap: 6,
+  },
+  analysisGroupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  analysisGroupTitle: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.3,
+    ...Platform.select({
+      ios: {
+        fontFamily: 'System',
+      },
+    }),
+  },
+  analysisPoint: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginLeft: 8,
+    ...Platform.select({
+      ios: {
+        fontFamily: 'System',
+      },
+    }),
   },
 });
