@@ -195,7 +195,7 @@ export default function HomeScreen() {
                 console.log('Image captured, navigating immediately...');
                 // Navegar imediatamente sem delay
                 router.push({
-                  pathname: '/analysis',
+                  pathname: '/food-analysis',
                   params: { imageBase64: result.assets[0].base64 },
                 });
               }
@@ -226,7 +226,7 @@ export default function HomeScreen() {
                 console.log('Image selected, navigating immediately...');
                 // Navegar imediatamente sem delay
                 router.push({
-                  pathname: '/analysis',
+                  pathname: '/food-analysis',
                   params: { imageBase64: result.assets[0].base64 },
                 });
               }
