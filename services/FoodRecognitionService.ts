@@ -23,48 +23,118 @@ const FoodRecognitionSchema = z.object({
   notes: z.string().optional().describe('Observações adicionais sobre a análise')
 });
 
-// Nutrition database for common Brazilian foods
+// Nutrition database for common Brazilian foods (per 100g)
 const BRAZILIAN_FOOD_DATABASE: Record<string, { calories: number; protein: number; carbs: number; fat: number; fiber: number; sodium: number }> = {
   // Grains and cereals
   'arroz branco': { calories: 130, protein: 2.7, carbs: 28, fat: 0.3, fiber: 0.4, sodium: 1 },
+  'arroz branco cozido': { calories: 130, protein: 2.7, carbs: 28, fat: 0.3, fiber: 0.4, sodium: 1 },
   'arroz integral': { calories: 111, protein: 2.6, carbs: 22, fat: 0.9, fiber: 1.8, sodium: 5 },
+  'arroz integral cozido': { calories: 111, protein: 2.6, carbs: 22, fat: 0.9, fiber: 1.8, sodium: 5 },
   'feijão preto': { calories: 77, protein: 4.5, carbs: 14, fat: 0.5, fiber: 4.8, sodium: 2 },
   'feijão carioca': { calories: 76, protein: 4.8, carbs: 13.6, fat: 0.5, fiber: 8.4, sodium: 2 },
+  'feijão carioca cozido': { calories: 76, protein: 4.8, carbs: 13.6, fat: 0.5, fiber: 8.4, sodium: 2 },
   'macarrão': { calories: 131, protein: 5, carbs: 25, fat: 1.1, fiber: 1.8, sodium: 6 },
+  'macarrão cozido': { calories: 131, protein: 5, carbs: 25, fat: 1.1, fiber: 1.8, sodium: 6 },
   'pão francês': { calories: 300, protein: 9, carbs: 58, fat: 3.1, fiber: 2.3, sodium: 584 },
   'pão integral': { calories: 247, protein: 13, carbs: 41, fat: 4.2, fiber: 7, sodium: 489 },
+  'tapioca': { calories: 358, protein: 1.2, carbs: 88, fat: 0.3, fiber: 1.4, sodium: 1 },
+  'cuscuz': { calories: 112, protein: 3.7, carbs: 23, fat: 0.2, fiber: 2.2, sodium: 5 },
+  'polenta': { calories: 85, protein: 1.9, carbs: 18, fat: 0.6, fiber: 1.2, sodium: 1 },
   
   // Proteins
   'frango grelhado': { calories: 165, protein: 31, carbs: 0, fat: 3.6, fiber: 0, sodium: 74 },
+  'frango grelhado sem pele': { calories: 165, protein: 31, carbs: 0, fat: 3.6, fiber: 0, sodium: 74 },
   'frango frito': { calories: 246, protein: 19, carbs: 8, fat: 15, fiber: 0.4, sodium: 435 },
+  'frango assado': { calories: 190, protein: 29, carbs: 0, fat: 7.4, fiber: 0, sodium: 82 },
+  'peito de frango': { calories: 165, protein: 31, carbs: 0, fat: 3.6, fiber: 0, sodium: 74 },
   'carne bovina': { calories: 250, protein: 26, carbs: 0, fat: 15, fiber: 0, sodium: 72 },
+  'carne bovina grelhada': { calories: 250, protein: 26, carbs: 0, fat: 15, fiber: 0, sodium: 72 },
+  'picanha': { calories: 292, protein: 20, carbs: 0, fat: 23, fiber: 0, sodium: 55 },
+  'alcatra': { calories: 163, protein: 23, carbs: 0, fat: 7.2, fiber: 0, sodium: 55 },
   'peixe grelhado': { calories: 206, protein: 22, carbs: 0, fat: 12, fiber: 0, sodium: 59 },
+  'salmão': { calories: 208, protein: 20, carbs: 0, fat: 13, fiber: 0, sodium: 59 },
+  'tilápia': { calories: 96, protein: 20, carbs: 0, fat: 1.7, fiber: 0, sodium: 52 },
   'ovo frito': { calories: 196, protein: 13.6, carbs: 0.8, fat: 15, fiber: 0, sodium: 207 },
   'ovo cozido': { calories: 155, protein: 13, carbs: 1.1, fat: 11, fiber: 0, sodium: 124 },
+  'ovo mexido': { calories: 154, protein: 11, carbs: 1.6, fat: 11, fiber: 0, sodium: 124 },
+  'linguiça': { calories: 296, protein: 17, carbs: 2.8, fat: 24, fiber: 0, sodium: 1165 },
+  'bacon': { calories: 541, protein: 37, carbs: 1.4, fat: 42, fiber: 0, sodium: 1717 },
+  'presunto': { calories: 145, protein: 21, carbs: 1.2, fat: 5.5, fiber: 0, sodium: 1203 },
   
   // Vegetables
   'alface': { calories: 15, protein: 1.4, carbs: 2.9, fat: 0.2, fiber: 1.3, sodium: 28 },
+  'alface americana': { calories: 15, protein: 1.4, carbs: 2.9, fat: 0.2, fiber: 1.3, sodium: 28 },
+  'rúcula': { calories: 25, protein: 2.6, carbs: 3.7, fat: 0.7, fiber: 1.6, sodium: 27 },
   'tomate': { calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2, fiber: 1.2, sodium: 5 },
+  'tomate cereja': { calories: 18, protein: 0.9, carbs: 3.9, fat: 0.2, fiber: 1.2, sodium: 5 },
   'cenoura': { calories: 41, protein: 0.9, carbs: 9.6, fat: 0.2, fiber: 2.8, sodium: 69 },
+  'cenoura cozida': { calories: 35, protein: 0.8, carbs: 8.2, fat: 0.2, fiber: 2.8, sodium: 58 },
   'brócolis': { calories: 34, protein: 2.8, carbs: 7, fat: 0.4, fiber: 2.6, sodium: 33 },
+  'brócolis cozido': { calories: 34, protein: 2.8, carbs: 7, fat: 0.4, fiber: 2.6, sodium: 33 },
+  'couve-flor': { calories: 25, protein: 1.9, carbs: 5, fat: 0.3, fiber: 2, sodium: 30 },
   'batata': { calories: 77, protein: 2, carbs: 17, fat: 0.1, fiber: 2.2, sodium: 6 },
+  'batata cozida': { calories: 77, protein: 2, carbs: 17, fat: 0.1, fiber: 2.2, sodium: 6 },
+  'batata frita': { calories: 365, protein: 4, carbs: 63, fat: 17, fiber: 3.8, sodium: 246 },
   'batata doce': { calories: 86, protein: 1.6, carbs: 20, fat: 0.1, fiber: 3, sodium: 54 },
+  'batata doce cozida': { calories: 86, protein: 1.6, carbs: 20, fat: 0.1, fiber: 3, sodium: 54 },
+  'mandioca': { calories: 160, protein: 1.4, carbs: 38, fat: 0.3, fiber: 1.8, sodium: 14 },
+  'mandioca cozida': { calories: 125, protein: 1.1, carbs: 30, fat: 0.2, fiber: 1.4, sodium: 11 },
+  'abobrinha': { calories: 17, protein: 1.2, carbs: 3.1, fat: 0.3, fiber: 1, sodium: 8 },
+  'berinjela': { calories: 25, protein: 1, carbs: 6, fat: 0.2, fiber: 3, sodium: 2 },
+  'pimentão': { calories: 31, protein: 1, carbs: 7.3, fat: 0.3, fiber: 2.5, sodium: 4 },
+  'cebola': { calories: 40, protein: 1.1, carbs: 9.3, fat: 0.1, fiber: 1.7, sodium: 4 },
+  'alho': { calories: 149, protein: 6.4, carbs: 33, fat: 0.5, fiber: 2.1, sodium: 17 },
   
   // Fruits
   'banana': { calories: 89, protein: 1.1, carbs: 23, fat: 0.3, fiber: 2.6, sodium: 1 },
+  'banana nanica': { calories: 89, protein: 1.1, carbs: 23, fat: 0.3, fiber: 2.6, sodium: 1 },
+  'banana prata': { calories: 98, protein: 1.3, carbs: 26, fat: 0.1, fiber: 2, sodium: 1 },
   'maçã': { calories: 52, protein: 0.3, carbs: 14, fat: 0.2, fiber: 2.4, sodium: 1 },
   'laranja': { calories: 47, protein: 0.9, carbs: 12, fat: 0.1, fiber: 2.4, sodium: 0 },
   'mamão': { calories: 43, protein: 0.5, carbs: 11, fat: 0.3, fiber: 1.7, sodium: 8 },
+  'abacaxi': { calories: 50, protein: 0.5, carbs: 13, fat: 0.1, fiber: 1.4, sodium: 1 },
+  'manga': { calories: 60, protein: 0.8, carbs: 15, fat: 0.4, fiber: 1.6, sodium: 1 },
+  'uva': { calories: 69, protein: 0.7, carbs: 18, fat: 0.2, fiber: 0.9, sodium: 2 },
+  'morango': { calories: 32, protein: 0.7, carbs: 7.7, fat: 0.3, fiber: 2, sodium: 1 },
+  'melancia': { calories: 30, protein: 0.6, carbs: 8, fat: 0.2, fiber: 0.4, sodium: 1 },
+  'melão': { calories: 34, protein: 0.8, carbs: 8.6, fat: 0.2, fiber: 0.9, sodium: 12 },
+  'abacate': { calories: 160, protein: 2, carbs: 8.5, fat: 15, fiber: 6.7, sodium: 7 },
   
   // Dairy
   'leite integral': { calories: 61, protein: 3.2, carbs: 4.6, fat: 3.2, fiber: 0, sodium: 44 },
+  'leite desnatado': { calories: 35, protein: 3.4, carbs: 4.9, fat: 0.2, fiber: 0, sodium: 44 },
   'queijo mussarela': { calories: 280, protein: 25, carbs: 2.2, fat: 19, fiber: 0, sodium: 627 },
+  'queijo prato': { calories: 360, protein: 26, carbs: 0, fat: 28, fiber: 0, sodium: 560 },
+  'queijo minas': { calories: 264, protein: 17.4, carbs: 3, fat: 20, fiber: 0, sodium: 346 },
+  'requeijão': { calories: 264, protein: 11, carbs: 3, fat: 24, fiber: 0, sodium: 380 },
   'iogurte natural': { calories: 61, protein: 3.5, carbs: 4.7, fat: 3.3, fiber: 0, sodium: 46 },
+  'iogurte grego': { calories: 59, protein: 10, carbs: 3.6, fat: 0.4, fiber: 0, sodium: 36 },
+  'manteiga': { calories: 717, protein: 0.9, carbs: 0.1, fat: 81, fiber: 0, sodium: 11 },
+  'margarina': { calories: 596, protein: 0.2, carbs: 1.3, fat: 66, fiber: 0, sodium: 943 },
   
   // Snacks and others
   'biscoito': { calories: 435, protein: 6.5, carbs: 75, fat: 12, fiber: 2.5, sodium: 328 },
+  'bolacha maria': { calories: 443, protein: 7.5, carbs: 78, fat: 11, fiber: 2.6, sodium: 539 },
   'chocolate': { calories: 546, protein: 4.9, carbs: 61, fat: 31, fiber: 7, sodium: 24 },
-  'açúcar': { calories: 387, protein: 0, carbs: 100, fat: 0, fiber: 0, sodium: 1 }
+  'chocolate ao leite': { calories: 534, protein: 7.6, carbs: 57, fat: 30, fiber: 3.4, sodium: 79 },
+  'açúcar': { calories: 387, protein: 0, carbs: 100, fat: 0, fiber: 0, sodium: 1 },
+  'mel': { calories: 304, protein: 0.3, carbs: 82, fat: 0, fiber: 0.2, sodium: 4 },
+  'azeite': { calories: 884, protein: 0, carbs: 0, fat: 100, fiber: 0, sodium: 2 },
+  'óleo de soja': { calories: 884, protein: 0, carbs: 0, fat: 100, fiber: 0, sodium: 0 },
+  'castanha do pará': { calories: 656, protein: 14, carbs: 12, fat: 67, fiber: 7.5, sodium: 3 },
+  'amendoim': { calories: 567, protein: 26, carbs: 16, fat: 49, fiber: 8.5, sodium: 18 },
+  'granola': { calories: 471, protein: 13, carbs: 64, fat: 20, fiber: 9.1, sodium: 21 },
+  'aveia': { calories: 394, protein: 17, carbs: 66, fat: 6.9, fiber: 10, sodium: 2 },
+  
+  // Brazilian specialties
+  'feijoada': { calories: 149, protein: 8.9, carbs: 14, fat: 6.4, fiber: 5.4, sodium: 463 },
+  'farofa': { calories: 365, protein: 3.8, carbs: 57, fat: 13, fiber: 6.4, sodium: 397 },
+  'açaí': { calories: 58, protein: 0.8, carbs: 6.2, fat: 3.9, fiber: 2.6, sodium: 7 },
+  'guaraná': { calories: 42, protein: 0, carbs: 11, fat: 0, fiber: 0, sodium: 7 },
+  'coxinha': { calories: 186, protein: 8.2, carbs: 18, fat: 9.1, fiber: 1.1, sodium: 267 },
+  'pastel': { calories: 235, protein: 6.8, carbs: 23, fat: 13, fiber: 1.4, sodium: 312 },
+  'brigadeiro': { calories: 395, protein: 4.2, carbs: 70, fat: 12, fiber: 2.8, sodium: 52 },
+  'beijinho': { calories: 389, protein: 3.8, carbs: 72, fat: 11, fiber: 1.2, sodium: 48 }
 };
 
 // Enhanced food recognition service
@@ -89,8 +159,14 @@ export class FoodRecognitionService {
       throw new Error('Imagem inválida');
     }
     
+    // Clean base64 string (remove data URL prefix if present)
+    let cleanBase64 = imageBase64.trim();
+    if (cleanBase64.startsWith('data:image/')) {
+      cleanBase64 = cleanBase64.split(',')[1] || cleanBase64;
+    }
+    
     // Validate base64 format
-    if (!imageBase64.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
+    if (!cleanBase64.match(/^[A-Za-z0-9+/]*={0,2}$/)) {
       console.error('❌ Invalid base64 format');
       throw new Error('Formato de imagem inválido');
     }
@@ -100,7 +176,7 @@ export class FoodRecognitionService {
       
       // Step 1: AI-powered food identification with enhanced prompts
       console.log('🤖 Step 1: Starting AI identification...');
-      const aiResult = await this.identifyFoodsWithAI(imageBase64);
+      const aiResult = await this.identifyFoodsWithAI(cleanBase64);
       console.log('✅ Step 1 completed:', aiResult);
       
       // Step 2: Enhance nutrition data with database lookup
@@ -162,36 +238,43 @@ export class FoodRecognitionService {
   // AI-powered food identification with enhanced prompts
   private async identifyFoodsWithAI(imageBase64: string): Promise<any> {
     const prompt = `
-Analise esta imagem de comida e identifique TODOS os alimentos visíveis com máxima precisão.
+Você é um especialista em nutrição e análise de alimentos. Analise esta imagem de comida e identifique TODOS os alimentos visíveis com máxima precisão.
 
-Instruções específicas:
+🎯 INSTRUÇÕES ESPECÍFICAS:
 1. IDENTIFIQUE CADA ALIMENTO SEPARADAMENTE - não agrupe itens diferentes
-2. ESTIME O PESO de cada alimento em gramas baseado no tamanho visual
-3. CALCULE as informações nutricionais precisas para cada porção
-4. DÊ UM NOME ESPECÍFICO ao prato principal se houver múltiplos alimentos
-5. INCLUA fibras, açúcar e sódio quando relevante
+2. ESTIME O PESO de cada alimento em gramas baseado no tamanho visual e referências do prato
+3. CALCULE as informações nutricionais precisas para cada porção identificada
+4. DÊ UM NOME ESPECÍFICO e descritivo ao prato principal
+5. INCLUA todos os macronutrientes (proteína, carboidratos, gordura) e micronutrientes quando relevante
 6. SEJA PRECISO com as porções - use referências visuais como pratos, talheres, mãos
 
-Exemplos de boas identificações:
-- "Arroz branco cozido" (não apenas "arroz")
-- "Frango grelhado sem pele" (não apenas "frango")
-- "Feijão carioca cozido" (não apenas "feijão")
-- "Alface americana" (não apenas "salada")
-
-Para PESO/PORÇÃO, use estas referências:
-- 1 xícara de arroz = ~150g
-- 1 filé de frango médio = ~120g
+📏 REFERÊNCIAS DE PESO/PORÇÃO:
+- 1 xícara de arroz cozido = ~150g
+- 1 filé de frango médio = ~120g  
 - 1 concha de feijão = ~80g
 - 1 fatia de pão = ~50g
 - 1 ovo médio = ~50g
 - 1 banana média = ~120g
+- 1 colher de sopa de óleo = ~15g
+- 1 fatia de queijo = ~30g
 
-Seja específico sobre:
-- Método de preparo (grelhado, frito, cozido, assado)
+🔍 SEJA ESPECÍFICO SOBRE:
+- Método de preparo (grelhado, frito, cozido, assado, refogado)
 - Tipo específico (integral, branco, carioca, etc.)
 - Estado (cru, cozido, maduro, etc.)
+- Temperos e molhos visíveis
 
-RETORNE dados nutricionais precisos baseados em tabelas nutricionais brasileiras (TACO/IBGE).`;
+📊 DADOS NUTRICIONAIS:
+Use tabelas nutricionais brasileiras (TACO/IBGE) como referência para calorias e macronutrientes.
+
+🍽️ EXEMPLOS DE BOAS IDENTIFICAÇÕES:
+- "Arroz branco cozido" (não apenas "arroz")
+- "Frango grelhado sem pele" (não apenas "frango")
+- "Feijão carioca cozido" (não apenas "feijão")
+- "Alface americana fresca" (não apenas "salada")
+- "Batata frita em óleo" (não apenas "batata")
+
+Analise a imagem com cuidado e forneça uma análise completa e precisa.`;
 
     try {
       const result = await generateObject({
@@ -290,7 +373,12 @@ RETORNE dados nutricionais precisos baseados em tabelas nutricionais brasileiras
 
   // Find nutrition match in Brazilian food database
   private findNutritionMatch(foodName: string): any | null {
-    const normalizedName = foodName.toLowerCase()
+    if (!foodName?.trim() || foodName.length > 200) {
+      return null;
+    }
+    
+    const sanitizedName = foodName.trim();
+    const normalizedName = sanitizedName.toLowerCase()
       .replace(/[áàâã]/g, 'a')
       .replace(/[éêë]/g, 'e')
       .replace(/[íîï]/g, 'i')
@@ -306,7 +394,7 @@ RETORNE dados nutricionais precisos baseados em tabelas nutricionais brasileiras
     // Partial matches
     for (const [key, value] of Object.entries(BRAZILIAN_FOOD_DATABASE)) {
       if (normalizedName.includes(key) || key.includes(normalizedName)) {
-        console.log(`🎯 Found partial match: ${foodName} -> ${key}`);
+        console.log(`🎯 Found partial match: ${sanitizedName} -> ${key}`);
         return value;
       }
     }
@@ -315,19 +403,47 @@ RETORNE dados nutricionais precisos baseados em tabelas nutricionais brasileiras
     const keywords = {
       'arroz': 'arroz branco',
       'feijao': 'feijão carioca',
+      'feijão': 'feijão carioca',
       'frango': 'frango grelhado',
       'carne': 'carne bovina',
       'peixe': 'peixe grelhado',
+      'salmao': 'salmão',
+      'tilapia': 'tilápia',
       'ovo': 'ovo cozido',
       'batata': 'batata',
       'pao': 'pão francês',
+      'pão': 'pão francês',
       'leite': 'leite integral',
-      'queijo': 'queijo mussarela'
+      'queijo': 'queijo mussarela',
+      'tomate': 'tomate',
+      'alface': 'alface',
+      'banana': 'banana',
+      'maça': 'maçã',
+      'laranja': 'laranja',
+      'mamao': 'mamão',
+      'mamão': 'mamão',
+      'cenoura': 'cenoura',
+      'brocolis': 'brócolis',
+      'brócolis': 'brócolis',
+      'azeite': 'azeite',
+      'oleo': 'óleo de soja',
+      'óleo': 'óleo de soja',
+      'manteiga': 'manteiga',
+      'margarina': 'margarina',
+      'chocolate': 'chocolate',
+      'acucar': 'açúcar',
+      'açúcar': 'açúcar',
+      'mel': 'mel',
+      'aveia': 'aveia',
+      'granola': 'granola',
+      'iogurte': 'iogurte natural',
+      'macarrao': 'macarrão',
+      'macarrão': 'macarrão'
     };
     
     for (const [keyword, dbKey] of Object.entries(keywords)) {
       if (normalizedName.includes(keyword)) {
-        console.log(`🔍 Found keyword match: ${foodName} -> ${dbKey}`);
+        console.log(`🔍 Found keyword match: ${sanitizedName} -> ${dbKey}`);
         return BRAZILIAN_FOOD_DATABASE[dbKey];
       }
     }
@@ -342,14 +458,29 @@ RETORNE dados nutricionais precisos baseados em tabelas nutricionais brasileiras
       let adjustedWeight = food.weightInGrams || 100;
       
       // Common portion size validations
-      if (food.name.toLowerCase().includes('arroz')) {
+      const lowerName = food.name.toLowerCase();
+      if (lowerName.includes('arroz')) {
         adjustedWeight = Math.max(50, Math.min(300, adjustedWeight)); // 50g-300g
-      } else if (food.name.toLowerCase().includes('frango')) {
+      } else if (lowerName.includes('frango') || lowerName.includes('peito')) {
         adjustedWeight = Math.max(80, Math.min(250, adjustedWeight)); // 80g-250g
-      } else if (food.name.toLowerCase().includes('feijão')) {
+      } else if (lowerName.includes('feijão') || lowerName.includes('feijao')) {
         adjustedWeight = Math.max(30, Math.min(150, adjustedWeight)); // 30g-150g
-      } else if (food.name.toLowerCase().includes('salada') || food.name.toLowerCase().includes('alface')) {
+      } else if (lowerName.includes('salada') || lowerName.includes('alface') || lowerName.includes('rúcula')) {
         adjustedWeight = Math.max(20, Math.min(100, adjustedWeight)); // 20g-100g
+      } else if (lowerName.includes('batata') && !lowerName.includes('frita')) {
+        adjustedWeight = Math.max(100, Math.min(300, adjustedWeight)); // 100g-300g
+      } else if (lowerName.includes('batata frita')) {
+        adjustedWeight = Math.max(50, Math.min(150, adjustedWeight)); // 50g-150g
+      } else if (lowerName.includes('ovo')) {
+        adjustedWeight = Math.max(50, Math.min(100, adjustedWeight)); // 50g-100g (1-2 ovos)
+      } else if (lowerName.includes('pão')) {
+        adjustedWeight = Math.max(25, Math.min(100, adjustedWeight)); // 25g-100g
+      } else if (lowerName.includes('queijo')) {
+        adjustedWeight = Math.max(20, Math.min(80, adjustedWeight)); // 20g-80g
+      } else if (lowerName.includes('banana')) {
+        adjustedWeight = Math.max(80, Math.min(150, adjustedWeight)); // 80g-150g
+      } else if (lowerName.includes('maçã') || lowerName.includes('laranja')) {
+        adjustedWeight = Math.max(100, Math.min(200, adjustedWeight)); // 100g-200g
       }
       
       // Recalculate nutrition if weight was adjusted
@@ -428,6 +559,24 @@ Seja prático e específico. Máximo 4 sugestões de 1-2 frases cada.`;
     }
   }
 
+  // Test method for debugging
+  async testRecognition(): Promise<void> {
+    console.log('🧪 Testing food recognition service...');
+    console.log('📊 Database contains', Object.keys(BRAZILIAN_FOOD_DATABASE).length, 'food items');
+    
+    // Test database lookup
+    const testFoods = ['arroz', 'frango grelhado', 'feijão carioca', 'batata frita'];
+    testFoods.forEach(food => {
+      if (!food?.trim() || food.length > 100) {
+        console.log(`🔍 ${food} -> ❌ Invalid food name`);
+        return;
+      }
+      const sanitizedFood = food.trim();
+      const match = this.findNutritionMatch(sanitizedFood);
+      console.log(`🔍 ${sanitizedFood} ->`, match ? '✅ Found' : '❌ Not found');
+    });
+  }
+
   // Alternative recognition using multiple AI models
   async recognizeFoodWithFallback(imageBase64: string): Promise<AnalysisResult> {
     const fallbackPrompts = [
@@ -492,3 +641,8 @@ Seja prático e específico. Máximo 4 sugestões de 1-2 frases cada.`;
 
 // Export singleton instance
 export const foodRecognitionService = FoodRecognitionService.getInstance();
+
+// Test the service on startup (development only)
+if (__DEV__) {
+  foodRecognitionService.testRecognition();
+}
