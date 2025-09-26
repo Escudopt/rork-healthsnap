@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
-import { Camera } from 'lucide-react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Animated } from 'react-native';
+import { Camera, Sparkles } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/providers/ThemeProvider';
 import { Typography } from '@/constants/typography';
 
@@ -14,6 +15,8 @@ interface CalorieProgressBarProps {
 export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, onCameraPress }: CalorieProgressBarProps) {
   const { colors, isDark } = useTheme();
   const [animatedWidth, setAnimatedWidth] = useState<number>(0);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const glowAnim = useRef(new Animated.Value(0)).current;
   
   const percentage = Math.min((currentCalories / dailyGoal) * 100, 100);
   const isOverGoal = currentCalories > dailyGoal;
@@ -40,6 +43,47 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
     
     return () => clearTimeout(timer);
   }, [percentage]);
+
+  useEffect(() => {
+    // Pulse animation for camera button
+    const startPulse = () => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 1500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    };
+
+    // Glow animation
+    const startGlow = () => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, {
+            toValue: 1,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(glowAnim, {
+            toValue: 0,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    };
+
+    startPulse();
+    startGlow();
+  }, [pulseAnim, glowAnim]);
   
   return (
     <View style={styles.container}>
@@ -55,15 +99,55 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
               </Text>
             </View>
           </View>
-          <TouchableOpacity 
-            onPress={onCameraPress} 
-            style={[styles.cameraButton, { backgroundColor: colors.primary }]}
-            activeOpacity={0.7}
-          >
-            <View style={styles.cameraButtonInner}>
-              <Camera color="white" size={18} strokeWidth={2.5} />
-            </View>
-          </TouchableOpacity>
+          <Animated.View style={[
+            styles.cameraButtonContainer,
+            {
+              transform: [{ scale: pulseAnim }]
+            }
+          ]}>
+            <Animated.View style={[
+              styles.cameraButtonGlow,
+              {
+                opacity: glowAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.3, 0.8],
+                })
+              }
+            ]} />
+            <TouchableOpacity 
+              onPress={onCameraPress} 
+              style={styles.cameraButton}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={['#FF6B35', '#F7931E', '#FFD700']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.cameraButtonGradient}
+              >
+                <View style={styles.cameraButtonInner}>
+                  <Camera color="white" size={20} strokeWidth={2.5} />
+                  <Animated.View style={[
+                    styles.sparkleIcon,
+                    {
+                      opacity: glowAnim.interpolate({
+                        inputRange: [0, 0.5, 1],
+                        outputRange: [0.4, 1, 0.4],
+                      }),
+                      transform: [{
+                        rotate: glowAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '180deg'],
+                        })
+                      }]
+                    }
+                  ]}>
+                    <Sparkles color="white" size={12} strokeWidth={2} />
+                  </Animated.View>
+                </View>
+              </LinearGradient>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
         
         {/* Enhanced calories display */}
@@ -169,21 +253,51 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     letterSpacing: 0.2,
   },
+  cameraButtonContainer: {
+    position: 'relative',
+  },
+  cameraButtonGlow: {
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderRadius: 28,
+    backgroundColor: '#FFD700',
+    shadowColor: '#FFD700',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 12,
+    elevation: 8,
+  },
   cameraButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    overflow: 'hidden',
+    shadowColor: '#FF6B35',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  cameraButtonGradient: {
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   cameraButtonInner: {
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+  },
+  sparkleIcon: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
   },
   caloriesSection: {
     marginBottom: 20,
