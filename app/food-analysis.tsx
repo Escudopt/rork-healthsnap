@@ -44,6 +44,7 @@ export default function FoodAnalysisScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const [nutritionSuggestions, setNutritionSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -52,12 +53,16 @@ export default function FoodAnalysisScreen() {
   const sparkleAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    console.log('🔍 FoodAnalysisScreen mounted');
+    console.log('📸 imageBase64 length:', imageBase64?.length || 0);
+    
     if (!imageBase64) {
-      console.error('Imagem não encontrada');
+      console.error('❌ Imagem não encontrada - voltando');
       router.back();
       return;
     }
 
+    console.log('✅ Imagem encontrada, iniciando análise...');
     analyzeFood();
   }, [imageBase64]);
 

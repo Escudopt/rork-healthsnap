@@ -81,14 +81,21 @@ export class FoodRecognitionService {
 
   // Main food recognition method
   async recognizeFood(imageBase64: string): Promise<AnalysisResult> {
+    console.log('🔍 FoodRecognitionService.recognizeFood called');
+    console.log('📸 Image base64 length:', imageBase64?.length || 0);
+    
     if (!imageBase64?.trim()) {
+      console.error('❌ Invalid image - empty or null');
       throw new Error('Imagem inválida');
     }
+    
     try {
       console.log('🔍 Starting enhanced food recognition...');
       
       // Step 1: AI-powered food identification with enhanced prompts
+      console.log('🤖 Step 1: Starting AI identification...');
       const aiResult = await this.identifyFoodsWithAI(imageBase64);
+      console.log('✅ Step 1 completed:', aiResult);
       
       // Step 2: Enhance nutrition data with database lookup
       const enhancedFoods = await this.enhanceNutritionData(aiResult.foods);

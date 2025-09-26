@@ -531,6 +531,21 @@ export default function HomeScreen() {
                     <Camera color={colors.primary} size={16} strokeWidth={2} />
                     <Text style={[styles.emptyActionText, { color: colors.primary }]}>Adicionar Refeição</Text>
                   </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={[styles.emptyActionButton, { backgroundColor: colors.textSecondary + '15', marginTop: 12 }]}
+                    onPress={() => {
+                      console.log('🧪 Testing navigation to food-analysis...');
+                      router.push({
+                        pathname: '/food-analysis',
+                        params: { imageBase64: 'test-image-data' },
+                      });
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Settings color={colors.textSecondary} size={16} strokeWidth={2} />
+                    <Text style={[styles.emptyActionText, { color: colors.textSecondary }]}>Teste Navegação</Text>
+                  </TouchableOpacity>
                 </View>
               </LinearGradient>
             </View>
