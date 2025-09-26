@@ -11,7 +11,7 @@ export const FREE_FOOD_APIS = {
     url: 'https://api.clarifai.com/v2/models/food-item-recognition/outputs',
     freeLimit: '5000 requests/month',
     features: ['Food item recognition', 'Confidence scores', 'Multiple food detection'],
-    apiKey: 'demo-key', // Replace with real key
+    apiKey: '2893b19392c74edb8907c9cdf0e06454', // Your Clarifai API key
     headers: {
       'Authorization': 'Key YOUR_API_KEY',
       'Content-Type': 'application/json'
