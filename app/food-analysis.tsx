@@ -36,6 +36,13 @@ import { AnalysisResult, FoodItem } from '@/types/food';
 
 export default function FoodAnalysisScreen() {
   const { imageBase64 } = useLocalSearchParams<{ imageBase64: string }>();
+  
+  console.log('🔍 FoodAnalysisScreen - imageBase64 received:', {
+    exists: !!imageBase64,
+    length: imageBase64?.length || 0,
+    type: typeof imageBase64,
+    preview: imageBase64?.substring(0, 50) + '...'
+  });
   const { addMeal } = useCalorieTracker();
   const { colors, isDark } = useTheme();
   
@@ -54,15 +61,22 @@ export default function FoodAnalysisScreen() {
 
   useEffect(() => {
     console.log('🔍 FoodAnalysisScreen mounted');
-    console.log('📸 imageBase64 length:', imageBase64?.length || 0);
+    console.log('📸 imageBase64 received:', {
+      exists: !!imageBase64,
+      length: imageBase64?.length || 0,
+      type: typeof imageBase64,
+      isString: typeof imageBase64 === 'string',
+      isEmpty: !imageBase64?.trim()
+    });
     
-    if (!imageBase64) {
-      console.error('❌ Imagem não encontrada - voltando');
-      router.back();
+    if (!imageBase64 || typeof imageBase64 !== 'string' || !imageBase64.trim()) {
+      console.error('❌ Imagem inválida ou não encontrada - voltando');
+      setError('Imagem não encontrada ou inválida');
+      setTimeout(() => router.back(), 2000);
       return;
     }
 
-    console.log('✅ Imagem encontrada, iniciando análise...');
+    console.log('✅ Imagem válida encontrada, iniciando análise...');
     analyzeFood();
   }, [imageBase64]);
 
@@ -317,6 +331,26 @@ export default function FoodAnalysisScreen() {
     );
   }
 
+  if (error) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.errorContainer}>
+            <Text style={[styles.errorText, { color: colors.text }]}>
+              {error}
+            </Text>
+            <TouchableOpacity
+              style={[styles.retryButton, { backgroundColor: colors.primary }]}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.retryButtonText}>Voltar</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      </View>
+    );
+  }
+
   if (!analysisResult) {
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -415,11 +449,24 @@ export default function FoodAnalysisScreen() {
               transform: [{ scale: scaleAnim }]
             }
           ]}>
-            <Image
-              source={{ uri: `data:image/jpeg;base64,${imageBase64}` }}
-              style={styles.foodImage}
-              resizeMode="cover"
-            />
+            {imageBase64 && typeof imageBase64 === 'string' && imageBase64.trim() ? (
+              <Image
+                source={{ uri: `data:image/jpeg;base64,${imageBase64}` }}
+                style={styles.foodImage}
+                resizeMode="cover"
+                onError={(error) => {
+                  console.error('❌ Image loading error:', error);
+                  setError('Erro ao carregar a imagem');
+                }}
+                onLoad={() => {
+                  console.log('✅ Image loaded successfully');
+                }}
+              />
+            ) : (
+              <View style={[styles.foodImage, { backgroundColor: colors.surfaceSecondary, justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={[{ color: colors.textSecondary, textAlign: 'center' }]}>Imagem não disponível</Text>
+              </View>
+            )}
             <LinearGradient
               colors={['transparent', 'rgba(0,0,0,0.3)']}
               style={styles.imageOverlay}

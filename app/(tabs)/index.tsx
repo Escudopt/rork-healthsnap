@@ -191,13 +191,26 @@ export default function HomeScreen() {
                 exif: false,
               });
 
-              if (!result.canceled && result.assets[0].base64) {
-                console.log('Image captured, navigating immediately...');
-                // Navegar imediatamente sem delay
-                router.push({
-                  pathname: '/food-analysis',
-                  params: { imageBase64: result.assets[0].base64 },
+              if (!result.canceled && result.assets[0]?.base64) {
+                const base64Data = result.assets[0].base64;
+                console.log('📸 Image captured successfully:', {
+                  hasBase64: !!base64Data,
+                  length: base64Data?.length || 0,
+                  preview: base64Data?.substring(0, 50) + '...'
                 });
+                
+                if (base64Data && base64Data.trim()) {
+                  console.log('🚀 Navigating to food-analysis with image data...');
+                  router.push({
+                    pathname: '/food-analysis',
+                    params: { imageBase64: base64Data },
+                  });
+                } else {
+                  console.error('❌ No valid base64 data found');
+                  Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
+                }
+              } else {
+                console.log('📸 Camera result:', { canceled: result.canceled, hasAssets: !!result.assets?.[0] });
               }
             } catch (error) {
               console.error('Camera error:', error);
@@ -222,13 +235,26 @@ export default function HomeScreen() {
                 exif: false,
               });
 
-              if (!result.canceled && result.assets[0].base64) {
-                console.log('Image selected, navigating immediately...');
-                // Navegar imediatamente sem delay
-                router.push({
-                  pathname: '/food-analysis',
-                  params: { imageBase64: result.assets[0].base64 },
+              if (!result.canceled && result.assets[0]?.base64) {
+                const base64Data = result.assets[0].base64;
+                console.log('🖼️ Image selected successfully:', {
+                  hasBase64: !!base64Data,
+                  length: base64Data?.length || 0,
+                  preview: base64Data?.substring(0, 50) + '...'
                 });
+                
+                if (base64Data && base64Data.trim()) {
+                  console.log('🚀 Navigating to food-analysis with image data...');
+                  router.push({
+                    pathname: '/food-analysis',
+                    params: { imageBase64: base64Data },
+                  });
+                } else {
+                  console.error('❌ No valid base64 data found');
+                  Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
+                }
+              } else {
+                console.log('🖼️ Gallery result:', { canceled: result.canceled, hasAssets: !!result.assets?.[0] });
               }
             } catch (error) {
               console.error('Gallery error:', error);
@@ -532,20 +558,7 @@ export default function HomeScreen() {
                     <Text style={[styles.emptyActionText, { color: colors.primary }]}>Adicionar Refeição</Text>
                   </TouchableOpacity>
                   
-                  <TouchableOpacity
-                    style={[styles.emptyActionButton, { backgroundColor: colors.textSecondary + '15', marginTop: 12 }]}
-                    onPress={() => {
-                      console.log('🧪 Testing navigation to food-analysis...');
-                      router.push({
-                        pathname: '/food-analysis',
-                        params: { imageBase64: 'test-image-data' },
-                      });
-                    }}
-                    activeOpacity={0.8}
-                  >
-                    <Settings color={colors.textSecondary} size={16} strokeWidth={2} />
-                    <Text style={[styles.emptyActionText, { color: colors.textSecondary }]}>Teste Navegação</Text>
-                  </TouchableOpacity>
+
                 </View>
               </LinearGradient>
             </View>
