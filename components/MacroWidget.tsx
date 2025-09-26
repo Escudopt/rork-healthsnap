@@ -23,31 +23,25 @@ interface MacroWidgetProps {
 const macroConfig = {
   protein: {
     name: 'Proteína',
-    shortName: 'Prot',
     icon: Beef,
     color: '#FF6B6B',
-    lightColor: '#FFE5E5',
     gradientColors: ['#FF6B6B', '#FF8E8E'],
     unit: 'g',
     defaultGoal: 120,
   },
   carbs: {
     name: 'Carboidratos',
-    shortName: 'Carb',
     icon: Wheat,
     color: '#4ECDC4',
-    lightColor: '#E5F9F7',
     gradientColors: ['#4ECDC4', '#6FE6DD'],
     unit: 'g',
     defaultGoal: 200,
   },
   fat: {
     name: 'Gorduras',
-    shortName: 'Gord',
     icon: Droplets,
-    color: '#FFB800',
-    lightColor: '#FFF4E5',
-    gradientColors: ['#FFB800', '#FFCC33'],
+    color: '#FFE66D',
+    gradientColors: ['#FFE66D', '#FFF08A'],
     unit: 'g',
     defaultGoal: 70,
   },
@@ -74,70 +68,76 @@ export function MacroWidget({ foods, type, goal, onPress }: MacroWidgetProps) {
       style={styles.container}
     >
       <BlurCard style={[styles.card, { backgroundColor: colors.surfaceElevated }]}>
-        <View style={styles.cardContent}>
-          {/* Enhanced Header */}
+        <LinearGradient
+          colors={isDark ? 
+            [`${config.color}15`, `${config.color}08`] : 
+            [`${config.color}10`, `${config.color}05`]
+          }
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientOverlay}
+        >
+          {/* Header */}
           <View style={styles.header}>
-            <View style={[styles.iconContainer, { backgroundColor: config.color + '15' }]}>
+            <View style={[styles.iconContainer, { backgroundColor: config.color + '20' }]}>
               <IconComponent 
                 color={config.color} 
-                size={14} 
+                size={16} 
                 strokeWidth={2.5} 
               />
             </View>
-            <View style={styles.titleContainer}>
-              <Text style={[styles.title, { color: colors.textTertiary }]}>
-                {config.shortName}
-              </Text>
-              <View style={[styles.statusDot, { 
-                backgroundColor: isOverGoal ? '#FF6B6B' : percentage >= 80 ? config.color : colors.textTertiary 
-              }]} />
-            </View>
-          </View>
-          
-          {/* Enhanced Value Display */}
-          <View style={styles.valueSection}>
-            <View style={styles.valueContainer}>
-              <Text style={[styles.value, { color: colors.text }]}>
-                {currentValue.toFixed(0)}
-              </Text>
-              <Text style={[styles.unit, { color: colors.textSecondary }]}>
-                {config.unit}
-              </Text>
-            </View>
-            <Text style={[styles.goalText, { color: colors.textTertiary }]}>
-              de {targetGoal}{config.unit}
+            <Text style={[styles.title, { color: colors.textSecondary }]}>
+              {config.name}
             </Text>
           </View>
           
-          {/* Enhanced Progress Bar */}
+          {/* Value */}
+          <View style={styles.valueContainer}>
+            <Text style={[styles.value, { color: colors.text }]}>
+              {currentValue.toFixed(0)}
+            </Text>
+            <Text style={[styles.unit, { color: colors.textSecondary }]}>
+              {config.unit}
+            </Text>
+          </View>
+          
+          {/* Progress Bar */}
           <View style={styles.progressContainer}>
-            <View style={[styles.progressTrack, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)' }]}>
+            <View style={[styles.progressTrack, { backgroundColor: colors.surfaceSecondary }]}>
               <View 
                 style={[
                   styles.progressFill,
                   {
-                    width: `${Math.min(percentage, 100)}%`,
+                    width: `${percentage}%`,
                     backgroundColor: isOverGoal ? '#FF6B6B' : config.color,
-                    shadowColor: isOverGoal ? '#FF6B6B' : config.color,
-                    shadowOffset: { width: 0, height: 0 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 2,
                   }
                 ]} 
               />
             </View>
-            <View style={styles.progressInfo}>
-              <Text style={[styles.progressPercentage, { color: colors.text }]}>
-                {Math.round(percentage)}%
-              </Text>
-              {isOverGoal && (
-                <View style={styles.overGoalIndicator}>
-                  <TrendingUp color="#FF6B6B" size={10} strokeWidth={2.5} />
-                </View>
-              )}
-            </View>
+            <Text style={[styles.progressText, { color: colors.textTertiary }]}>
+              {percentage.toFixed(0)}% de {targetGoal}{config.unit}
+            </Text>
           </View>
-        </View>
+          
+          {/* Status Indicator */}
+          {isOverGoal && (
+            <View style={styles.statusContainer}>
+              <TrendingUp color="#FF6B6B" size={12} strokeWidth={2} />
+              <Text style={[styles.statusText, { color: '#FF6B6B' }]}>
+                Meta excedida
+              </Text>
+            </View>
+          )}
+          
+          {currentValue >= targetGoal * 0.8 && !isOverGoal && (
+            <View style={styles.statusContainer}>
+              <TrendingUp color={config.color} size={12} strokeWidth={2} />
+              <Text style={[styles.statusText, { color: config.color }]}>
+                Quase lá!
+              </Text>
+            </View>
+          )}
+        </LinearGradient>
       </BlurCard>
     </TouchableOpacity>
   );
@@ -152,63 +152,48 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowRadius: 8,
+    elevation: 3,
     borderWidth: 0.5,
-    borderColor: 'rgba(0, 0, 0, 0.04)',
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
-  cardContent: {
+  gradientOverlay: {
     padding: 16,
-    minHeight: 110,
-    justifyContent: 'space-between',
+    minHeight: 120,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 10,
+    gap: 6,
   },
   iconContainer: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
   },
   title: {
     ...Typography.caption1Emphasized,
     fontSize: 11,
-    fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.8,
-    opacity: 0.7,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  valueSection: {
-    marginBottom: 12,
-    gap: 2,
+    letterSpacing: 0.6,
+    opacity: 0.8,
   },
   valueContainer: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: 4,
+    marginBottom: 10,
+    gap: 3,
   },
   value: {
     ...Typography.mediumNumber,
-    fontSize: 22,
-    fontWeight: '600',
-    letterSpacing: -0.4,
+    fontSize: 24,
+    fontWeight: '700',
+    letterSpacing: -0.6,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -217,42 +202,48 @@ const styles = StyleSheet.create({
   },
   unit: {
     ...Typography.caption1Emphasized,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
     textTransform: 'uppercase',
     letterSpacing: 0.4,
-    opacity: 0.6,
-  },
-  goalText: {
-    fontSize: 10,
-    fontWeight: '500',
-    letterSpacing: 0.2,
-    opacity: 0.6,
+    opacity: 0.7,
   },
   progressContainer: {
-    gap: 8,
+    gap: 5,
   },
   progressTrack: {
-    height: 6,
-    borderRadius: 3,
+    height: 4,
+    borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    borderRadius: 3,
-    minWidth: 2,
+    borderRadius: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
-  progressInfo: {
+  progressText: {
+    ...Typography.caption2,
+    fontSize: 10,
+    fontWeight: '500',
+    textAlign: 'center',
+    letterSpacing: 0.1,
+    opacity: 0.7,
+  },
+  statusContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 6,
+    gap: 3,
   },
-  progressPercentage: {
-    fontSize: 12,
-    fontWeight: '600',
-    letterSpacing: -0.2,
-  },
-  overGoalIndicator: {
-    padding: 2,
+  statusText: {
+    ...Typography.caption2Emphasized,
+    fontSize: 9,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
 });

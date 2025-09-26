@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
-import { Appearance, StatusBar, Platform } from 'react-native';
+import { Appearance, StatusBar } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Typography, getTypographyStyle } from '@/constants/typography';
 
@@ -51,86 +51,86 @@ export interface ThemeColors {
 
 const lightTheme: ThemeColors = {
   // Background colors
-  background: '#FAFBFF',
-  backgroundSecondary: '#F5F7FA',
+  background: '#FFFFFF',
+  backgroundSecondary: '#F2F2F7',
   backgroundTertiary: '#FFFFFF',
   
   // Surface colors
   surface: '#FFFFFF',
-  surfaceSecondary: 'rgba(0, 122, 255, 0.06)',
-  surfaceElevated: 'rgba(255, 255, 255, 0.95)',
+  surfaceSecondary: 'rgba(0, 122, 255, 0.08)',
+  surfaceElevated: '#FFFFFF',
   
   // Text colors
-  text: '#1A1D29',
-  textSecondary: 'rgba(26, 29, 41, 0.65)',
-  textTertiary: 'rgba(26, 29, 41, 0.35)',
+  text: '#1C1C1E',
+  textSecondary: 'rgba(60, 60, 67, 0.6)',
+  textTertiary: 'rgba(60, 60, 67, 0.3)',
   
   // Border colors
-  border: 'rgba(26, 29, 41, 0.12)',
-  borderSecondary: 'rgba(26, 29, 41, 0.06)',
+  border: 'rgba(60, 60, 67, 0.29)',
+  borderSecondary: 'rgba(60, 60, 67, 0.12)',
   
   // Accent colors
-  primary: '#0066FF',
-  primaryLight: '#4D94FF',
-  primaryDark: '#0052CC',
+  primary: '#007AFF',
+  primaryLight: '#5AC8FA',
+  primaryDark: '#0051D5',
   
   // Status colors
-  success: '#00C851',
-  warning: '#FF8800',
-  error: '#FF4444',
+  success: '#34C759',
+  warning: '#FF9500',
+  error: '#FF3B30',
   
   // Glass/blur effects
-  glassBackground: 'rgba(255, 255, 255, 0.85)',
-  glassBorder: 'rgba(26, 29, 41, 0.08)',
-  glassOverlay: 'rgba(255, 255, 255, 0.6)',
+  glassBackground: 'rgba(255, 255, 255, 0.8)',
+  glassBorder: 'rgba(60, 60, 67, 0.18)',
+  glassOverlay: 'rgba(255, 255, 255, 0.5)',
   
   // Tab bar
-  tabBarBackground: 'rgba(255, 255, 255, 0.9)',
-  tabBarBorder: 'rgba(26, 29, 41, 0.08)',
-  tabBarActive: '#0066FF',
-  tabBarInactive: 'rgba(26, 29, 41, 0.5)',
+  tabBarBackground: 'rgba(255, 255, 255, 0.8)',
+  tabBarBorder: 'rgba(60, 60, 67, 0.18)',
+  tabBarActive: '#007AFF',
+  tabBarInactive: 'rgba(60, 60, 67, 0.6)',
 };
 
 const darkTheme: ThemeColors = {
   // Background colors
-  background: '#0A0B0F',
-  backgroundSecondary: '#111318',
-  backgroundTertiary: '#1A1D24',
+  background: '#000000',
+  backgroundSecondary: '#0A0A0B',
+  backgroundTertiary: '#1A1A1C',
   
   // Surface colors
-  surface: 'rgba(102, 148, 255, 0.08)',
-  surfaceSecondary: 'rgba(102, 148, 255, 0.12)',
-  surfaceElevated: 'rgba(255, 255, 255, 0.08)',
+  surface: 'rgba(10, 132, 255, 0.08)',
+  surfaceSecondary: 'rgba(10, 132, 255, 0.12)',
+  surfaceElevated: 'rgba(255, 255, 255, 0.05)',
   
   // Text colors
-  text: '#F8FAFC',
-  textSecondary: 'rgba(248, 250, 252, 0.7)',
-  textTertiary: 'rgba(248, 250, 252, 0.4)',
+  text: '#FFFFFF',
+  textSecondary: 'rgba(235, 235, 245, 0.6)',
+  textTertiary: 'rgba(235, 235, 245, 0.3)',
   
   // Border colors
-  border: 'rgba(248, 250, 252, 0.12)',
-  borderSecondary: 'rgba(248, 250, 252, 0.06)',
+  border: 'rgba(84, 84, 88, 0.65)',
+  borderSecondary: 'rgba(84, 84, 88, 0.36)',
   
   // Accent colors
-  primary: '#6694FF',
-  primaryLight: '#99B8FF',
-  primaryDark: '#3366FF',
+  primary: '#0A84FF',
+  primaryLight: '#64D2FF',
+  primaryDark: '#0056CC',
   
   // Status colors
-  success: '#00D97E',
-  warning: '#FFB800',
-  error: '#FF6B6B',
+  success: '#30D158',
+  warning: '#FF9F0A',
+  error: '#FF453A',
   
   // Glass/blur effects
-  glassBackground: 'rgba(26, 29, 36, 0.85)',
-  glassBorder: 'rgba(248, 250, 252, 0.08)',
-  glassOverlay: 'rgba(255, 255, 255, 0.06)',
+  glassBackground: 'rgba(28, 28, 30, 0.8)',
+  glassBorder: 'rgba(84, 84, 88, 0.65)',
+  glassOverlay: 'rgba(255, 255, 255, 0.05)',
   
   // Tab bar
-  tabBarBackground: 'rgba(26, 29, 36, 0.9)',
-  tabBarBorder: 'rgba(248, 250, 252, 0.08)',
-  tabBarActive: '#6694FF',
-  tabBarInactive: 'rgba(248, 250, 252, 0.6)',
+  tabBarBackground: 'rgba(28, 28, 30, 0.8)',
+  tabBarBorder: 'rgba(84, 84, 88, 0.65)',
+  tabBarActive: '#0A84FF',
+  tabBarInactive: 'rgba(235, 235, 245, 0.6)',
 };
 
 interface ThemeContextType {
@@ -151,7 +151,6 @@ export const [ThemeProvider, useTheme] = createContextHook<ThemeContextType>(() 
   const [systemColorScheme, setSystemColorScheme] = useState<ColorScheme>(
     Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'
   );
-  const [hydrated, setHydrated] = useState(false);
 
   // Determine the actual color scheme based on theme mode
   const colorScheme: ColorScheme = themeMode === 'system' ? systemColorScheme : themeMode;
@@ -222,19 +221,9 @@ export const [ThemeProvider, useTheme] = createContextHook<ThemeContextType>(() 
     return () => subscription?.remove();
   }, []);
 
-  // Load theme mode on mount with hydration handling
+  // Load theme mode on mount
   useEffect(() => {
-    const initializeTheme = async () => {
-      // For web, add a small delay to prevent hydration mismatch
-      if (Platform.OS === 'web') {
-        await new Promise(resolve => setTimeout(resolve, 50));
-      }
-      
-      await loadThemeMode();
-      setHydrated(true);
-    };
-    
-    initializeTheme();
+    loadThemeMode();
   }, [loadThemeMode]);
 
   // Update status bar style based on theme
@@ -243,15 +232,15 @@ export const [ThemeProvider, useTheme] = createContextHook<ThemeContextType>(() 
   }, [isDark]);
 
   return useMemo(() => ({
-    themeMode: hydrated ? themeMode : 'system',
-    colorScheme: hydrated ? colorScheme : 'light',
-    colors: hydrated ? colors : lightTheme,
+    themeMode,
+    colorScheme,
+    colors,
     typography: Typography,
-    isDark: hydrated ? isDark : false,
+    isDark,
     setThemeMode,
     toggleTheme,
     getTypographyStyle,
-  }), [themeMode, colorScheme, colors, isDark, setThemeMode, toggleTheme, hydrated]);
+  }), [themeMode, colorScheme, colors, isDark, setThemeMode, toggleTheme]);
 });
 
 // Helper hook for creating themed styles

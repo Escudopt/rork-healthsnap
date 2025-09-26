@@ -33,462 +33,47 @@ export default function AnalysisScreen() {
   const { colors, isDark } = useTheme();
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
-  const [mealName, setMealName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [showEditMenu, setShowEditMenu] = useState(false);
   const [editingFood, setEditingFood] = useState<{ food: FoodItem; index: number } | null>(null);
   const [editedFoods, setEditedFoods] = useState<FoodItem[]>([]);
   const [editedMealType, setEditedMealType] = useState<string>('');
   const [showMealTypeModal, setShowMealTypeModal] = useState(false);
-  const [showMealNameModal, setShowMealNameModal] = useState(false);
-  const [tempMealName, setTempMealName] = useState<string>('');
   
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const editMenuAnim = useRef(new Animated.Value(0)).current;
 
-  // Free API alternatives for food identification
-  const analyzeWithFreeAPIs = useCallback(async (retryCount = 0) => {
-    const maxRetries = 2;
-    
-    try {
-      setIsAnalyzing(true);
-      setError(null);
-
-      console.log(`Starting free API analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
-      
-      if (!imageBase64) {
-        throw new Error('Nenhuma imagem foi fornecida para análise');
-      }
-      
-      const startTime = Date.now();
-
-      // Try multiple free APIs in sequence
-      let apiResult = null;
-      
-      // Option 1: Try FoodVisor API (free tier: 100 requests/month)
-      try {
-        console.log('Trying FoodVisor API...');
-        const foodVisorResponse = await fetch('https://vision.foodvisor.io/api/1.0/en/analysis/', {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Api-Key demo-key', // Replace with real key from foodvisor.io
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            image: imageBase64
-          })
-        });
-        
-        if (foodVisorResponse.ok) {
-          apiResult = await foodVisorResponse.json();
-          console.log('FoodVisor result:', apiResult);
-          apiResult.source = 'foodvisor';
-        }
-      } catch (foodVisorError) {
-        console.log('FoodVisor failed:', foodVisorError);
-      }
-      
-      // Option 2: Try Spoonacular API (free tier: 150 requests/day)
-      if (!apiResult) {
-        try {
-          console.log('Trying Spoonacular API...');
-          const spoonacularResponse = await fetch('https://api.spoonacular.com/food/images/analyze', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-API-KEY': 'demo-key', // Replace with real key from spoonacular.com
-            },
-            body: JSON.stringify({
-              imageUrl: `data:image/jpeg;base64,${imageBase64}`
-            })
-          });
-          
-          if (spoonacularResponse.ok) {
-            apiResult = await spoonacularResponse.json();
-            console.log('Spoonacular result:', apiResult);
-            apiResult.source = 'spoonacular';
-          }
-        } catch (spoonError) {
-          console.log('Spoonacular failed:', spoonError);
-        }
-      }
-      
-      // Option 3: Try Clarifai Food Model (free tier: 5000 requests/month)
-      if (!apiResult) {
-        try {
-          console.log('Trying Clarifai Food Model...');
-          const clarifaiResponse = await fetch('https://api.clarifai.com/v2/models/food-item-recognition/outputs', {
-            method: 'POST',
-            headers: {
-              'Authorization': 'Key demo-key', // Replace with real key from clarifai.com
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              inputs: [{
-                data: {
-                  image: {
-                    base64: imageBase64
-                  }
-                }
-              }]
-            })
-          });
-          
-          if (clarifaiResponse.ok) {
-            const clarifaiData = await clarifaiResponse.json();
-            console.log('Clarifai result:', clarifaiData);
-            
-            // Extract food concepts
-            const concepts = clarifaiData.outputs?.[0]?.data?.concepts || [];
-            const foodConcepts = concepts.filter((concept: any) => concept.value > 0.5);
-            
-            if (foodConcepts.length > 0) {
-              apiResult = { concepts: foodConcepts, source: 'clarifai' };
-            }
-          }
-        } catch (clarifaiError) {
-          console.log('Clarifai failed:', clarifaiError);
-        }
-      }
-      
-      // Option 4: Use Google Vision API (free tier: 1000 requests/month)
-      if (!apiResult) {
-        try {
-          console.log('Trying Google Vision API...');
-          const visionResponse = await fetch('https://vision.googleapis.com/v1/images:annotate?key=demo-key', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              requests: [{
-                image: {
-                  content: imageBase64
-                },
-                features: [{
-                  type: 'LABEL_DETECTION',
-                  maxResults: 10
-                }]
-              }]
-            })
-          });
-          
-          if (visionResponse.ok) {
-            const visionData = await visionResponse.json();
-            console.log('Google Vision result:', visionData);
-            
-            // Extract food-related labels
-            const labels = visionData.responses?.[0]?.labelAnnotations || [];
-            const foodLabels = labels.filter((label: any) => 
-              label.description && 
-              (label.description.toLowerCase().includes('food') ||
-               label.description.toLowerCase().includes('meal') ||
-               label.description.toLowerCase().includes('dish') ||
-               label.score > 0.7)
-            );
-            
-            if (foodLabels.length > 0) {
-              apiResult = { labels: foodLabels, source: 'google-vision' };
-            }
-          }
-        } catch (visionError) {
-          console.log('Google Vision failed:', visionError);
-        }
-      }
-
-      // Step 2: Process API results and enhance with AI
-      const analysisSchema = z.object({
-        mealName: z.string().describe('Nome automático gerado para a refeição'),
-        foods: z.array(z.object({
-          name: z.string(),
-          weightInGrams: z.number(),
-          calories: z.number(),
-          protein: z.number(),
-          carbs: z.number(),
-          fat: z.number(),
-          fiber: z.number().optional(),
-          sugar: z.number().optional(),
-          sodium: z.number().optional(),
-          portion: z.string()
-        })),
-        totalCalories: z.number(),
-        totalWeight: z.number(),
-        mealType: z.enum(['Café da Manhã', 'Almoço', 'Jantar', 'Lanche']),
-        confidence: z.enum(['high', 'medium', 'low'])
-      });
-
-      // Add timeout to the request
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout: A análise demorou muito para responder')), 45000);
-      });
-
-      console.log('Processing API data with AI enhancement...');
-      
-      // Create enhanced prompt based on available API data
-      let apiDataText = 'Nenhum dado de API disponível - analise apenas a imagem.';
-      if (apiResult) {
-        if (apiResult.source === 'google-vision') {
-          apiDataText = `DADOS DO GOOGLE VISION API:
-Rótulos detectados: ${apiResult.labels.map((l: any) => `${l.description} (${Math.round(l.score * 100)}%)`).join(', ')}`;
-        } else if (apiResult.source === 'clarifai') {
-          apiDataText = `DADOS DO CLARIFAI API:
-Conceitos detectados: ${apiResult.concepts.map((c: any) => `${c.name} (${Math.round(c.value * 100)}%)`).join(', ')}`;
-        } else if (apiResult.source === 'foodvisor') {
-          apiDataText = `DADOS DO FOODVISOR API:
-Alimentos detectados: ${JSON.stringify(apiResult, null, 2)}`;
-        } else if (apiResult.source === 'spoonacular') {
-          apiDataText = `DADOS DO SPOONACULAR API:
-Análise: ${JSON.stringify(apiResult, null, 2)}`;
-        } else {
-          apiDataText = `DADOS DA API:
-${JSON.stringify(apiResult, null, 2)}`;
-        }
-      }
-      
-      const analysisPromise = generateObject({
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: `Analise esta imagem de comida e identifique CADA INGREDIENTE SEPARADAMENTE com informações nutricionais precisas em português. Use os dados da API como referência quando disponível.
-                
-                ${apiDataText}
-                
-                REGRAS CRÍTICAS PARA IDENTIFICAÇÃO:
-                - Separe CADA ingrediente individualmente com pesos realistas em GRAMAS
-                - Calcule valores nutricionais precisos baseados em dados reais de nutrição
-                - Identifique 4-10 ingredientes diferentes quando possível
-                - Seja específico: "Peito de frango grelhado", não apenas "Frango"
-                - Para vegetais, estime peso individual (ex: "Tomate" 80g, "Alface" 30g)
-                - Para carnes, estime porções realistas (ex: "Peito de frango" 120g)
-                - Para carboidratos, use medidas precisas (ex: "Arroz cozido" 150g)
-                - Inclua temperos e molhos visíveis se significativos
-                - Use dados nutricionais precisos por 100g e ajuste para o peso estimado
-                
-                REGRAS PARA NOME AUTOMÁTICO DA REFEIÇÃO:
-                - Crie um nome atrativo e descritivo baseado nos ingredientes principais
-                - Use nomes brasileiros típicos (ex: "Frango com Arroz e Brócolis", "Salada Tropical", "Bowl Proteico")
-                - Seja criativo mas realista
-                - Máximo 4-5 palavras
-                - Evite nomes genéricos como "Refeição" ou "Prato"
-                
-                BASES DE DADOS NUTRICIONAIS:
-                - Use valores nutricionais da TACO (Tabela Brasileira de Composição de Alimentos)
-                - Para alimentos não brasileiros, use USDA Food Database
-                - Seja preciso com calorias, proteínas, carboidratos e gorduras
-                
-                Exemplo de resposta:
-                {
-                  "mealName": "Frango Grelhado com Arroz e Brócolis",
-                  "foods": [
-                    {
-                      "name": "Peito de frango grelhado",
-                      "weightInGrams": 120,
-                      "calories": 198,
-                      "protein": 37,
-                      "carbs": 0,
-                      "fat": 4,
-                      "fiber": 0,
-                      "portion": "120g"
-                    }
-                  ],
-                  "totalCalories": 503,
-                  "totalWeight": 360,
-                  "mealType": "Almoço",
-                  "confidence": "${apiResult ? 'high' : 'medium'}"
-                }`
-              },
-              {
-                type: 'image',
-                image: imageBase64
-              }
-            ]
-          }
-        ],
-        schema: analysisSchema
-      });
-
-      console.log('Waiting for enhanced analysis result...');
-      const result = await Promise.race([analysisPromise, timeoutPromise]) as any;
-      console.log('Enhanced analysis result received:', result);
-      
-      const processingTime = Date.now() - startTime;
-      console.log(`Free APIs + AI analysis completed in ${processingTime}ms`);
-      
-      // Validate the result structure
-      if (!result || typeof result !== 'object') {
-        throw new Error('Resposta inválida da análise');
-      }
-      
-      if (!result.foods || !Array.isArray(result.foods) || result.foods.length === 0) {
-        console.warn('No foods detected, creating fallback food item');
-        result.foods = [{
-          name: 'Alimento não identificado',
-          weightInGrams: 100,
-          calories: 150,
-          protein: 5,
-          carbs: 20,
-          fat: 5,
-          fiber: 2,
-          portion: '100g'
-        }];
-        result.confidence = 'low';
-      }
-      
-      // Validate and fix each food item
-      result.foods = result.foods.map((food: any, index: number) => {
-        const weightInGrams = Math.max(1, Number(food.weightInGrams) || 100);
-        const validFood = {
-          name: food.name || `Ingrediente ${index + 1}`,
-          weightInGrams: weightInGrams,
-          calories: Math.max(0, Number(food.calories) || 100),
-          protein: Math.max(0, Number(food.protein) || 0),
-          carbs: Math.max(0, Number(food.carbs) || 0),
-          fat: Math.max(0, Number(food.fat) || 0),
-          fiber: Math.max(0, Number(food.fiber) || 0),
-          sugar: food.sugar ? Math.max(0, Number(food.sugar)) : undefined,
-          sodium: food.sodium ? Math.max(0, Number(food.sodium)) : undefined,
-          portion: food.portion || `${weightInGrams}g`
-        };
-        return validFood;
-      });
-      
-      // Calculate the correct total calories from individual foods
-      const calculatedTotal = result.foods.reduce((sum: number, food: any) => {
-        return sum + (Number(food.calories) || 0);
-      }, 0);
-      
-      // Fix the totalCalories if it doesn't match the sum
-      if (result.totalCalories !== calculatedTotal) {
-        console.log(`Fixing totalCalories: AI said ${result.totalCalories}, calculated ${calculatedTotal}`);
-        result.totalCalories = calculatedTotal;
-      }
-      
-      // Ensure we have a valid total
-      if (result.totalCalories <= 0) {
-        result.totalCalories = calculatedTotal > 0 ? calculatedTotal : 150;
-      }
-      
-      // Ensure we have a valid meal type
-      if (!result.mealType || !['Café da Manhã', 'Almoço', 'Jantar', 'Lanche'].includes(result.mealType)) {
-        const currentHour = new Date().getHours();
-        if (currentHour < 10) {
-          result.mealType = 'Café da Manhã';
-        } else if (currentHour < 15) {
-          result.mealType = 'Almoço';
-        } else if (currentHour < 19) {
-          result.mealType = 'Lanche';
-        } else {
-          result.mealType = 'Jantar';
-        }
-      }
-      
-      // Ensure we have a valid confidence level
-      if (!result.confidence || !['high', 'medium', 'low'].includes(result.confidence)) {
-        result.confidence = 'high'; // Free APIs + AI should have higher confidence
-      }
-      
-      console.log('Free APIs + AI analysis result:', result);
-      setAnalysisResult(result);
-      setEditedFoods(result.foods);
-      setEditedMealType(result.mealType);
-      setMealName(result.mealName || 'Refeição Personalizada');
-      
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          friction: 12,
-          tension: 80,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      
-      setTimeout(() => {
-        setShowEditMenu(true);
-        Animated.timing(editMenuAnim, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      }, 200);
-      
-      setIsAnalyzing(false);
-    } catch (err) {
-      console.error(`Error in LogMeal analysis (attempt ${retryCount + 1}):`, err);
-      
-      const isNetworkError = err instanceof Error && (
-        err.message.includes('Network request failed') ||
-        err.message.includes('fetch') ||
-        err.message.includes('Timeout') ||
-        err.message.includes('Failed to fetch') ||
-        err.message.includes('NetworkError') ||
-        err.message.includes('TypeError') ||
-        err.message.includes('LogMeal API error')
-      );
-      
-      if (isNetworkError && retryCount < maxRetries) {
-        console.log(`Retrying LogMeal in ${(retryCount + 1) * 2} seconds...`);
-        setTimeout(() => {
-          analyzeWithFreeAPIs(retryCount + 1);
-        }, (retryCount + 1) * 2000);
-        return;
-      }
-      
-      // If all free APIs fail, throw error to trigger AI-only fallback
-      throw err;
-    }
-  }, [imageBase64, fadeAnim, slideAnim, editMenuAnim]);
-
-  // Fallback function using the original AI analysis
-  const analyzeImageFallback = useCallback(async (retryCount = 0) => {
+  const analyzeImage = useCallback(async (retryCount = 0) => {
     const maxRetries = 3;
     
     try {
       setIsAnalyzing(true);
       setError(null);
 
-      console.log(`Starting fallback AI analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
-      
-      if (!imageBase64) {
-        throw new Error('Nenhuma imagem foi fornecida para análise');
-      }
+      console.log(`Starting image analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
       
       const startTime = Date.now();
 
       const analysisSchema = z.object({
-        mealName: z.string().describe('Nome automático gerado para a refeição'),
         foods: z.array(z.object({
           name: z.string(),
-          weightInGrams: z.number(),
           calories: z.number(),
           protein: z.number(),
           carbs: z.number(),
           fat: z.number(),
-          fiber: z.number().optional(),
-          sugar: z.number().optional(),
-          sodium: z.number().optional(),
           portion: z.string()
         })),
         totalCalories: z.number(),
-        totalWeight: z.number(),
         mealType: z.enum(['Café da Manhã', 'Almoço', 'Jantar', 'Lanche']),
         confidence: z.enum(['high', 'medium', 'low'])
       });
 
+      // Add timeout to the request
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout: A análise demorou muito para responder')), 45000);
+        setTimeout(() => reject(new Error('Timeout: A análise demorou muito para responder')), 30000);
       });
 
-      console.log('Calling generateObject with image data...');
-      
       const analysisPromise = generateObject({
         messages: [
           {
@@ -496,79 +81,14 @@ ${JSON.stringify(apiResult, null, 2)}`;
             content: [
               {
                 type: 'text',
-                text: `Analise esta imagem de comida e identifique CADA INGREDIENTE SEPARADAMENTE com informações nutricionais precisas em português. Também gere um NOME AUTOMÁTICO para a refeição.
+                text: `Analise esta imagem de comida e identifique os alimentos com informações nutricionais em português.
                 
-                REGRAS CRÍTICAS PARA SEPARAÇÃO DE INGREDIENTES:
-                - Separe CADA ingrediente individualmente (ex: se vê arroz com feijão, liste "Arroz branco" e "Feijão preto" separadamente)
-                - Estime o peso em GRAMAS para cada ingrediente (muito importante!)
-                - Use estimativas realistas baseadas no tamanho visual
-                - Calcule valores nutricionais por 100g e ajuste para o peso estimado
-                - Identifique 4-10 ingredientes diferentes quando possível
-                - Seja específico: "Peito de frango grelhado", não apenas "Frango"
-                - Inclua temperos e molhos visíveis se significativos
-                - Para vegetais, estime peso individual (ex: "Tomate" 80g, "Alface" 30g)
-                - Para carnes, estime porções realistas (ex: "Peito de frango" 120g)
-                - Para carboidratos, use medidas precisas (ex: "Arroz cozido" 150g)
-                - Separe até mesmo ingredientes pequenos como cebola, alho, azeite se visíveis
-                - Para pratos compostos, decomponha em ingredientes básicos
-                
-                REGRAS PARA NOME AUTOMÁTICO DA REFEIÇÃO:
-                - Crie um nome atrativo e descritivo baseado nos ingredientes principais
-                - Use nomes brasileiros típicos (ex: "Frango com Arroz e Brócolis", "Salada Tropical", "Bowl Proteico")
-                - Seja criativo mas realista
-                - Máximo 4-5 palavras
-                - Evite nomes genéricos como "Refeição" ou "Prato"
-                
-                Exemplo de resposta detalhada:
-                {
-                  "mealName": "Frango Grelhado com Arroz e Brócolis",
-                  "foods": [
-                    {
-                      "name": "Peito de frango grelhado",
-                      "weightInGrams": 120,
-                      "calories": 198,
-                      "protein": 37,
-                      "carbs": 0,
-                      "fat": 4,
-                      "fiber": 0,
-                      "portion": "120g"
-                    },
-                    {
-                      "name": "Arroz branco cozido",
-                      "weightInGrams": 150,
-                      "calories": 195,
-                      "protein": 4,
-                      "carbs": 43,
-                      "fat": 0.5,
-                      "fiber": 1,
-                      "portion": "150g"
-                    },
-                    {
-                      "name": "Brócolis cozido",
-                      "weightInGrams": 80,
-                      "calories": 22,
-                      "protein": 2,
-                      "carbs": 4,
-                      "fat": 0,
-                      "fiber": 2,
-                      "portion": "80g"
-                    },
-                    {
-                      "name": "Azeite de oliva",
-                      "weightInGrams": 10,
-                      "calories": 88,
-                      "protein": 0,
-                      "carbs": 0,
-                      "fat": 10,
-                      "fiber": 0,
-                      "portion": "1 colher de sopa"
-                    }
-                  ],
-                  "totalCalories": 503,
-                  "totalWeight": 360,
-                  "mealType": "Almoço",
-                  "confidence": "high"
-                }`
+                Regras:
+                - Identifique 1-3 alimentos principais
+                - Use porções comuns (ex: "1 prato", "100g", "1 xícara")
+                - Estime calorias com precisão
+                - Determine o tipo de refeição baseado nos alimentos
+                - Calcule proteínas, carboidratos e gorduras em gramas`
               },
               {
                 type: 'image',
@@ -580,54 +100,19 @@ ${JSON.stringify(apiResult, null, 2)}`;
         schema: analysisSchema
       });
 
-      console.log('Waiting for analysis result...');
       const result = await Promise.race([analysisPromise, timeoutPromise]) as any;
-      console.log('Analysis result received:', result);
       
       const processingTime = Date.now() - startTime;
       console.log(`Analysis completed in ${processingTime}ms`);
       
       // Validate the result structure
-      if (!result || typeof result !== 'object') {
-        throw new Error('Resposta inválida da análise');
+      if (!result.foods || result.foods.length === 0) {
+        throw new Error('Nenhum alimento foi identificado na imagem');
       }
-      
-      if (!result.foods || !Array.isArray(result.foods) || result.foods.length === 0) {
-        console.warn('No foods detected, creating fallback food item');
-        result.foods = [{
-          name: 'Alimento não identificado',
-          weightInGrams: 100,
-          calories: 150,
-          protein: 5,
-          carbs: 20,
-          fat: 5,
-          fiber: 2,
-          portion: '100g'
-        }];
-        result.confidence = 'low';
-      }
-      
-      // Validate and fix each food item
-      result.foods = result.foods.map((food: any, index: number) => {
-        const weightInGrams = Math.max(1, Number(food.weightInGrams) || 100);
-        const validFood = {
-          name: food.name || `Ingrediente ${index + 1}`,
-          weightInGrams: weightInGrams,
-          calories: Math.max(0, Number(food.calories) || 100),
-          protein: Math.max(0, Number(food.protein) || 0),
-          carbs: Math.max(0, Number(food.carbs) || 0),
-          fat: Math.max(0, Number(food.fat) || 0),
-          fiber: Math.max(0, Number(food.fiber) || 0),
-          sugar: food.sugar ? Math.max(0, Number(food.sugar)) : undefined,
-          sodium: food.sodium ? Math.max(0, Number(food.sodium)) : undefined,
-          portion: food.portion || `${weightInGrams}g`
-        };
-        return validFood;
-      });
       
       // Calculate the correct total calories from individual foods
       const calculatedTotal = result.foods.reduce((sum: number, food: any) => {
-        return sum + (Number(food.calories) || 0);
+        return sum + food.calories;
       }, 0);
       
       // Fix the totalCalories if it doesn't match the sum
@@ -636,170 +121,70 @@ ${JSON.stringify(apiResult, null, 2)}`;
         result.totalCalories = calculatedTotal;
       }
       
-      // Ensure we have a valid total
       if (result.totalCalories <= 0) {
-        result.totalCalories = calculatedTotal > 0 ? calculatedTotal : 150;
-      }
-      
-      // Ensure we have a valid meal type
-      if (!result.mealType || !['Café da Manhã', 'Almoço', 'Jantar', 'Lanche'].includes(result.mealType)) {
-        const currentHour = new Date().getHours();
-        if (currentHour < 10) {
-          result.mealType = 'Café da Manhã';
-        } else if (currentHour < 15) {
-          result.mealType = 'Almoço';
-        } else if (currentHour < 19) {
-          result.mealType = 'Lanche';
-        } else {
-          result.mealType = 'Jantar';
-        }
-      }
-      
-      // Ensure we have a valid confidence level
-      if (!result.confidence || !['high', 'medium', 'low'].includes(result.confidence)) {
-        result.confidence = 'medium';
+        throw new Error('Calorias não puderam ser calculadas');
       }
       
       console.log('Analysis result:', result);
       setAnalysisResult(result);
       setEditedFoods(result.foods);
       setEditedMealType(result.mealType);
-      setMealName(result.mealName || 'Refeição Personalizada');
       
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 250,
+          duration: 250, // Reduzido para 250ms
           useNativeDriver: true,
         }),
         Animated.spring(slideAnim, {
           toValue: 0,
-          friction: 12,
-          tension: 80,
+          friction: 12, // Aumentado para animação mais rápida
+          tension: 80,  // Aumentado para animação mais rápida
           useNativeDriver: true,
         }),
       ]).start();
       
+      // Show edit menu immediately
       setTimeout(() => {
         setShowEditMenu(true);
         Animated.timing(editMenuAnim, {
           toValue: 1,
-          duration: 200,
+          duration: 200, // Reduzido para 200ms
           useNativeDriver: true,
         }).start();
-      }, 200);
-      
-      setIsAnalyzing(false);
+      }, 200); // Reduzido para 200ms
     } catch (err) {
-      console.error(`Error in fallback analysis (attempt ${retryCount + 1}):`, err);
+      console.error(`Error analyzing image (attempt ${retryCount + 1}):`, err);
       
+      // Check if it's a network error and we can retry
       const isNetworkError = err instanceof Error && (
         err.message.includes('Network request failed') ||
         err.message.includes('fetch') ||
         err.message.includes('Timeout') ||
-        err.message.includes('Failed to fetch') ||
-        err.message.includes('NetworkError') ||
-        err.message.includes('TypeError')
+        err.message.includes('Failed to fetch')
       );
       
       if (isNetworkError && retryCount < maxRetries) {
-        console.log(`Retrying fallback in ${(retryCount + 1) * 2} seconds...`);
+        console.log(`Retrying in ${(retryCount + 1) * 2} seconds...`);
         setTimeout(() => {
-          analyzeImageFallback(retryCount + 1);
-        }, (retryCount + 1) * 2000);
-        return;
-      }
-      
-      if (retryCount >= maxRetries) {
-        console.log('All fallback retries failed, creating final fallback...');
-        const fallbackResult = {
-          mealName: 'Refeição Mista',
-          foods: [{
-            name: 'Refeição mista (análise manual necessária)',
-            weightInGrams: 200,
-            calories: 300,
-            protein: 15,
-            carbs: 35,
-            fat: 10,
-            fiber: 5,
-            portion: '200g'
-          }],
-          totalCalories: 300,
-          totalWeight: 200,
-          mealType: (() => {
-            const currentHour = new Date().getHours();
-            if (currentHour < 10) return 'Café da Manhã';
-            if (currentHour < 15) return 'Almoço';
-            if (currentHour < 19) return 'Lanche';
-            return 'Jantar';
-          })() as 'Café da Manhã' | 'Almoço' | 'Jantar' | 'Lanche',
-          confidence: 'low' as 'high' | 'medium' | 'low'
-        };
-        
-        setAnalysisResult(fallbackResult);
-        setEditedFoods(fallbackResult.foods);
-        setEditedMealType(fallbackResult.mealType);
-        setMealName(fallbackResult.mealName);
-        
-        Animated.parallel([
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 250,
-            useNativeDriver: true,
-          }),
-          Animated.spring(slideAnim, {
-            toValue: 0,
-            friction: 12,
-            tension: 80,
-            useNativeDriver: true,
-          }),
-        ]).start();
-        
-        setTimeout(() => {
-          setShowEditMenu(true);
-          Animated.timing(editMenuAnim, {
-            toValue: 1,
-            duration: 200,
-            useNativeDriver: true,
-          }).start();
-        }, 200);
-        
-        setIsAnalyzing(false);
+          analyzeImage(retryCount + 1);
+        }, (retryCount + 1) * 2000); // Exponential backoff
         return;
       }
       
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      let userFriendlyMessage = 'Não foi possível analisar a imagem automaticamente';
+      let userFriendlyMessage = 'Não foi possível analisar a imagem';
       
       if (isNetworkError) {
         userFriendlyMessage = 'Erro de conexão. Verifique sua internet e tente novamente';
       } else if (errorMessage.includes('Timeout')) {
         userFriendlyMessage = 'A análise demorou muito. Tente novamente';
-      } else if (errorMessage.includes('generateObject')) {
-        userFriendlyMessage = 'Serviço de análise temporariamente indisponível';
       }
       
       setError(userFriendlyMessage);
       setIsAnalyzing(false);
     }
   }, [imageBase64, fadeAnim, slideAnim, editMenuAnim]);
-
-  // Main analysis function that tries free APIs first, then falls back to AI-only
-  const analyzeImage = useCallback(async (retryCount = 0) => {
-    try {
-      console.log('Starting analysis with free APIs...');
-      await analyzeWithFreeAPIs(retryCount);
-    } catch (freeApiError) {
-      console.warn('Free APIs failed, falling back to AI-only analysis:', freeApiError);
-      try {
-        await analyzeImageFallback(retryCount);
-      } catch (fallbackError) {
-        console.error('Both free APIs and AI analysis failed:', fallbackError);
-        setError('Não foi possível analisar a imagem. Tente novamente.');
-        setIsAnalyzing(false);
-      }
-    }
-  }, [analyzeWithFreeAPIs, analyzeImageFallback]);
 
   useEffect(() => {
     if (imageBase64) {
@@ -823,7 +208,6 @@ ${JSON.stringify(apiResult, null, 2)}`;
         totalCalories: totalCalories,
         mealType: editedMealType,
         imageBase64: imageBase64,
-        mealName: mealName,
       });
 
 
@@ -883,14 +267,12 @@ ${JSON.stringify(apiResult, null, 2)}`;
 
   const handleAddFood = () => {
     const newFood: FoodItem = {
-      name: 'Novo Ingrediente',
-      weightInGrams: 100,
+      name: 'Novo Alimento',
       calories: 100,
       protein: 5,
       carbs: 15,
       fat: 3,
-      fiber: 2,
-      portion: '100g'
+      portion: '1 porção'
     };
     setEditedFoods([...editedFoods, newFood]);
     setEditingFood({ food: newFood, index: editedFoods.length });
@@ -971,7 +353,7 @@ ${JSON.stringify(apiResult, null, 2)}`;
               <View style={styles.sparkleRow}>
                 <Sparkles color="#FFD700" size={20} />
                 <Text style={[styles.loadingSubtext, { color: colors.textSecondary }]}>
-                  Usando APIs gratuitas + IA para identificação precisa
+                  Processamento inteligente em andamento
                 </Text>
                 <Sparkles color="#FFD700" size={20} />
               </View>
@@ -982,7 +364,7 @@ ${JSON.stringify(apiResult, null, 2)}`;
                 <Text style={[styles.progressText, { color: colors.textSecondary }]}>85% concluído</Text>
               </View>
               <Text style={[styles.loadingTip, { color: colors.textTertiary }]}>
-                🔬 APIs gratuitas detectam alimentos + IA separa ingredientes e gera nome automático...
+                ✨ Identificando nutrientes e calculando valores...
               </Text>
             </BlurCard>
           ) : error ? (
@@ -1002,16 +384,6 @@ ${JSON.stringify(apiResult, null, 2)}`;
               }
             ]}>
               <BlurCard style={styles.totalCard}>
-                <View style={styles.mealNameContainer}>
-                  <Sparkles color="#FFD700" size={20} />
-                  <Text style={[styles.mealNameText, { color: colors.text }]}>{mealName}</Text>
-                  <TouchableOpacity onPress={() => {
-                    setTempMealName(mealName);
-                    setShowMealNameModal(true);
-                  }} style={styles.editMealNameButton}>
-                    <Edit3 color={colors.textSecondary} size={16} />
-                  </TouchableOpacity>
-                </View>
                 <View style={styles.totalHeader}>
                   <Award color="#FFD700" size={24} />
                   <Text style={[styles.totalLabel, { color: colors.textSecondary }]}>Total de Calorias</Text>
@@ -1041,14 +413,11 @@ ${JSON.stringify(apiResult, null, 2)}`;
               <View style={styles.foodsHeader}>
                 <View style={styles.foodsTitleContainer}>
                   <TrendingUp color="#4ECDC4" size={20} />
-                  <Text style={[styles.foodsTitle, { color: colors.text }]}>Ingredientes Identificados ({editedFoods.length})</Text>
+                  <Text style={[styles.foodsTitle, { color: colors.text }]}>Alimentos Identificados</Text>
                 </View>
-                <View style={styles.totalWeightContainer}>
-                  <Text style={[styles.totalWeightText, { color: colors.textSecondary }]}>⚖️ {editedFoods.reduce((sum, food) => sum + food.weightInGrams, 0)}g total</Text>
-                  <TouchableOpacity onPress={handleAddFood} style={[styles.addFoodButton, { backgroundColor: colors.surfaceElevated }]}>
-                    <Plus color={colors.text} size={20} />
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity onPress={handleAddFood} style={[styles.addFoodButton, { backgroundColor: colors.surfaceElevated }]}>
+                  <Plus color={colors.text} size={20} />
+                </TouchableOpacity>
               </View>
               
               {editedFoods.map((food, index) => (
@@ -1077,10 +446,7 @@ ${JSON.stringify(apiResult, null, 2)}`;
                       </TouchableOpacity>
                     </View>
                   </View>
-                  <View style={styles.portionContainer}>
-                    <Text style={[styles.foodPortion, { color: colors.textSecondary }]}>📏 {food.portion}</Text>
-                    <Text style={[styles.foodWeight, { color: colors.text }]}>⚖️ {food.weightInGrams}g</Text>
-                  </View>
+                  <Text style={[styles.foodPortion, { color: colors.textSecondary }]}>📏 {food.portion}</Text>
                   <View style={styles.macrosContainer}>
                     <View style={styles.macrosRow}>
                       <View style={[styles.macroItem, styles.proteinMacro]}>
@@ -1307,38 +673,6 @@ ${JSON.stringify(apiResult, null, 2)}`;
                       </View>
                     </View>
                     
-                    <View style={styles.macroInputsRow}>
-                      <View style={styles.macroInputGroup}>
-                        <Text style={styles.inputLabel}>Fibra (g)</Text>
-                        <TextInput
-                          style={styles.numberInput}
-                          value={(editingFood.food.fiber || 0).toString()}
-                          onChangeText={(text) => setEditingFood({
-                            ...editingFood,
-                            food: { ...editingFood.food, fiber: parseInt(text) || 0 }
-                          })}
-                          keyboardType="numeric"
-                          placeholder="0"
-                          placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                        />
-                      </View>
-                      
-                      <View style={styles.macroInputGroup}>
-                        <Text style={styles.inputLabel}>Peso (g)</Text>
-                        <TextInput
-                          style={styles.numberInput}
-                          value={editingFood.food.weightInGrams.toString()}
-                          onChangeText={(text) => setEditingFood({
-                            ...editingFood,
-                            food: { ...editingFood.food, weightInGrams: parseInt(text) || 0 }
-                          })}
-                          keyboardType="numeric"
-                          placeholder="0"
-                          placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                        />
-                      </View>
-                    </View>
-                    
                     <View style={styles.modalButtons}>
                       <TouchableOpacity
                         style={styles.modalCancelButton}
@@ -1411,58 +745,6 @@ ${JSON.stringify(apiResult, null, 2)}`;
                 >
                   <Text style={styles.mealTypeModalCloseText}>Fechar</Text>
                 </TouchableOpacity>
-              </LinearGradient>
-            </View>
-          </View>
-        </Modal>
-
-        {/* Meal Name Edit Modal */}
-        <Modal
-          visible={showMealNameModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowMealNameModal(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.mealNameModalContainer}>
-              <LinearGradient
-                colors={['#667eea', '#764ba2']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.mealNameModalGradient}
-              >
-                <Text style={styles.mealNameModalTitle}>Nome da Refeição</Text>
-                
-                <TextInput
-                  style={styles.mealNameInput}
-                  value={tempMealName}
-                  onChangeText={setTempMealName}
-                  placeholder="Digite um nome para a refeição"
-                  placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                  maxLength={50}
-                  autoFocus
-                />
-                
-                <View style={styles.mealNameModalButtons}>
-                  <TouchableOpacity
-                    style={styles.mealNameCancelButton}
-                    onPress={() => setShowMealNameModal(false)}
-                  >
-                    <Text style={styles.mealNameCancelText}>Cancelar</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity
-                    style={styles.mealNameSaveButton}
-                    onPress={() => {
-                      if (tempMealName.trim()) {
-                        setMealName(tempMealName.trim());
-                      }
-                      setShowMealNameModal(false);
-                    }}
-                  >
-                    <Text style={styles.mealNameSaveText}>Salvar</Text>
-                  </TouchableOpacity>
-                </View>
               </LinearGradient>
             </View>
           </View>
@@ -2056,104 +1338,5 @@ const styles = StyleSheet.create({
   confidenceBarFill: {
     height: '100%',
     borderRadius: 4,
-  },
-  portionContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  foodWeight: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
-    backgroundColor: 'rgba(78, 205, 196, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  totalWeightContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  totalWeightText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  mealNameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    marginBottom: 20,
-    paddingHorizontal: 16,
-  },
-  mealNameText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-    flex: 1,
-  },
-  editMealNameButton: {
-    padding: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-  },
-  mealNameModalContainer: {
-    width: '85%',
-    maxWidth: 350,
-    borderRadius: 20,
-    overflow: 'hidden',
-  },
-  mealNameModalGradient: {
-    padding: 24,
-  },
-  mealNameModalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  mealNameInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: 'white',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  mealNameModalButtons: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  mealNameCancelButton: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  mealNameCancelText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  mealNameSaveButton: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  mealNameSaveText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });

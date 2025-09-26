@@ -95,29 +95,24 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
       <BlurCard variant="default" style={styles.card}>
         <View style={styles.content}>
           {meal.imageBase64 ? (
-            <View style={styles.thumbnailContainer}>
-              <Image
-                source={{ uri: `data:image/jpeg;base64,${meal.imageBase64}` }}
-                style={styles.thumbnail}
-              />
-              <View style={styles.thumbnailOverlay} />
-            </View>
+            <Image
+              source={{ uri: `data:image/jpeg;base64,${meal.imageBase64}` }}
+              style={styles.thumbnail}
+            />
           ) : (
             <View style={styles.placeholderThumbnail}>
-              <View style={[styles.placeholderIcon, { backgroundColor: colors.primary + '15' }]}>
-                <Utensils color={colors.primary} size={20} strokeWidth={2} />
-              </View>
+              <Utensils color={colors.textTertiary} size={24} strokeWidth={1.5} />
             </View>
           )}
           
           <View style={styles.info}>
             <View style={styles.header}>
-              <View style={[styles.mealTypeContainer, { backgroundColor: colors.primary + '12' }]}>
-                <Text style={[styles.mealType, { color: colors.primary }]}>{meal.mealType}</Text>
+              <View style={styles.mealTypeContainer}>
+                <Text style={styles.mealType}>{meal.mealType}</Text>
               </View>
               <View style={styles.timeContainer}>
-                <Clock color={colors.textTertiary} size={11} strokeWidth={2} />
-                <Text style={[styles.time, { color: colors.textTertiary }]}>{formatTime(meal.timestamp)}</Text>
+                <Clock color={colors.textSecondary} size={12} strokeWidth={2} />
+                <Text style={[styles.time, { color: colors.textSecondary }]}>{formatTime(meal.timestamp)}</Text>
               </View>
             </View>
             
@@ -127,7 +122,7 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
               </Text>
               {meal.foods.length > 2 && (
                 <Text style={[styles.foodCount, { color: colors.textTertiary }]}>
-                  +{meal.foods.length - 2} itens adicionais
+                  +{meal.foods.length - 2} mais
                 </Text>
               )}
             </View>
@@ -136,31 +131,18 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
               <View style={styles.caloriesContainer}>
                 <Text style={[styles.calories, { color: colors.text }]}>{meal.totalCalories}</Text>
                 <Text style={[styles.caloriesUnit, { color: colors.textSecondary }]}>kcal</Text>
-                <View style={styles.macroSummary}>
-                  <Text style={[styles.macroText, { color: colors.textTertiary }]}>
-                    P: {meal.foods.reduce((sum, f) => sum + (f.protein || 0), 0).toFixed(0)}g
-                  </Text>
-                  <Text style={[styles.macroSeparator, { color: colors.textTertiary }]}>•</Text>
-                  <Text style={[styles.macroText, { color: colors.textTertiary }]}>
-                    C: {meal.foods.reduce((sum, f) => sum + (f.carbs || 0), 0).toFixed(0)}g
-                  </Text>
-                  <Text style={[styles.macroSeparator, { color: colors.textTertiary }]}>•</Text>
-                  <Text style={[styles.macroText, { color: colors.textTertiary }]}>
-                    G: {meal.foods.reduce((sum, f) => sum + (f.fat || 0), 0).toFixed(0)}g
-                  </Text>
-                </View>
               </View>
               <View style={styles.actionButtons}>
                 {showDetailButton && (
                   <TouchableOpacity onPress={handleViewDetails} style={styles.detailButton}>
-                    <View style={[styles.detailButtonInner, { backgroundColor: colors.primary + '12' }]}>
-                      <ChevronRight color={colors.primary} size={16} strokeWidth={2.5} />
+                    <View style={styles.detailButtonInner}>
+                      <ChevronRight color={colors.primary} size={18} strokeWidth={2} />
                     </View>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-                  <View style={[styles.deleteButtonInner, { backgroundColor: colors.error + '12' }]}>
-                    <Trash2 color={colors.error} size={16} strokeWidth={2.5} />
+                  <View style={styles.deleteButtonInner}>
+                    <Trash2 color={colors.error} size={18} strokeWidth={2} />
                   </View>
                 </TouchableOpacity>
               </View>
@@ -177,55 +159,36 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     marginBottom: 16,
   },
   card: {
-    padding: 18,
+    padding: 20,
     backgroundColor: colors.surfaceElevated,
-    borderRadius: 18,
+    borderRadius: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: isDark ? 0.15 : 0.06,
-    shadowRadius: isDark ? 6 : 12,
-    elevation: isDark ? 3 : 4,
-    borderWidth: isDark ? 0 : 0.5,
-    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: 0.5,
+    borderColor: 'rgba(0, 0, 0, 0.05)',
   },
   content: {
     flexDirection: 'row',
-    gap: 14,
-  },
-  thumbnailContainer: {
-    position: 'relative',
+    gap: 16,
   },
   thumbnail: {
-    width: 68,
-    height: 68,
-    borderRadius: 14,
+    width: 64,
+    height: 64,
+    borderRadius: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  thumbnailOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 14,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   placeholderThumbnail: {
-    width: 68,
-    height: 68,
-    borderRadius: 14,
+    width: 64,
+    height: 64,
+    borderRadius: 12,
     backgroundColor: colors.surfaceSecondary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  placeholderIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -238,18 +201,20 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   mealTypeContainer: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    backgroundColor: '#007AFF' + '15',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     borderRadius: 8,
   },
   mealType: {
-    fontSize: 10,
-    fontWeight: '700' as const,
+    fontSize: 11,
+    fontWeight: '600' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
+    color: '#007AFF',
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -259,13 +224,12 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   timeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    gap: 4,
   },
   time: {
-    fontSize: 11,
-    fontWeight: '500' as const,
+    fontSize: 13,
+    fontWeight: '400' as const,
     letterSpacing: 0.1,
-    opacity: 0.7,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -273,14 +237,14 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     }),
   },
   foodsContainer: {
-    marginBottom: 10,
-    gap: 3,
+    marginBottom: 12,
+    gap: 4,
   },
   foods: {
-    fontSize: 15,
-    fontWeight: '500' as const,
-    lineHeight: 20,
-    letterSpacing: -0.2,
+    fontSize: 16,
+    fontWeight: '400' as const,
+    lineHeight: 22,
+    letterSpacing: -0.24,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -288,10 +252,10 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     }),
   },
   foodCount: {
-    fontSize: 11,
-    fontWeight: '500' as const,
+    fontSize: 13,
+    fontWeight: '400' as const,
     letterSpacing: 0.1,
-    opacity: 0.5,
+    opacity: 0.6,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -301,16 +265,17 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    alignItems: 'center',
   },
   caloriesContainer: {
-    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'baseline',
     gap: 4,
   },
   calories: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '300' as const,
-    letterSpacing: -0.6,
+    letterSpacing: -0.8,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -318,60 +283,45 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     }),
   },
   caloriesUnit: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '600' as const,
     textTransform: 'uppercase' as const,
-    letterSpacing: 0.4,
+    letterSpacing: 0.5,
     opacity: 0.6,
-    marginLeft: 4,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
       },
     }),
   },
-  macroSummary: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  macroText: {
-    fontSize: 10,
-    fontWeight: '500' as const,
-    letterSpacing: 0.2,
-    opacity: 0.6,
-  },
-  macroSeparator: {
-    fontSize: 10,
-    opacity: 0.4,
+  deleteButton: {
+    borderRadius: 12,
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 6,
+    gap: 8,
   },
   detailButton: {
-    borderRadius: 10,
-  },
-  deleteButton: {
-    borderRadius: 10,
+    borderRadius: 12,
   },
   detailButtonInner: {
-    padding: 8,
-    borderRadius: 10,
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: colors.primary + '15',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   deleteButtonInner: {
-    padding: 8,
-    borderRadius: 10,
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: colors.error + '15',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
 });

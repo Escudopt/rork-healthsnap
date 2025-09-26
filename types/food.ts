@@ -1,21 +1,17 @@
 export interface FoodItem {
   name: string;
-  weightInGrams: number;
   calories: number;
   protein: number;
   carbs: number;
   fat: number;
-  fiber?: number; // fibra em gramas
   sugar?: number; // açúcar em gramas
   sodium?: number; // sal/sódio em mg
   portion: string;
 }
 
 export interface AnalysisResult {
-  mealName?: string;
   foods: FoodItem[];
   totalCalories: number;
-  totalWeight?: number;
   mealType: 'Café da Manhã' | 'Almoço' | 'Jantar' | 'Lanche';
   confidence: 'high' | 'medium' | 'low';
   notes?: string;
@@ -24,7 +20,6 @@ export interface AnalysisResult {
 export interface Meal {
   id: string;
   name?: string;
-  mealName?: string;
   foods: FoodItem[];
   totalCalories: number;
   mealType?: string;

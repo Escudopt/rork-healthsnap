@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity, Image } from 'lucide-react-native';
+import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity } from 'lucide-react-native';
 import { FloatingAIChat } from '@/components/FloatingAIChat';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -146,8 +146,6 @@ export default function HomeScreen() {
     setTimeout(startMotivationPulse, 2000);
   }, [fadeAnim, scaleAnim, headerSlideAnim, statsSlideAnim, floatingAnim, sparkleAnim, motivationAnim]);
 
-  const [showImagePicker, setShowImagePicker] = useState(false);
-
   const handleCameraPress = async () => {
     if (Platform.OS !== 'web') {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -166,107 +164,88 @@ export default function HomeScreen() {
       }),
     ]).start();
 
-    setShowImagePicker(true);
-  };
+    Alert.alert(
+      'Adicionar Refeição',
+      'Como você deseja adicionar sua refeição?',
+      [
+        {
+          text: 'Câmera',
+          onPress: async () => {
+            try {
+              const permission = await ImagePicker.requestCameraPermissionsAsync();
+              if (!permission.granted) {
+                Alert.alert(
+                  'Permissão Necessária',
+                  'Precisamos de acesso à câmera para tirar fotos dos alimentos.',
+                  [{ text: 'OK' }]
+                );
+                return;
+              }
 
-  const handleImagePickerOption = async (option: 'camera' | 'gallery') => {
-    setShowImagePicker(false);
-    
-    // Small delay to ensure modal is closed before starting image picker
-    await new Promise(resolve => setTimeout(resolve, 100));
-    
-    try {
-      if (option === 'camera') {
-        const permission = await ImagePicker.requestCameraPermissionsAsync();
-        if (!permission.granted) {
-          Alert.alert(
-            'Permissão Necessária',
-            'Precisamos de acesso à câmera para tirar fotos dos alimentos.',
-            [{ text: 'OK' }]
-          );
-          return;
-        }
-
-        const result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [4, 3],
-          quality: 0.5,
-          base64: true,
-          exif: false,
-        });
-
-        if (!result.canceled && result.assets[0]?.base64) {
-          const base64Data = result.assets[0].base64;
-          console.log('📸 Image captured successfully:', {
-            hasBase64: !!base64Data,
-            length: base64Data?.length || 0,
-            preview: base64Data?.substring(0, 50) + '...'
-          });
-          
-          if (base64Data && base64Data.trim()) {
-            console.log('🚀 Navigating to food-analysis with image data...');
-            
-            // Ensure modal is closed before navigation
-            setShowImagePicker(false);
-            
-            // Small delay to ensure UI is updated
-            setTimeout(() => {
-              router.push({
-                pathname: '/food-analysis',
-                params: { imageBase64: base64Data },
+              const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.5, // Reduzido para 0.5 para processamento mais rápido
+                base64: true,
+                exif: false,
               });
-            }, 100);
-          } else {
-            console.error('❌ No valid base64 data found');
-            Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
-          }
-        }
-      } else {
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [4, 3],
-          quality: 0.5,
-          base64: true,
-          exif: false,
-        });
 
-        if (!result.canceled && result.assets[0]?.base64) {
-          const base64Data = result.assets[0].base64;
-          console.log('🖼️ Image selected successfully:', {
-            hasBase64: !!base64Data,
-            length: base64Data?.length || 0,
-            preview: base64Data?.substring(0, 50) + '...'
-          });
-          
-          if (base64Data && base64Data.trim()) {
-            console.log('🚀 Navigating to food-analysis with image data...');
-            
-            // Ensure modal is closed before navigation
-            setShowImagePicker(false);
-            
-            // Small delay to ensure UI is updated
-            setTimeout(() => {
-              router.push({
-                pathname: '/food-analysis',
-                params: { imageBase64: base64Data },
+              if (!result.canceled && result.assets[0].base64) {
+                console.log('Image captured, navigating immediately...');
+                // Navegar imediatamente sem delay
+                router.push({
+                  pathname: '/analysis',
+                  params: { imageBase64: result.assets[0].base64 },
+                });
+              }
+            } catch (error) {
+              console.error('Camera error:', error);
+              Alert.alert(
+                'Erro na Câmera',
+                'Não foi possível acessar a câmera. Tente novamente.',
+                [{ text: 'OK' }]
+              );
+            }
+          },
+        },
+        {
+          text: 'Galeria',
+          onPress: async () => {
+            try {
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.5, // Reduzido para 0.5 para processamento mais rápido
+                base64: true,
+                exif: false,
               });
-            }, 100);
-          } else {
-            console.error('❌ No valid base64 data found');
-            Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Image picker error:', error);
-      Alert.alert(
-        'Erro',
-        'Não foi possível acessar a câmera/galeria. Tente novamente.',
-        [{ text: 'OK' }]
-      );
-    }
+
+              if (!result.canceled && result.assets[0].base64) {
+                console.log('Image selected, navigating immediately...');
+                // Navegar imediatamente sem delay
+                router.push({
+                  pathname: '/analysis',
+                  params: { imageBase64: result.assets[0].base64 },
+                });
+              }
+            } catch (error) {
+              console.error('Gallery error:', error);
+              Alert.alert(
+                'Erro na Galeria',
+                'Não foi possível acessar a galeria. Tente novamente.',
+                [{ text: 'OK' }]
+              );
+            }
+          },
+        },
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+      ]
+    );
   };
 
   // Get today's meals using the same logic as the provider
@@ -552,8 +531,6 @@ export default function HomeScreen() {
                     <Camera color={colors.primary} size={16} strokeWidth={2} />
                     <Text style={[styles.emptyActionText, { color: colors.primary }]}>Adicionar Refeição</Text>
                   </TouchableOpacity>
-                  
-
                 </View>
               </LinearGradient>
             </View>
@@ -600,15 +577,15 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <LinearGradient
         colors={isDark ? [
-          '#0A0B0F',
-          '#111318',
-          '#1A1D24',
-          '#242831'
+          '#000000',
+          '#0A0A0B',
+          '#1C1C1E',
+          '#2C2C2E'
         ] : [
           '#FAFBFF',
-          '#F5F7FA',
-          '#F0F2F5',
-          '#E8EBF0'
+          '#F8F9FE',
+          '#F2F4F8',
+          '#EBEEF5'
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -995,77 +972,6 @@ export default function HomeScreen() {
           </View>
         </Modal>
 
-        {/* Image Picker Modal */}
-        <Modal
-          visible={showImagePicker}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setShowImagePicker(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.imagePickerContainer}>
-              <LinearGradient
-                colors={['rgba(0, 0, 0, 0.8)', 'rgba(26, 26, 46, 0.9)', 'rgba(22, 33, 62, 0.8)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.imagePickerGradient}
-              >
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Adicionar Refeição</Text>
-                  <TouchableOpacity
-                    onPress={() => setShowImagePicker(false)}
-                    style={styles.closeButton}
-                  >
-                    <X color={colors.text} size={24} />
-                  </TouchableOpacity>
-                </View>
-                
-                <View style={styles.imagePickerContent}>
-                  <Text style={styles.imagePickerSubtitle}>
-                    Como você deseja adicionar sua refeição?
-                  </Text>
-                  
-                  <View style={styles.imagePickerOptions}>
-                    <TouchableOpacity
-                      style={styles.imagePickerOption}
-                      onPress={() => handleImagePickerOption('camera')}
-                      activeOpacity={0.8}
-                    >
-                      <LinearGradient
-                        colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.08)']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.imagePickerOptionGradient}
-                      >
-                        <Camera color="rgba(255, 255, 255, 0.9)" size={32} strokeWidth={2} />
-                        <Text style={styles.imagePickerOptionText}>Câmera</Text>
-                        <Text style={styles.imagePickerOptionSubtext}>Tirar uma foto</Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity
-                      style={styles.imagePickerOption}
-                      onPress={() => handleImagePickerOption('gallery')}
-                      activeOpacity={0.8}
-                    >
-                      <LinearGradient
-                        colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.08)']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.imagePickerOptionGradient}
-                      >
-                        <Image color="rgba(255, 255, 255, 0.9)" size={32} strokeWidth={2} />
-                        <Text style={styles.imagePickerOptionText}>Galeria</Text>
-                        <Text style={styles.imagePickerOptionSubtext}>Escolher da galeria</Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </LinearGradient>
-            </View>
-          </View>
-        </Modal>
-
         {/* Quick Goal Selection Modal */}
         <Modal
           visible={showQuickGoals}
@@ -1170,18 +1076,18 @@ export default function HomeScreen() {
 const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isDark ? '#0A0B0F' : '#FAFBFF',
+    backgroundColor: isDark ? '#000000' : '#FAFBFF',
   },
   safeArea: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 140,
+    paddingBottom: 120,
   },
   header: {
-    paddingHorizontal: 24,
-    paddingTop: 12,
-    paddingBottom: 28,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 24,
   },
   headerTop: {
     flexDirection: 'row',
@@ -1254,10 +1160,10 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignSelf: 'center',
   },
   greeting: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700' as const,
-    marginBottom: 4,
-    letterSpacing: -0.4,
+    marginBottom: 2,
+    letterSpacing: -0.3,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -1265,11 +1171,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     }),
   },
   date: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '500' as const,
     textTransform: 'capitalize' as const,
-    lineHeight: 18,
-    opacity: 0.65,
+    lineHeight: 17,
+    opacity: 0.6,
     letterSpacing: 0.1,
   },
   headerButtons: {
@@ -1278,17 +1184,17 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 8,
   },
   headerIconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.9)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: isDark ? 0.2 : 0.06,
-    shadowRadius: isDark ? 4 : 8,
-    elevation: isDark ? 2 : 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: isDark ? 0.15 : 0.04,
+    shadowRadius: isDark ? 3 : 6,
+    elevation: isDark ? 1 : 1,
     borderWidth: isDark ? 0 : 0.5,
     borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
   },
@@ -1345,11 +1251,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     position: 'relative',
   },
   statsContainer: {
-    paddingHorizontal: 24,
-    marginBottom: 28,
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
   mainContentContainer: {
-    gap: 24,
+    gap: 20,
     paddingHorizontal: 0,
     marginHorizontal: 0,
   },
@@ -2157,58 +2063,6 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '600' as const,
     letterSpacing: 0.2,
-  },
-  
-  // Image Picker Modal Styles
-  imagePickerContainer: {
-    width: '90%',
-    maxWidth: 400,
-    borderRadius: 24,
-    overflow: 'hidden',
-    shadowColor: 'rgba(0, 122, 255, 0.5)',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.4,
-    shadowRadius: 30,
-    elevation: 20,
-  },
-  imagePickerGradient: {
-    padding: 0,
-    borderRadius: 24,
-  },
-  imagePickerContent: {
-    padding: 20,
-    paddingTop: 10,
-  },
-  imagePickerSubtitle: {
-    fontSize: 16,
-    fontWeight: '400' as const,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center' as const,
-    marginBottom: 24,
-    lineHeight: 22,
-  },
-  imagePickerOptions: {
-    gap: 16,
-  },
-  imagePickerOption: {
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  imagePickerOptionGradient: {
-    padding: 24,
-    alignItems: 'center',
-    gap: 8,
-  },
-  imagePickerOptionText: {
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontSize: 18,
-    fontWeight: '600' as const,
-    marginTop: 8,
-  },
-  imagePickerOptionSubtext: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 14,
-    fontWeight: '400' as const,
   },
   
   // Enhanced Daily Progress Menu Styles

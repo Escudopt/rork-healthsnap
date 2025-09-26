@@ -2,11 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Alert } from 'react-native';
-import { generateText } from '@rork/toolkit-sdk';
 import { Meal, UserProfile, HealthMetrics } from '@/types/food';
-
-// Hydration state management
-let isHydrated = false;
 
 // Health sync types (mock implementation for demonstration)
 interface HealthRecord {
@@ -112,7 +108,6 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
   const [healthMetrics, setHealthMetrics] = useState<HealthMetrics | null>(null);
   const [isHealthSyncEnabled, setIsHealthSyncEnabled] = useState<boolean>(false);
   const [healthSyncStatus, setHealthSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
-  const [hydrated, setHydrated] = useState(false);
   
   console.log('🔢 Provider state - meals count:', meals.length, 'isInitialized:', isInitialized);
 
@@ -182,10 +177,8 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
       else if (bmi < 30) bmiCategory = 'Sobrepeso';
       else bmiCategory = 'Obesidade';
       
-      // Generate personalized recommendations using AI
-      let recommendations: string[] = [];
-      try {
-        const aiPrompt = `
+      // Use AI to generate personalized recommendations
+      const aiPrompt = `
 Analise os seguintes dados de saúde e forneça 3-4 recomendações personalizadas em português:
 
 Perfil:
@@ -211,17 +204,32 @@ Forneça recomendações práticas e específicas sobre:
 4. Metas realistas
 
 Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
-        
-        const response = await generateText({ messages: [{ role: 'user', content: aiPrompt }] });
-        
+      
+      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: aiPrompt
+            }
+          ]
+        })
+      });
+      
+      let recommendations: string[] = [];
+      if (response.ok) {
+        const data = await response.json();
         // Split the AI response into individual recommendations
-        recommendations = response
+        recommendations = data.completion
           .split(/\d+\.\s*/)
           .filter((rec: string) => rec.trim().length > 0)
           .map((rec: string) => rec.trim())
           .slice(0, 4);
-      } catch (error) {
-        console.error('❌ Error generating AI recommendations:', error);
+      } else {
         // Fallback recommendations
         recommendations = [
           'Mantenha uma alimentação equilibrada com proteínas, carboidratos e gorduras saudáveis.',
@@ -400,27 +408,18 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
     }
   }, []);
 
-  // Initialize app data with hydration handling
+  // Initialize app data
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        // For web, add a small delay to prevent hydration mismatch
-        if (Platform.OS === 'web' && !isHydrated) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-          isHydrated = true;
-        }
-        
         await Promise.all([
           loadDailyGoal(),
           loadUserProfile(),
           loadMeals()
         ]);
-        
-        setHydrated(true);
       } catch (error) {
         console.error('❌ Error during app initialization:', error);
         setIsLoading(false);
-        setHydrated(true);
       }
     };
     
@@ -856,11 +855,6 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
   }, [emergencyCleanup]);
 
   const todayCalories = useMemo(() => {
-    // Prevent hydration mismatch by returning 0 until hydrated
-    if (!hydrated) {
-      return 0;
-    }
-    
     console.log('🧮 CALCULATING TODAY CALORIES - Starting from 0');
     console.log('Current meals array:', meals);
     console.log('Meals length:', meals?.length || 0);
@@ -902,11 +896,10 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
     const finalTotal = Math.max(0, Math.round(total));
     console.log(`📊 FINAL CALCULATION: ${todayMeals.length} meals = ${finalTotal} kcal`);
     return finalTotal;
-  }, [meals, hydrated]);
+  }, [meals]);
 
   const weeklyAverage = useMemo(() => {
-    // Prevent hydration mismatch by returning 0 until hydrated
-    if (!hydrated || !meals || meals.length === 0) return 0;
+    if (!meals || meals.length === 0) return 0;
     
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -927,7 +920,7 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
       return sum + calories;
     }, 0);
     return Math.round(totalCalories / 7);
-  }, [meals, hydrated]);
+  }, [meals]);
 
   // Auto-sync with health app when meals are added (if enabled)
   useEffect(() => {

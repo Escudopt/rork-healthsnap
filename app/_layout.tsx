@@ -24,49 +24,7 @@ function RootLayoutNav() {
       }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen 
-          name="food-analysis" 
-          options={{ 
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
-          }} 
-        />
-        <Stack.Screen 
-          name="meal-history" 
-          options={{ 
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
-          }} 
-        />
-        <Stack.Screen 
-          name="food-detail" 
-          options={{ 
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
-          }} 
-        />
-        <Stack.Screen 
-          name="meal-detail" 
-          options={{ 
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
-          }} 
-        />
-        <Stack.Screen 
-          name="privacy-policy" 
-          options={{ 
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
-          }} 
-        />
-        <Stack.Screen 
-          name="help" 
-          options={{ 
-            presentation: 'modal',
-            animation: 'slide_from_bottom'
-          }} 
-        />
-        <Stack.Screen 
-          name="language-selection" 
+          name="analysis" 
           options={{ 
             presentation: 'modal',
             animation: 'slide_from_bottom'

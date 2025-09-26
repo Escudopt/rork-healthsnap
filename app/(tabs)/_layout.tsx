@@ -21,7 +21,7 @@ export default function TabLayout() {
           bottom: 0,
           left: 0,
           right: 0,
-          height: Platform.OS === 'ios' ? 88 + insets.bottom : 72,
+          height: Platform.OS === 'ios' ? 83 + insets.bottom : 68,
           backgroundColor: 'transparent',
           borderTopWidth: 0,
           elevation: 0,
@@ -31,19 +31,18 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.tabBarInactive,
         tabBarLabelStyle: {
           fontSize: 10,
-          marginTop: 5,
-          marginBottom: 2,
+          marginTop: 4,
+          marginBottom: 0,
           textAlign: 'center' as const,
           fontWeight: '600' as const,
-          letterSpacing: 0.2,
         },
         tabBarItemStyle: {
-          paddingVertical: Platform.OS === 'ios' ? 10 : 8,
-          paddingHorizontal: 4,
+          paddingVertical: Platform.OS === 'ios' ? 8 : 6,
+          paddingHorizontal: 0,
           justifyContent: 'center',
           alignItems: 'center',
           flex: 1,
-          minHeight: Platform.OS === 'ios' ? 52 : 56,
+          minHeight: Platform.OS === 'ios' ? 49 : 52,
         },
         tabBarBackground: () => {
           const styles = StyleSheet.create({
@@ -56,7 +55,7 @@ export default function TabLayout() {
               left: 0,
               right: 0,
               height: 0.5,
-              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
             },
           });
           
@@ -66,8 +65,8 @@ export default function TabLayout() {
                 StyleSheet.absoluteFillObject,
                 {
                   backgroundColor: isDark 
-                    ? 'rgba(26, 29, 36, 0.95)' 
-                    : 'rgba(250, 251, 255, 0.95)',
+                    ? 'rgba(28, 28, 30, 0.95)' 
+                    : 'rgba(248, 248, 248, 0.95)',
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
                 }
@@ -91,7 +90,7 @@ export default function TabLayout() {
         options={{
           title: t('home'),
           tabBarIcon: ({ color, size }) => {
-            return <Home color={color} size={22} strokeWidth={2.5} />;
+            return <Home color={color} size={24} strokeWidth={2} />;
           },
         }}
       />
@@ -101,7 +100,7 @@ export default function TabLayout() {
         options={{
           title: t('nutritionTips'),
           tabBarIcon: ({ color, size }) => {
-            return <BookOpen color={color} size={22} strokeWidth={2.5} />;
+            return <BookOpen color={color} size={24} strokeWidth={2} />;
           },
         }}
       />
@@ -110,7 +109,7 @@ export default function TabLayout() {
         options={{
           title: t('supplements'),
           tabBarIcon: ({ color, size }) => {
-            return <Pill color={color} size={22} strokeWidth={2.5} />;
+            return <Pill color={color} size={24} strokeWidth={2} />;
           },
         }}
       />
@@ -120,7 +119,7 @@ export default function TabLayout() {
         options={{
           title: t('workouts'),
           tabBarIcon: ({ color, size }) => {
-            return <Dumbbell color={color} size={22} strokeWidth={2.5} />;
+            return <Dumbbell color={color} size={24} strokeWidth={2} />;
           },
         }}
       />
@@ -130,7 +129,7 @@ export default function TabLayout() {
         options={{
           title: t('profile'),
           tabBarIcon: ({ color, size, focused }) => {
-            return <User color={color} size={22} strokeWidth={2.5} />;
+            return <User color={color} size={24} strokeWidth={2} />;
           },
         }}
       />
@@ -139,7 +138,7 @@ export default function TabLayout() {
         options={{
           title: t('settingsTitle'),
           tabBarIcon: ({ color, size }) => {
-            return <Settings color={color} size={22} strokeWidth={2.5} />;
+            return <Settings color={color} size={24} strokeWidth={2} />;
           },
         }}
       />
