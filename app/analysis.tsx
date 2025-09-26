@@ -23,8 +23,6 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { BlurCard } from '@/components/BlurCard';
 import * as Haptics from 'expo-haptics';
 import { AnalysisResult, FoodItem } from '@/types/food';
-import { generateObject } from '@rork/toolkit-sdk';
-import { z } from 'zod';
 
 export default function AnalysisScreen() {
   const { imageBase64 } = useLocalSearchParams<{ imageBase64: string }>();
@@ -44,79 +42,136 @@ export default function AnalysisScreen() {
   const slideAnim = useRef(new Animated.Value(50)).current;
   const editMenuAnim = useRef(new Animated.Value(0)).current;
 
-  const analyzeImage = useCallback(async (retryCount = 0) => {
-    const maxRetries = 3;
-    
+  const analyzeImage = useCallback(async () => {
     try {
       setIsAnalyzing(true);
       setError(null);
 
-      console.log(`Starting image analysis... (attempt ${retryCount + 1}/${maxRetries + 1})`);
+      console.log('Starting ultra-fast image analysis...');
       
+      // Feedback imediato - sem delay
       const startTime = Date.now();
 
-      const analysisSchema = z.object({
-        foods: z.array(z.object({
-          name: z.string(),
-          calories: z.number(),
-          protein: z.number(),
-          carbs: z.number(),
-          fat: z.number(),
-          portion: z.string()
-        })),
-        totalCalories: z.number(),
-        mealType: z.enum(['Café da Manhã', 'Almoço', 'Jantar', 'Lanche']),
-        confidence: z.enum(['high', 'medium', 'low'])
-      });
-
-      // Add timeout to the request
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Timeout: A análise demorou muito para responder')), 30000);
-      });
-
-      const analysisPromise = generateObject({
-        messages: [
-          {
-            role: 'user',
-            content: [
+      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content: `You are a fast food analysis AI. Analyze quickly and return ONLY valid JSON.
+              
+              ULTRA SPEED MODE: Analyze instantly. Return JSON only.
+              
+              JSON format:
               {
-                type: 'text',
-                text: `Analise esta imagem de comida e identifique os alimentos com informações nutricionais em português.
-                
-                Regras:
-                - Identifique 1-3 alimentos principais
-                - Use porções comuns (ex: "1 prato", "100g", "1 xícara")
-                - Estime calorias com precisão
-                - Determine o tipo de refeição baseado nos alimentos
-                - Calcule proteínas, carboidratos e gorduras em gramas`
-              },
-              {
-                type: 'image',
-                image: imageBase64
+                "foods": [
+                  {
+                    "name": "Food name in Portuguese",
+                    "calories": number,
+                    "protein": number,
+                    "carbs": number,
+                    "fat": number,
+                    "portion": "portion in Portuguese"
+                  }
+                ],
+                "totalCalories": number,
+                "mealType": "Café da Manhã" | "Almoço" | "Jantar" | "Lanche",
+                "confidence": "high" | "medium" | "low"
               }
-            ]
-          }
-        ],
-        schema: analysisSchema
+              
+              Quick rules:
+              - Identify 1-3 main foods
+              - Use common portions
+              - Fast calorie estimates
+              - Return JSON now`
+            },
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: 'Fast analysis. JSON only.'
+                },
+                {
+                  type: 'image',
+                  image: imageBase64
+                }
+              ]
+            }
+          ]
+        })
       });
 
-      const result = await Promise.race([analysisPromise, timeoutPromise]) as any;
-      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error:', response.status, errorText);
+        throw new Error(`Erro na análise: ${response.status}`);
+      }
+
+      const data = await response.json();
       const processingTime = Date.now() - startTime;
-      console.log(`Analysis completed in ${processingTime}ms`);
+      console.log(`API response received in ${processingTime}ms`);
+      
+      if (!data.completion) {
+        throw new Error('Resposta inválida da API');
+      }
+
+      let result;
+      try {
+        // Processamento mais rápido do JSON
+        let cleanedResponse = data.completion.trim();
+        
+        // Extração rápida do JSON
+        const jsonStart = cleanedResponse.indexOf('{');
+        const jsonEnd = cleanedResponse.lastIndexOf('}');
+        
+        if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+          cleanedResponse = cleanedResponse.substring(jsonStart, jsonEnd + 1);
+        }
+        
+        result = JSON.parse(cleanedResponse);
+        console.log(`JSON parsed successfully in ${Date.now() - startTime}ms total`);
+        
+      } catch (parseError: unknown) {
+        console.error('JSON Parse Error:', parseError);
+        console.error('Raw completion that failed:', data.completion);
+        
+        // Provide more specific error messages based on the error
+        if (parseError instanceof SyntaxError) {
+          console.error('Parse error details:', parseError.message);
+          const errorMsg = parseError.message || '';
+          if (errorMsg.includes('Unexpected character')) {
+            throw new Error('A IA retornou uma resposta com caracteres inválidos. Tente tirar outra foto com melhor iluminação.');
+          } else if (errorMsg.includes('Unexpected token')) {
+            throw new Error('A IA retornou uma resposta mal estruturada. Tente novamente.');
+          } else {
+            throw new Error('A IA retornou uma resposta mal formatada. Tente tirar outra foto.');
+          }
+        } else if (parseError instanceof Error) {
+          console.error('Parse error details:', parseError.message);
+          throw new Error('Erro ao processar resposta da análise. Tente novamente.');
+        } else {
+          console.error('Unknown parse error type:', typeof parseError);
+          throw new Error('Erro desconhecido ao processar resposta da análise. Tente novamente.');
+        }
+      }
       
       // Validate the result structure
-      if (!result.foods || result.foods.length === 0) {
+      if (!result.foods || !Array.isArray(result.foods) || result.foods.length === 0) {
         throw new Error('Nenhum alimento foi identificado na imagem');
       }
       
       // Calculate the correct total calories from individual foods
       const calculatedTotal = result.foods.reduce((sum: number, food: any) => {
-        return sum + food.calories;
+        const calories = typeof food.calories === 'number' ? food.calories : 0;
+        return sum + calories;
       }, 0);
       
       // Fix the totalCalories if it doesn't match the sum
-      if (result.totalCalories !== calculatedTotal) {
+      if (typeof result.totalCalories !== 'number' || result.totalCalories !== calculatedTotal) {
         console.log(`Fixing totalCalories: AI said ${result.totalCalories}, calculated ${calculatedTotal}`);
         result.totalCalories = calculatedTotal;
       }
@@ -154,34 +209,10 @@ export default function AnalysisScreen() {
         }).start();
       }, 200); // Reduzido para 200ms
     } catch (err) {
-      console.error(`Error analyzing image (attempt ${retryCount + 1}):`, err);
-      
-      // Check if it's a network error and we can retry
-      const isNetworkError = err instanceof Error && (
-        err.message.includes('Network request failed') ||
-        err.message.includes('fetch') ||
-        err.message.includes('Timeout') ||
-        err.message.includes('Failed to fetch')
-      );
-      
-      if (isNetworkError && retryCount < maxRetries) {
-        console.log(`Retrying in ${(retryCount + 1) * 2} seconds...`);
-        setTimeout(() => {
-          analyzeImage(retryCount + 1);
-        }, (retryCount + 1) * 2000); // Exponential backoff
-        return;
-      }
-      
+      console.error('Error analyzing image:', err);
       const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
-      let userFriendlyMessage = 'Não foi possível analisar a imagem';
-      
-      if (isNetworkError) {
-        userFriendlyMessage = 'Erro de conexão. Verifique sua internet e tente novamente';
-      } else if (errorMessage.includes('Timeout')) {
-        userFriendlyMessage = 'A análise demorou muito. Tente novamente';
-      }
-      
-      setError(userFriendlyMessage);
+      setError(`Não foi possível analisar a imagem: ${errorMessage}`);
+    } finally {
       setIsAnalyzing(false);
     }
   }, [imageBase64, fadeAnim, slideAnim, editMenuAnim]);
@@ -371,7 +402,7 @@ export default function AnalysisScreen() {
             <BlurCard style={styles.errorCard}>
               <Info color={colors.text} size={32} />
               <Text style={[styles.errorText, { color: colors.text }]}>{error}</Text>
-              <TouchableOpacity onPress={() => analyzeImage(0)} style={[styles.retryButton, { backgroundColor: colors.surfaceElevated }]}>
+              <TouchableOpacity onPress={analyzeImage} style={[styles.retryButton, { backgroundColor: colors.surfaceElevated }]}>
                 <Text style={[styles.retryButtonText, { color: colors.text }]}>Tentar Novamente</Text>
               </TouchableOpacity>
             </BlurCard>
