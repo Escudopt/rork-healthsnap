@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity } from 'lucide-react-native';
+import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity, Image } from 'lucide-react-native';
 import { FloatingAIChat } from '@/components/FloatingAIChat';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -146,6 +146,8 @@ export default function HomeScreen() {
     setTimeout(startMotivationPulse, 2000);
   }, [fadeAnim, scaleAnim, headerSlideAnim, statsSlideAnim, floatingAnim, sparkleAnim, motivationAnim]);
 
+  const [showImagePicker, setShowImagePicker] = useState(false);
+
   const handleCameraPress = async () => {
     if (Platform.OS !== 'web') {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -164,114 +166,93 @@ export default function HomeScreen() {
       }),
     ]).start();
 
-    Alert.alert(
-      'Adicionar Refeição',
-      'Como você deseja adicionar sua refeição?',
-      [
-        {
-          text: 'Câmera',
-          onPress: async () => {
-            try {
-              const permission = await ImagePicker.requestCameraPermissionsAsync();
-              if (!permission.granted) {
-                Alert.alert(
-                  'Permissão Necessária',
-                  'Precisamos de acesso à câmera para tirar fotos dos alimentos.',
-                  [{ text: 'OK' }]
-                );
-                return;
-              }
+    setShowImagePicker(true);
+  };
 
-              const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [4, 3],
-                quality: 0.5, // Reduzido para 0.5 para processamento mais rápido
-                base64: true,
-                exif: false,
-              });
+  const handleImagePickerOption = async (option: 'camera' | 'gallery') => {
+    setShowImagePicker(false);
+    
+    // Small delay to ensure modal is closed before starting image picker
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    try {
+      if (option === 'camera') {
+        const permission = await ImagePicker.requestCameraPermissionsAsync();
+        if (!permission.granted) {
+          Alert.alert(
+            'Permissão Necessária',
+            'Precisamos de acesso à câmera para tirar fotos dos alimentos.',
+            [{ text: 'OK' }]
+          );
+          return;
+        }
 
-              if (!result.canceled && result.assets[0]?.base64) {
-                const base64Data = result.assets[0].base64;
-                console.log('📸 Image captured successfully:', {
-                  hasBase64: !!base64Data,
-                  length: base64Data?.length || 0,
-                  preview: base64Data?.substring(0, 50) + '...'
-                });
-                
-                if (base64Data && base64Data.trim()) {
-                  console.log('🚀 Navigating to food-analysis with image data...');
-                  router.push({
-                    pathname: '/food-analysis',
-                    params: { imageBase64: base64Data },
-                  });
-                } else {
-                  console.error('❌ No valid base64 data found');
-                  Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
-                }
-              } else {
-                console.log('📸 Camera result:', { canceled: result.canceled, hasAssets: !!result.assets?.[0] });
-              }
-            } catch (error) {
-              console.error('Camera error:', error);
-              Alert.alert(
-                'Erro na Câmera',
-                'Não foi possível acessar a câmera. Tente novamente.',
-                [{ text: 'OK' }]
-              );
-            }
-          },
-        },
-        {
-          text: 'Galeria',
-          onPress: async () => {
-            try {
-              const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
-                aspect: [4, 3],
-                quality: 0.5, // Reduzido para 0.5 para processamento mais rápido
-                base64: true,
-                exif: false,
-              });
+        const result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.5,
+          base64: true,
+          exif: false,
+        });
 
-              if (!result.canceled && result.assets[0]?.base64) {
-                const base64Data = result.assets[0].base64;
-                console.log('🖼️ Image selected successfully:', {
-                  hasBase64: !!base64Data,
-                  length: base64Data?.length || 0,
-                  preview: base64Data?.substring(0, 50) + '...'
-                });
-                
-                if (base64Data && base64Data.trim()) {
-                  console.log('🚀 Navigating to food-analysis with image data...');
-                  router.push({
-                    pathname: '/food-analysis',
-                    params: { imageBase64: base64Data },
-                  });
-                } else {
-                  console.error('❌ No valid base64 data found');
-                  Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
-                }
-              } else {
-                console.log('🖼️ Gallery result:', { canceled: result.canceled, hasAssets: !!result.assets?.[0] });
-              }
-            } catch (error) {
-              console.error('Gallery error:', error);
-              Alert.alert(
-                'Erro na Galeria',
-                'Não foi possível acessar a galeria. Tente novamente.',
-                [{ text: 'OK' }]
-              );
-            }
-          },
-        },
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-      ]
-    );
+        if (!result.canceled && result.assets[0]?.base64) {
+          const base64Data = result.assets[0].base64;
+          console.log('📸 Image captured successfully:', {
+            hasBase64: !!base64Data,
+            length: base64Data?.length || 0,
+            preview: base64Data?.substring(0, 50) + '...'
+          });
+          
+          if (base64Data && base64Data.trim()) {
+            console.log('🚀 Navigating to food-analysis with image data...');
+            router.push({
+              pathname: '/food-analysis',
+              params: { imageBase64: base64Data },
+            });
+          } else {
+            console.error('❌ No valid base64 data found');
+            Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
+          }
+        }
+      } else {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.5,
+          base64: true,
+          exif: false,
+        });
+
+        if (!result.canceled && result.assets[0]?.base64) {
+          const base64Data = result.assets[0].base64;
+          console.log('🖼️ Image selected successfully:', {
+            hasBase64: !!base64Data,
+            length: base64Data?.length || 0,
+            preview: base64Data?.substring(0, 50) + '...'
+          });
+          
+          if (base64Data && base64Data.trim()) {
+            console.log('🚀 Navigating to food-analysis with image data...');
+            router.push({
+              pathname: '/food-analysis',
+              params: { imageBase64: base64Data },
+            });
+          } else {
+            console.error('❌ No valid base64 data found');
+            Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Image picker error:', error);
+      Alert.alert(
+        'Erro',
+        'Não foi possível acessar a câmera/galeria. Tente novamente.',
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   // Get today's meals using the same logic as the provider
@@ -991,6 +972,77 @@ export default function HomeScreen() {
                         style={styles.submitButtonGradient}
                       >
                         <Text style={styles.submitButtonText}>Definir Meta</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </LinearGradient>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Image Picker Modal */}
+        <Modal
+          visible={showImagePicker}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowImagePicker(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.imagePickerContainer}>
+              <LinearGradient
+                colors={['rgba(0, 0, 0, 0.8)', 'rgba(26, 26, 46, 0.9)', 'rgba(22, 33, 62, 0.8)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.imagePickerGradient}
+              >
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Adicionar Refeição</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowImagePicker(false)}
+                    style={styles.closeButton}
+                  >
+                    <X color={colors.text} size={24} />
+                  </TouchableOpacity>
+                </View>
+                
+                <View style={styles.imagePickerContent}>
+                  <Text style={styles.imagePickerSubtitle}>
+                    Como você deseja adicionar sua refeição?
+                  </Text>
+                  
+                  <View style={styles.imagePickerOptions}>
+                    <TouchableOpacity
+                      style={styles.imagePickerOption}
+                      onPress={() => handleImagePickerOption('camera')}
+                      activeOpacity={0.8}
+                    >
+                      <LinearGradient
+                        colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.08)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.imagePickerOptionGradient}
+                      >
+                        <Camera color="rgba(255, 255, 255, 0.9)" size={32} strokeWidth={2} />
+                        <Text style={styles.imagePickerOptionText}>Câmera</Text>
+                        <Text style={styles.imagePickerOptionSubtext}>Tirar uma foto</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={styles.imagePickerOption}
+                      onPress={() => handleImagePickerOption('gallery')}
+                      activeOpacity={0.8}
+                    >
+                      <LinearGradient
+                        colors={['rgba(255, 255, 255, 0.15)', 'rgba(255, 255, 255, 0.08)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.imagePickerOptionGradient}
+                      >
+                        <Image color="rgba(255, 255, 255, 0.9)" size={32} strokeWidth={2} />
+                        <Text style={styles.imagePickerOptionText}>Galeria</Text>
+                        <Text style={styles.imagePickerOptionSubtext}>Escolher da galeria</Text>
                       </LinearGradient>
                     </TouchableOpacity>
                   </View>
@@ -2091,6 +2143,58 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '600' as const,
     letterSpacing: 0.2,
+  },
+  
+  // Image Picker Modal Styles
+  imagePickerContainer: {
+    width: '90%',
+    maxWidth: 400,
+    borderRadius: 24,
+    overflow: 'hidden',
+    shadowColor: 'rgba(0, 122, 255, 0.5)',
+    shadowOffset: { width: 0, height: 20 },
+    shadowOpacity: 0.4,
+    shadowRadius: 30,
+    elevation: 20,
+  },
+  imagePickerGradient: {
+    padding: 0,
+    borderRadius: 24,
+  },
+  imagePickerContent: {
+    padding: 20,
+    paddingTop: 10,
+  },
+  imagePickerSubtitle: {
+    fontSize: 16,
+    fontWeight: '400' as const,
+    color: 'rgba(255, 255, 255, 0.8)',
+    textAlign: 'center' as const,
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  imagePickerOptions: {
+    gap: 16,
+  },
+  imagePickerOption: {
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  imagePickerOptionGradient: {
+    padding: 24,
+    alignItems: 'center',
+    gap: 8,
+  },
+  imagePickerOptionText: {
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: 18,
+    fontWeight: '600' as const,
+    marginTop: 8,
+  },
+  imagePickerOptionSubtext: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 14,
+    fontWeight: '400' as const,
   },
   
   // Enhanced Daily Progress Menu Styles
