@@ -77,7 +77,11 @@ export default function FoodAnalysisScreen() {
     }
 
     console.log('✅ Imagem válida encontrada, iniciando análise...');
-    analyzeFood();
+    
+    // Small delay to ensure UI is ready
+    setTimeout(() => {
+      analyzeFood();
+    }, 500);
   }, [imageBase64]);
 
   useEffect(() => {
@@ -140,8 +144,7 @@ export default function FoodAnalysisScreen() {
       
     } catch (error) {
       console.error('❌ Analysis failed:', error);
-      // For web compatibility, we'll just go back instead of showing alert
-      router.back();
+      setError('Erro na análise da imagem. Tente novamente.');
     } finally {
       setIsAnalyzing(false);
     }

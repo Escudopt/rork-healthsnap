@@ -206,10 +206,17 @@ export default function HomeScreen() {
           
           if (base64Data && base64Data.trim()) {
             console.log('🚀 Navigating to food-analysis with image data...');
-            router.push({
-              pathname: '/food-analysis',
-              params: { imageBase64: base64Data },
-            });
+            
+            // Ensure modal is closed before navigation
+            setShowImagePicker(false);
+            
+            // Small delay to ensure UI is updated
+            setTimeout(() => {
+              router.push({
+                pathname: '/food-analysis',
+                params: { imageBase64: base64Data },
+              });
+            }, 100);
           } else {
             console.error('❌ No valid base64 data found');
             Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
@@ -235,10 +242,17 @@ export default function HomeScreen() {
           
           if (base64Data && base64Data.trim()) {
             console.log('🚀 Navigating to food-analysis with image data...');
-            router.push({
-              pathname: '/food-analysis',
-              params: { imageBase64: base64Data },
-            });
+            
+            // Ensure modal is closed before navigation
+            setShowImagePicker(false);
+            
+            // Small delay to ensure UI is updated
+            setTimeout(() => {
+              router.push({
+                pathname: '/food-analysis',
+                params: { imageBase64: base64Data },
+              });
+            }, 100);
           } else {
             console.error('❌ No valid base64 data found');
             Alert.alert('Erro', 'Não foi possível processar a imagem. Tente novamente.');
