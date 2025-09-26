@@ -28,7 +28,7 @@ import { BlurCard } from '@/components/BlurCard';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { FoodItem } from '@/types/food';
-import { generateText } from '@rork/toolkit-sdk';
+
 
 export default function MealDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -131,9 +131,11 @@ export default function MealDetailScreen() {
   };
   
   const generateMealAnalysis = React.useCallback(async () => {
-    if (!meal || !nutritionTotals || aiAnalysis) return;
+    if (!meal || !nutritionTotals) return;
     
     setIsLoadingAnalysis(true);
+    setAiAnalysis('');
+    
     try {
       const foodList = meal.foods.map(food => `${food.name} (${food.portion})`).join(', ');
       const age = userProfile?.age || 30;
@@ -141,7 +143,25 @@ export default function MealDetailScreen() {
       const height = userProfile?.height || 170;
       const activityLevel = userProfile?.activityLevel || 'moderado';
       
-      const prompt = `Analise esta refeição detalhadamente para uma pessoa de ${age} anos, ${weight}kg, ${height}cm, nível de atividade ${activityLevel}:
+      console.log('Iniciando análise da refeição...');
+      console.log('Dados da refeição:', {
+        foods: foodList,
+        calories: nutritionTotals.calories,
+        protein: nutritionTotals.protein,
+        carbs: nutritionTotals.carbs,
+        fat: nutritionTotals.fat
+      });
+      
+      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: `Analise esta refeição detalhadamente para uma pessoa de ${age} anos, ${weight}kg, ${height}cm, nível de atividade ${activityLevel}:
 
 Refeição: ${meal.mealType || 'Refeição'}
 Alimentos: ${foodList}
@@ -168,23 +188,44 @@ Forneça uma análise detalhada em português brasileiro com:
 - Sugestões de acompanhamentos
 - Dicas específicas para a idade
 
-Seja específico, educativo e construtivo. Mantenha um tom profissional mas acessível.`;
+Seja específico, educativo e construtivo. Mantenha um tom profissional mas acessível.`
+            }
+          ]
+        })
+      });
       
-      const analysis = await generateText(prompt);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na API:', response.status, errorText);
+        throw new Error(`Erro na análise: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Resposta da API recebida:', data);
+      
+      if (!data.completion) {
+        throw new Error('Resposta inválida da API');
+      }
+      
+      const analysis = data.completion.trim();
+      console.log('Análise gerada com sucesso:', analysis.substring(0, 100) + '...');
+      
       setAiAnalysis(analysis);
     } catch (error) {
       console.error('Erro ao gerar análise:', error);
-      setAiAnalysis('Não foi possível gerar a análise da refeição no momento.');
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      setAiAnalysis(`Não foi possível gerar a análise da refeição: ${errorMessage}. Tente novamente mais tarde.`);
     } finally {
       setIsLoadingAnalysis(false);
     }
-  }, [meal, nutritionTotals, aiAnalysis, userProfile]);
+  }, [meal, nutritionTotals, userProfile]);
   
   useEffect(() => {
-    if (meal && nutritionTotals) {
+    if (meal && nutritionTotals && !aiAnalysis && !isLoadingAnalysis) {
+      console.log('Executando análise da refeição...');
       generateMealAnalysis();
     }
-  }, [meal, nutritionTotals, generateMealAnalysis]);
+  }, [meal, nutritionTotals, generateMealAnalysis, aiAnalysis, isLoadingAnalysis]);
   
   const styles = useThemedStyles((colors, isDark) => createStyles(colors, isDark));
 
@@ -371,7 +412,15 @@ Seja específico, educativo e construtivo. Mantenha um tom profissional mas aces
             ) : (
               <View style={styles.analysisError}>
                 <AlertTriangle color={colors.textSecondary} size={20} />
-                <Text style={[styles.analysisErrorText, { color: colors.textSecondary }]}>Análise não disponível</Text>
+                <View style={styles.analysisErrorContent}>
+                  <Text style={[styles.analysisErrorText, { color: colors.textSecondary }]}>Análise não disponível</Text>
+                  <TouchableOpacity 
+                    onPress={generateMealAnalysis}
+                    style={[styles.retryAnalysisButton, { backgroundColor: colors.surfaceElevated }]}
+                  >
+                    <Text style={[styles.retryAnalysisText, { color: colors.text }]}>Tentar Novamente</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
           </BlurCard>
@@ -670,5 +719,19 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   analysisErrorText: {
     fontSize: 14,
+  },
+  analysisErrorContent: {
+    flex: 1,
+    marginLeft: 8,
+  },
+  retryAnalysisButton: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  retryAnalysisText: {
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
