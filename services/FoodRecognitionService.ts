@@ -207,11 +207,11 @@ RETORNE dados nutricionais precisos baseados em tabelas nutricionais brasileiras
         
         if (dbMatch) {
           // Use database data as base and adjust for portion size
-          const portionMultiplier = food.weightInGrams / 100; // Database values are per 100g
+          const portionMultiplier = (food.weightInGrams || 100) / 100; // Database values are per 100g
           
           enhancedFood = {
             name: food.name,
-            weightInGrams: food.weightInGrams,
+            weightInGrams: food.weightInGrams || 100,
             calories: Math.round(dbMatch.calories * portionMultiplier),
             protein: Math.round(dbMatch.protein * portionMultiplier * 10) / 10,
             carbs: Math.round(dbMatch.carbs * portionMultiplier * 10) / 10,
@@ -219,23 +219,23 @@ RETORNE dados nutricionais precisos baseados em tabelas nutricionais brasileiras
             fiber: dbMatch.fiber ? Math.round(dbMatch.fiber * portionMultiplier * 10) / 10 : undefined,
             sugar: food.sugar || undefined,
             sodium: dbMatch.sodium ? Math.round(dbMatch.sodium * portionMultiplier) : undefined,
-            portion: food.portion
+            portion: food.portion || '1 porção'
           };
           
           console.log(`📊 Enhanced ${food.name} with database data`);
         } else {
           // Use AI data as-is but validate ranges
           enhancedFood = {
-            name: food.name,
-            weightInGrams: Math.max(1, food.weightInGrams),
-            calories: Math.max(0, food.calories),
-            protein: Math.max(0, food.protein),
-            carbs: Math.max(0, food.carbs),
-            fat: Math.max(0, food.fat),
+            name: food.name || 'Alimento não identificado',
+            weightInGrams: Math.max(1, food.weightInGrams || 100),
+            calories: Math.max(0, food.calories || 100),
+            protein: Math.max(0, food.protein || 5),
+            carbs: Math.max(0, food.carbs || 15),
+            fat: Math.max(0, food.fat || 3),
             fiber: food.fiber && food.fiber > 0 ? food.fiber : undefined,
             sugar: food.sugar && food.sugar > 0 ? food.sugar : undefined,
             sodium: food.sodium && food.sodium > 0 ? food.sodium : undefined,
-            portion: food.portion
+            portion: food.portion || '1 porção'
           };
           
           console.log(`🤖 Using AI data for ${food.name}`);
@@ -247,7 +247,7 @@ RETORNE dados nutricionais precisos baseados em tabelas nutricionais brasileiras
         console.error(`❌ Error enhancing ${food.name}:`, error);
         // Fallback to basic food item
         enhancedFoods.push({
-          name: food.name,
+          name: food.name || 'Alimento não identificado',
           weightInGrams: Math.max(1, food.weightInGrams || 100),
           calories: Math.max(0, food.calories || 100),
           protein: Math.max(0, food.protein || 5),
@@ -312,7 +312,7 @@ RETORNE dados nutricionais precisos baseados em tabelas nutricionais brasileiras
   private validatePortions(foods: FoodItem[]): FoodItem[] {
     return foods.map(food => {
       // Validate weight ranges
-      let adjustedWeight = food.weightInGrams;
+      let adjustedWeight = food.weightInGrams || 100;
       
       // Common portion size validations
       if (food.name.toLowerCase().includes('arroz')) {
@@ -326,8 +326,8 @@ RETORNE dados nutricionais precisos baseados em tabelas nutricionais brasileiras
       }
       
       // Recalculate nutrition if weight was adjusted
-      if (adjustedWeight !== food.weightInGrams) {
-        const ratio = adjustedWeight / food.weightInGrams;
+      if (adjustedWeight !== (food.weightInGrams || 100)) {
+        const ratio = adjustedWeight / (food.weightInGrams || 100);
         
         return {
           ...food,

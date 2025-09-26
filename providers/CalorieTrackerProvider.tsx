@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Alert } from 'react-native';
+import { generateText } from '@rork/toolkit-sdk';
 import { Meal, UserProfile, HealthMetrics } from '@/types/food';
 
 // Hydration state management
@@ -181,8 +182,10 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
       else if (bmi < 30) bmiCategory = 'Sobrepeso';
       else bmiCategory = 'Obesidade';
       
-      // Use AI to generate personalized recommendations
-      const aiPrompt = `
+      // Generate personalized recommendations using AI
+      let recommendations: string[] = [];
+      try {
+        const aiPrompt = `
 Analise os seguintes dados de saúde e forneça 3-4 recomendações personalizadas em português:
 
 Perfil:
@@ -208,32 +211,17 @@ Forneça recomendações práticas e específicas sobre:
 4. Metas realistas
 
 Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
-      
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: aiPrompt
-            }
-          ]
-        })
-      });
-      
-      let recommendations: string[] = [];
-      if (response.ok) {
-        const data = await response.json();
+        
+        const response = await generateText({ messages: [{ role: 'user', content: aiPrompt }] });
+        
         // Split the AI response into individual recommendations
-        recommendations = data.completion
+        recommendations = response
           .split(/\d+\.\s*/)
           .filter((rec: string) => rec.trim().length > 0)
           .map((rec: string) => rec.trim())
           .slice(0, 4);
-      } else {
+      } catch (error) {
+        console.error('❌ Error generating AI recommendations:', error);
         // Fallback recommendations
         recommendations = [
           'Mantenha uma alimentação equilibrada com proteínas, carboidratos e gorduras saudáveis.',
