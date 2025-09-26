@@ -1,6 +1,7 @@
 import { generateObject, generateText } from '@rork/toolkit-sdk';
 import { z } from 'zod';
 import { FoodItem, AnalysisResult } from '@/types/food';
+import { FREE_FOOD_APIS, SMART_STRATEGY } from '@/constants/free-food-apis';
 
 
 // Enhanced food recognition schema with more detailed nutrition data
@@ -149,9 +150,9 @@ export class FoodRecognitionService {
     return FoodRecognitionService.instance;
   }
 
-  // Main food recognition method
+  // 🚀 MÉTODO PRINCIPAL - Estratégia de Cascata Inteligente
   async recognizeFood(imageBase64: string): Promise<AnalysisResult> {
-    console.log('🔍 FoodRecognitionService.recognizeFood called');
+    console.log('🔍 FoodRecognitionService.recognizeFood called with Smart Cascade Strategy');
     console.log('📸 Image base64 length:', imageBase64?.length || 0);
     
     if (!imageBase64?.trim()) {
@@ -171,13 +172,70 @@ export class FoodRecognitionService {
       throw new Error('Formato de imagem inválido');
     }
     
+    console.log('🚀 Starting Smart Cascade Food Recognition...');
+    
+    // Try multiple APIs in order of priority
+    const apiOrder = SMART_STRATEGY.order.filter(api => api !== 'aiLocal');
+    
+    for (let i = 0; i < apiOrder.length; i++) {
+      const apiName = apiOrder[i];
+      console.log(`🔄 Attempting recognition with ${apiName} (${i + 1}/${apiOrder.length})...`);
+      
+      try {
+        const result = await this.tryAPIRecognition(apiName, cleanBase64);
+        if (result) {
+          console.log(`✅ Success with ${apiName}!`);
+          return result;
+        }
+      } catch (error) {
+        console.warn(`⚠️ ${apiName} failed:`, error);
+        // Continue to next API
+      }
+    }
+    
+    // If all APIs fail, use AI as fallback
+    console.log('🤖 All APIs failed, using AI fallback...');
+    return await this.recognizeFoodWithAI(cleanBase64);
+  }
+
+  // 🔄 Try API recognition with specific service
+  private async tryAPIRecognition(apiName: string, imageBase64: string): Promise<AnalysisResult | null> {
+    const api = FREE_FOOD_APIS[apiName as keyof typeof FREE_FOOD_APIS];
+    
+    if (!api || !api.active || api.apiKey === 'demo-key') {
+      console.log(`⏭️ Skipping ${apiName} - not configured or inactive`);
+      return null;
+    }
+    
     try {
-      console.log('🔍 Starting enhanced food recognition...');
+      switch (apiName) {
+        case 'clarifai':
+          return await this.recognizeWithClarifai(imageBase64);
+        case 'googleVision':
+          return await this.recognizeWithGoogleVision(imageBase64);
+        case 'spoonacular':
+          return await this.recognizeWithSpoonacular(imageBase64);
+        case 'logmeal':
+          return await this.recognizeWithLogMeal(imageBase64);
+        case 'roboflow':
+          return await this.recognizeWithRoboflow(imageBase64);
+        default:
+          console.warn(`❓ Unknown API: ${apiName}`);
+          return null;
+      }
+    } catch (error) {
+      console.error(`❌ ${apiName} recognition failed:`, error);
+      return null;
+    }
+  }
+
+  // 🤖 AI-only recognition (fallback)
+  async recognizeFoodWithAI(imageBase64: string): Promise<AnalysisResult> {
+    try {
+      console.log('🤖 Starting AI-only food recognition...');
       
       // Step 1: AI-powered food identification with enhanced prompts
-      console.log('🤖 Step 1: Starting AI identification...');
-      const aiResult = await this.identifyFoodsWithAI(cleanBase64);
-      console.log('✅ Step 1 completed:', aiResult);
+      const aiResult = await this.identifyFoodsWithAI(imageBase64);
       
       // Step 2: Enhance nutrition data with database lookup
       const enhancedFoods = await this.enhanceNutritionData(aiResult.foods);
@@ -196,10 +254,10 @@ export class FoodRecognitionService {
         totalWeight: Math.round(totalWeight),
         mealType: aiResult.mealType,
         confidence: aiResult.confidence,
-        notes: aiResult.notes
+        notes: `${aiResult.notes || ''} (Análise por IA local)`.trim()
       };
       
-      console.log('✅ Food recognition completed:', {
+      console.log('✅ AI food recognition completed:', {
         mealName: result.mealName,
         foodCount: result.foods.length,
         totalCalories: result.totalCalories,
@@ -209,7 +267,7 @@ export class FoodRecognitionService {
       return result;
       
     } catch (error) {
-      console.error('❌ Food recognition failed:', error);
+      console.error('❌ AI food recognition failed:', error);
       
       // Return a fallback result instead of throwing error
       console.log('🔄 Returning fallback food analysis result');
@@ -559,10 +617,12 @@ Seja prático e específico. Máximo 4 sugestões de 1-2 frases cada.`;
     }
   }
 
-  // Test method for debugging
+  // 🧪 Test method for debugging
   async testRecognition(): Promise<void> {
-    console.log('🧪 Testing food recognition service...');
+    console.log('🧪 Testing Enhanced Food Recognition Service...');
     console.log('📊 Database contains', Object.keys(BRAZILIAN_FOOD_DATABASE).length, 'food items');
+    console.log('🚀 Smart Strategy:', SMART_STRATEGY.approach);
+    console.log('🔄 API Order:', SMART_STRATEGY.order);
     
     // Test database lookup
     const testFoods = ['arroz', 'frango grelhado', 'feijão carioca', 'batata frita'];
@@ -575,61 +635,339 @@ Seja prático e específico. Máximo 4 sugestões de 1-2 frases cada.`;
       const match = this.findNutritionMatch(sanitizedFood);
       console.log(`🔍 ${sanitizedFood} ->`, match ? '✅ Found' : '❌ Not found');
     });
+    
+    // Test API configurations
+    console.log('\n🔧 API Configuration Status:');
+    Object.entries(FREE_FOOD_APIS).forEach(([name, api]) => {
+      const configured = api.apiKey !== 'demo-key';
+      const active = api.active !== false;
+      const status = configured && active ? '✅ Ready' : 
+                    configured ? '⚠️ Configured but inactive' : 
+                    '❌ Not configured';
+      console.log(`${name}: ${status} (${api.freeLimit})`);
+    });
   }
 
-  // Alternative recognition using multiple AI models
-  async recognizeFoodWithFallback(imageBase64: string): Promise<AnalysisResult> {
-    const fallbackPrompts = [
-      // Primary prompt (detailed)
-      `Analise esta imagem e identifique todos os alimentos com precisão máxima. Para cada alimento, forneça peso em gramas, calorias e macronutrientes detalhados.`,
-      
-      // Secondary prompt (simplified)
-      `Identifique os alimentos nesta imagem e estime suas calorias e informações nutricionais básicas.`,
-      
-      // Tertiary prompt (basic)
-      `Liste os alimentos visíveis nesta imagem com estimativas de calorias.`
-    ];
+  // 📊 Get API status for debugging
+  getAPIStatus(): Record<string, { configured: boolean; active: boolean; limit: string }> {
+    const status: Record<string, { configured: boolean; active: boolean; limit: string }> = {};
     
-    for (let i = 0; i < fallbackPrompts.length; i++) {
-      try {
-        console.log(`🔄 Trying recognition attempt ${i + 1}...`);
-        
-        const result = await generateObject({
-          messages: [
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: fallbackPrompts[i] },
-                { type: 'image', image: imageBase64 }
-              ]
+    Object.entries(FREE_FOOD_APIS).forEach(([name, api]) => {
+      status[name] = {
+        configured: api.apiKey !== 'demo-key',
+        active: api.active !== false,
+        limit: api.freeLimit
+      };
+    });
+    
+    return status;
+  }
+
+  // 🥇 Clarifai Food Recognition
+  private async recognizeWithClarifai(imageBase64: string): Promise<AnalysisResult> {
+    console.log('🔍 Trying Clarifai Food Recognition...');
+    
+    const api = FREE_FOOD_APIS.clarifai;
+    const response = await fetch(api.url, {
+      method: 'POST',
+      headers: {
+        ...api.headers,
+        'Authorization': api.headers.Authorization.replace('YOUR_API_KEY', api.apiKey)
+      },
+      body: JSON.stringify({
+        inputs: [{
+          data: {
+            image: {
+              base64: imageBase64
             }
-          ],
-          schema: FoodRecognitionSchema
-        });
-        
-        // Enhance with database data
-        const enhancedFoods = await this.enhanceNutritionData(result.foods);
-        const validatedFoods = this.validatePortions(enhancedFoods);
-        
-        return {
-          mealName: result.mealName,
-          foods: validatedFoods,
-          totalCalories: validatedFoods.reduce((sum, f) => sum + f.calories, 0),
-          totalWeight: validatedFoods.reduce((sum, f) => sum + f.weightInGrams, 0),
-          mealType: result.mealType,
-          confidence: i === 0 ? result.confidence : 'low',
-          notes: result.notes
-        };
-        
-      } catch (error) {
-        console.error(`❌ Recognition attempt ${i + 1} failed:`, error);
-        if (i === fallbackPrompts.length - 1) {
-          throw error;
-        }
-      }
+          }
+        }]
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Clarifai API error: ${response.status}`);
     }
     
-    throw new Error('Todas as tentativas de reconhecimento falharam');
+    const data = await response.json();
+    return this.parseClarifaiResponse(data);
+  }
+
+  // 🥈 Google Vision Recognition
+  private async recognizeWithGoogleVision(imageBase64: string): Promise<AnalysisResult> {
+    console.log('🔍 Trying Google Vision API...');
+    
+    const api = FREE_FOOD_APIS.googleVision;
+    const response = await fetch(api.url.replace('YOUR_API_KEY', api.apiKey), {
+      method: 'POST',
+      headers: api.headers,
+      body: JSON.stringify({
+        requests: [{
+          image: {
+            content: imageBase64
+          },
+          features: [{
+            type: 'LABEL_DETECTION',
+            maxResults: 10
+          }]
+        }]
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Google Vision API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return this.parseGoogleVisionResponse(data);
+  }
+
+  // 🥉 Spoonacular Recognition
+  private async recognizeWithSpoonacular(imageBase64: string): Promise<AnalysisResult> {
+    console.log('🔍 Trying Spoonacular API...');
+    
+    const api = FREE_FOOD_APIS.spoonacular;
+    const response = await fetch(api.url, {
+      method: 'POST',
+      headers: {
+        ...api.headers,
+        'X-API-KEY': api.apiKey
+      },
+      body: JSON.stringify({
+        imageUrl: `data:image/jpeg;base64,${imageBase64}`
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Spoonacular API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return this.parseSpoonacularResponse(data);
+  }
+
+  // 🆕 LogMeal Recognition
+  private async recognizeWithLogMeal(imageBase64: string): Promise<AnalysisResult> {
+    console.log('🔍 Trying LogMeal API...');
+    
+    const api = FREE_FOOD_APIS.logmeal;
+    const response = await fetch(api.url, {
+      method: 'POST',
+      headers: {
+        ...api.headers,
+        'Authorization': api.headers.Authorization.replace('YOUR_API_KEY', api.apiKey)
+      },
+      body: JSON.stringify({
+        image: imageBase64
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`LogMeal API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return this.parseLogMealResponse(data);
+  }
+
+  // 🔬 Roboflow Recognition
+  private async recognizeWithRoboflow(imageBase64: string): Promise<AnalysisResult> {
+    console.log('🔍 Trying Roboflow API...');
+    
+    const api = FREE_FOOD_APIS.roboflow;
+    const response = await fetch(api.url, {
+      method: 'POST',
+      headers: api.headers,
+      body: `image=${encodeURIComponent(imageBase64)}&api_key=${api.apiKey}`
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Roboflow API error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return this.parseRoboflowResponse(data);
+  }
+
+  // 📊 Response Parsers
+  private async parseClarifaiResponse(data: any): Promise<AnalysisResult> {
+    const concepts = data.outputs?.[0]?.data?.concepts || [];
+    const foods = concepts
+      .filter((concept: any) => concept.value > 0.5)
+      .map((concept: any) => ({
+        name: concept.name,
+        weightInGrams: 100,
+        calories: 100,
+        protein: 5,
+        carbs: 15,
+        fat: 3,
+        portion: '1 porção'
+      }));
+    
+    if (foods.length === 0) {
+      throw new Error('Nenhum alimento detectado com confiança suficiente');
+    }
+    
+    const enhancedFoods = await this.enhanceNutritionData(foods);
+    const validatedFoods = this.validatePortions(enhancedFoods);
+    
+    return {
+      mealName: `Refeição com ${validatedFoods.map(f => f.name).join(', ')}`,
+      foods: validatedFoods,
+      totalCalories: validatedFoods.reduce((sum, f) => sum + f.calories, 0),
+      totalWeight: validatedFoods.reduce((sum, f) => sum + f.weightInGrams, 0),
+      mealType: 'Lanche' as const,
+      confidence: 'medium' as const,
+      notes: 'Análise realizada com Clarifai Food Model'
+    };
+  }
+
+  private async parseGoogleVisionResponse(data: any): Promise<AnalysisResult> {
+    const labels = data.responses?.[0]?.labelAnnotations || [];
+    const foodLabels = labels
+      .filter((label: any) => 
+        label.score > 0.7 && 
+        (label.description.toLowerCase().includes('food') ||
+         label.description.toLowerCase().includes('dish') ||
+         label.description.toLowerCase().includes('meal') ||
+         this.isFoodRelated(label.description))
+      );
+    
+    if (foodLabels.length === 0) {
+      throw new Error('Nenhum alimento detectado');
+    }
+    
+    const foods = foodLabels.map((label: any) => ({
+      name: label.description,
+      weightInGrams: 100,
+      calories: 100,
+      protein: 5,
+      carbs: 15,
+      fat: 3,
+      portion: '1 porção'
+    }));
+    
+    const enhancedFoods = await this.enhanceNutritionData(foods);
+    const validatedFoods = this.validatePortions(enhancedFoods);
+    
+    return {
+      mealName: `Refeição com ${validatedFoods.map(f => f.name).join(', ')}`,
+      foods: validatedFoods,
+      totalCalories: validatedFoods.reduce((sum, f) => sum + f.calories, 0),
+      totalWeight: validatedFoods.reduce((sum, f) => sum + f.weightInGrams, 0),
+      mealType: 'Lanche' as const,
+      confidence: 'high' as const,
+      notes: 'Análise realizada com Google Vision API'
+    };
+  }
+
+  private async parseSpoonacularResponse(data: any): Promise<AnalysisResult> {
+    // Spoonacular response parsing logic
+    const category = data.category || {};
+    const nutrition = data.nutrition || {};
+    
+    const foods = [{
+      name: category.name || 'Alimento identificado',
+      weightInGrams: 100,
+      calories: nutrition.calories || 100,
+      protein: nutrition.protein || 5,
+      carbs: nutrition.carbs || 15,
+      fat: nutrition.fat || 3,
+      portion: '1 porção'
+    }];
+    
+    const enhancedFoods = await this.enhanceNutritionData(foods);
+    const validatedFoods = this.validatePortions(enhancedFoods);
+    
+    return {
+      mealName: validatedFoods[0]?.name || 'Refeição identificada',
+      foods: validatedFoods,
+      totalCalories: validatedFoods.reduce((sum, f) => sum + f.calories, 0),
+      totalWeight: validatedFoods.reduce((sum, f) => sum + f.weightInGrams, 0),
+      mealType: 'Lanche' as const,
+      confidence: 'medium' as const,
+      notes: 'Análise realizada com Spoonacular API'
+    };
+  }
+
+  private async parseLogMealResponse(data: any): Promise<AnalysisResult> {
+    // LogMeal response parsing logic
+    const segmentation = data.segmentation_results || [];
+    
+    if (segmentation.length === 0) {
+      throw new Error('Nenhum alimento detectado');
+    }
+    
+    const foods = segmentation.map((item: any) => ({
+      name: item.food_name || 'Alimento identificado',
+      weightInGrams: item.weight || 100,
+      calories: item.calories || 100,
+      protein: item.protein || 5,
+      carbs: item.carbs || 15,
+      fat: item.fat || 3,
+      portion: '1 porção'
+    }));
+    
+    const enhancedFoods = await this.enhanceNutritionData(foods);
+    const validatedFoods = this.validatePortions(enhancedFoods);
+    
+    return {
+      mealName: `Refeição com ${validatedFoods.map(f => f.name).join(', ')}`,
+      foods: validatedFoods,
+      totalCalories: validatedFoods.reduce((sum, f) => sum + f.calories, 0),
+      totalWeight: validatedFoods.reduce((sum, f) => sum + f.weightInGrams, 0),
+      mealType: 'Lanche' as const,
+      confidence: 'high' as const,
+      notes: 'Análise realizada com LogMeal Food AI'
+    };
+  }
+
+  private async parseRoboflowResponse(data: any): Promise<AnalysisResult> {
+    // Roboflow response parsing logic
+    const predictions = data.predictions || [];
+    
+    if (predictions.length === 0) {
+      throw new Error('Nenhum alimento detectado');
+    }
+    
+    const foods = predictions
+      .filter((pred: any) => pred.confidence > 0.5)
+      .map((pred: any) => ({
+        name: pred.class || 'Alimento identificado',
+        weightInGrams: 100,
+        calories: 100,
+        protein: 5,
+        carbs: 15,
+        fat: 3,
+        portion: '1 porção'
+      }));
+    
+    const enhancedFoods = await this.enhanceNutritionData(foods);
+    const validatedFoods = this.validatePortions(enhancedFoods);
+    
+    return {
+      mealName: `Refeição com ${validatedFoods.map(f => f.name).join(', ')}`,
+      foods: validatedFoods,
+      totalCalories: validatedFoods.reduce((sum, f) => sum + f.calories, 0),
+      totalWeight: validatedFoods.reduce((sum, f) => sum + f.weightInGrams, 0),
+      mealType: 'Lanche' as const,
+      confidence: 'medium' as const,
+      notes: 'Análise realizada com Roboflow Food Detection'
+    };
+  }
+
+  // Helper method to check if a label is food-related
+  private isFoodRelated(description: string): boolean {
+    const foodKeywords = [
+      'rice', 'arroz', 'beans', 'feijão', 'chicken', 'frango', 'beef', 'carne',
+      'fish', 'peixe', 'bread', 'pão', 'pasta', 'macarrão', 'salad', 'salada',
+      'vegetable', 'vegetal', 'fruit', 'fruta', 'meat', 'cheese', 'queijo',
+      'egg', 'ovo', 'potato', 'batata', 'tomato', 'tomate', 'onion', 'cebola'
+    ];
+    
+    return foodKeywords.some(keyword => 
+      description.toLowerCase().includes(keyword)
+    );
   }
 
   // Clear nutrition cache
@@ -645,4 +983,16 @@ export const foodRecognitionService = FoodRecognitionService.getInstance();
 // Test the service on startup (development only)
 if (__DEV__) {
   foodRecognitionService.testRecognition();
+  
+  // Log API status
+  console.log('\n📊 API Status Summary:');
+  const status = foodRecognitionService.getAPIStatus();
+  const readyAPIs = Object.entries(status).filter(([_, s]) => s.configured && s.active).length;
+  const totalAPIs = Object.keys(status).length;
+  console.log(`Ready APIs: ${readyAPIs}/${totalAPIs}`);
+  
+  if (readyAPIs === 0) {
+    console.log('⚠️ No APIs configured - will use AI-only fallback');
+    console.log('💡 Configure APIs for better accuracy and faster recognition');
+  }
 }
