@@ -60,40 +60,33 @@ export default function AnalysisScreen() {
         body: JSON.stringify({
           messages: [
             {
-              role: 'system',
-              content: `You are a fast food analysis AI. Analyze quickly and return ONLY valid JSON.
-              
-              ULTRA SPEED MODE: Analyze instantly. Return JSON only.
-              
-              JSON format:
-              {
-                "foods": [
-                  {
-                    "name": "Food name in Portuguese",
-                    "calories": number,
-                    "protein": number,
-                    "carbs": number,
-                    "fat": number,
-                    "portion": "portion in Portuguese"
-                  }
-                ],
-                "totalCalories": number,
-                "mealType": "Café da Manhã" | "Almoço" | "Jantar" | "Lanche",
-                "confidence": "high" | "medium" | "low"
-              }
-              
-              Quick rules:
-              - Identify 1-3 main foods
-              - Use common portions
-              - Fast calorie estimates
-              - Return JSON now`
-            },
-            {
               role: 'user',
               content: [
                 {
                   type: 'text',
-                  text: 'Fast analysis. JSON only.'
+                  text: `Você é um especialista em análise nutricional. Analise esta imagem de comida e retorne APENAS um JSON válido no formato exato:
+
+{
+  "foods": [
+    {
+      "name": "Nome do alimento em português",
+      "calories": número_de_calorias,
+      "protein": gramas_de_proteína,
+      "carbs": gramas_de_carboidratos,
+      "fat": gramas_de_gordura,
+      "portion": "porção em português"
+    }
+  ],
+  "totalCalories": total_de_calorias,
+  "mealType": "Café da Manhã" | "Almoço" | "Jantar" | "Lanche",
+  "confidence": "high" | "medium" | "low"
+}
+
+Regras:
+- Identifique 1-3 alimentos principais
+- Use porções comuns (ex: "1 prato", "1 xícara", "100g")
+- Estime calorias realistas
+- Retorne APENAS o JSON, sem texto adicional`
                 },
                 {
                   type: 'image',
