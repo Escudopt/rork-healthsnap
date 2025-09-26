@@ -152,7 +152,7 @@ export default function MealDetailScreen() {
         fat: nutritionTotals.fat
       });
       
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+      const response = await fetch(new URL("/agent/chat", process.env["EXPO_PUBLIC_TOOLKIT_URL"]), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -203,11 +203,11 @@ Seja específico, educativo e construtivo. Mantenha um tom profissional mas aces
       const data = await response.json();
       console.log('Resposta da API recebida:', data);
       
-      if (!data.completion) {
+      if (!data.messages || !data.messages[0] || !data.messages[0].content) {
         throw new Error('Resposta inválida da API');
       }
       
-      const analysis = data.completion.trim();
+      const analysis = data.messages[0].content.trim();
       console.log('Análise gerada com sucesso:', analysis.substring(0, 100) + '...');
       
       setAiAnalysis(analysis);

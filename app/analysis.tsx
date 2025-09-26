@@ -52,7 +52,7 @@ export default function AnalysisScreen() {
       // Feedback imediato - sem delay
       const startTime = Date.now();
 
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+      const response = await fetch(new URL("/agent/chat", process.env["EXPO_PUBLIC_TOOLKIT_URL"]), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -108,14 +108,14 @@ Regras:
       const processingTime = Date.now() - startTime;
       console.log(`API response received in ${processingTime}ms`);
       
-      if (!data.completion) {
+      if (!data.messages || !data.messages[0] || !data.messages[0].content) {
         throw new Error('Resposta inválida da API');
       }
 
       let result;
       try {
         // Processamento mais rápido do JSON
-        let cleanedResponse = data.completion.trim();
+        let cleanedResponse = data.messages[0].content.trim();
         
         // Extração rápida do JSON
         const jsonStart = cleanedResponse.indexOf('{');
@@ -130,7 +130,7 @@ Regras:
         
       } catch (parseError: unknown) {
         console.error('JSON Parse Error:', parseError);
-        console.error('Raw completion that failed:', data.completion);
+        console.error('Raw completion that failed:', data.messages[0].content);
         
         // Provide more specific error messages based on the error
         if (parseError instanceof SyntaxError) {
