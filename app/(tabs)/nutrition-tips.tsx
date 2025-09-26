@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
   Sunrise, 
   Sun, 
@@ -27,7 +27,7 @@ import {
   Leaf,
   Sparkles
 } from 'lucide-react-native';
-import { BlurCard } from '@/components/BlurCard';
+
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 
@@ -116,9 +116,10 @@ export default function NutritionTipsScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [selectedCategory, setSelectedCategory] = React.useState('all');
   const { colors, isDark } = useTheme();
-  const { userProfile, healthMetrics } = useCalorieTracker();
+  const { userProfile, healthMetrics, meals } = useCalorieTracker();
   const [personalizedTips, setPersonalizedTips] = React.useState<string[]>([]);
   const [isLoadingTips, setIsLoadingTips] = React.useState(false);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -128,48 +129,61 @@ export default function NutritionTipsScreen() {
     }).start();
   }, [fadeAnim]);
 
-  // Generate personalized nutrition tips based on user profile
+  // Generate personalized nutrition tips based on user profile and recent meals
   const generatePersonalizedTips = React.useCallback(async () => {
     if (!userProfile || !healthMetrics || isLoadingTips) return;
     
     setIsLoadingTips(true);
     
     try {
+      // Get recent meals for dietary analysis
+      const recentMeals = meals.slice(0, 10); // Last 10 meals
+      const mealAnalysis = recentMeals.map((meal: any) => ({
+        name: meal.name,
+        calories: meal.totalCalories,
+        foods: meal.foods.map((f: any) => f.name).join(', ')
+      }));
+      
       const aiPrompt = `
-Crie 6-8 dicas de nutrição personalizadas em português para:
+Crie 8-10 dicas de nutrição inteligentes e personalizadas em português para:
 
-Perfil do usuário:
+🧑‍⚕️ PERFIL DO USUÁRIO:
 - Nome: ${userProfile.name}
-- Idade: ${userProfile.age} anos
+- Idade: ${userProfile.age} anos (${userProfile.age < 25 ? 'Jovem adulto' : userProfile.age < 40 ? 'Adulto' : userProfile.age < 60 ? 'Meia-idade' : 'Idoso'})
 - Peso: ${userProfile.weight} kg
 - Altura: ${userProfile.height} cm
 - Sexo: ${userProfile.gender === 'male' ? 'Masculino' : 'Feminino'}
 - Nível de atividade: ${userProfile.activityLevel}
 - Objetivo: ${userProfile.goal === 'lose' ? 'Perder peso' : userProfile.goal === 'gain' ? 'Ganhar peso' : 'Manter peso'}
 
-Métricas de saúde:
-- IMC: ${healthMetrics.bmi}
+📊 MÉTRICAS DE SAÚDE:
+- IMC: ${healthMetrics.bmi} (${healthMetrics.bmiCategory})
 - TMB: ${healthMetrics.bmr} kcal/dia
 - TDEE: ${healthMetrics.tdee} kcal/dia
 - Meta calórica: ${healthMetrics.recommendedCalories} kcal/dia
-- Categoria IMC: ${healthMetrics.bmiCategory}
 
-Forneça dicas específicas e práticas sobre:
-1. Alimentos recomendados para o objetivo
-2. Timing de refeições baseado na atividade
-3. Hidratação personalizada
-4. Suplementação se necessário
-5. Estratégias nutricionais para a idade
-6. Ajustes baseados no IMC atual
+🍽️ ANÁLISE ALIMENTAR RECENTE:
+${mealAnalysis.length > 0 ? mealAnalysis.map((meal: any, i: number) => `${i+1}. ${meal.name} (${meal.calories} kcal): ${meal.foods}`).join('\n') : 'Nenhuma refeição registrada recentemente'}
 
-Cada dica deve ser:
-- Específica para o perfil
-- Prática e aplicável
-- Baseada em evidências
-- Máximo 2 frases
-- Focada em resultados
+🎯 FOQUE EM DICAS ESPECÍFICAS PARA:
+1. Necessidades nutricionais específicas da idade (${userProfile.age} anos)
+2. Alimentos que complementem o padrão alimentar atual
+3. Timing ideal de refeições para o objetivo
+4. Micronutrientes essenciais para a faixa etária
+5. Estratégias para otimizar o metabolismo
+6. Hidratação personalizada
+7. Suplementação inteligente se necessário
+8. Prevenção de deficiências nutricionais
 
-Formato: Uma dica por linha, sem numeração.`;
+✅ CRITÉRIOS PARA CADA DICA:
+- Específica para idade e perfil
+- Baseada no padrão alimentar atual
+- Prática e aplicável no dia a dia
+- Focada em resultados mensuráveis
+- Máximo 2 frases por dica
+- Use emojis para categorizar
+
+Formato: Uma dica por linha, começando com emoji relevante.`;
       
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
@@ -192,10 +206,10 @@ Formato: Uma dica por linha, sem numeração.`;
           .split('\n')
           .filter((tip: string) => tip.trim().length > 0)
           .map((tip: string) => tip.trim().replace(/^\d+\.\s*/, ''))
-          .slice(0, 8);
+          .slice(0, 10);
         
         setPersonalizedTips(tips);
-        console.log('✅ Generated personalized nutrition tips:', tips.length);
+        console.log('✅ Generated intelligent nutrition tips:', tips.length);
       } else {
         console.error('❌ Failed to generate personalized tips');
       }
@@ -204,7 +218,7 @@ Formato: Uma dica por linha, sem numeração.`;
     } finally {
       setIsLoadingTips(false);
     }
-  }, [userProfile, healthMetrics, isLoadingTips]);
+  }, [userProfile, healthMetrics, meals, isLoadingTips]);
 
   // Generate tips when profile is available
   useEffect(() => {
@@ -233,7 +247,7 @@ Formato: Uma dica por linha, sem numeração.`;
     },
     header: {
       paddingHorizontal: 20,
-      paddingTop: 8,
+      paddingTop: insets.top + 8,
       paddingBottom: 16,
     },
     headerTop: {
@@ -638,6 +652,67 @@ Formato: Uma dica por linha, sem numeração.`;
       fontSize: 14,
       fontWeight: '600',
     },
+    aiTipsCard: {
+      padding: 24,
+      borderRadius: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: isDark ? 0.4 : 0.12,
+      shadowRadius: isDark ? 6 : 12,
+      elevation: isDark ? 4 : 6,
+      borderWidth: isDark ? 1 : 0.5,
+      borderColor: isDark ? 'rgba(0, 122, 255, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+    },
+    aiTipsHeader: {
+      flex: 1,
+    },
+    aiSubtitle: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: '500',
+      marginTop: 2,
+    },
+    loadingIndicator: {
+      alignItems: 'center',
+      paddingVertical: 8,
+    },
+    loadingSubtext: {
+      fontSize: 12,
+      fontStyle: 'italic',
+      marginTop: 4,
+    },
+    aiTipsList: {
+      gap: 16,
+    },
+    aiTipItem: {
+      backgroundColor: isDark ? 'rgba(0, 122, 255, 0.1)' : 'rgba(0, 122, 255, 0.05)',
+      padding: 16,
+      borderRadius: 16,
+      borderLeftWidth: 4,
+      borderLeftColor: '#007AFF',
+    },
+    aiTipText: {
+      fontSize: 15,
+      lineHeight: 22,
+      fontWeight: '500',
+    },
+    generateButton: {
+      backgroundColor: '#007AFF',
+      paddingVertical: 16,
+      paddingHorizontal: 24,
+      borderRadius: 16,
+      alignItems: 'center',
+      marginTop: 12,
+      shadowColor: '#007AFF',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 3,
+    },
+    generateButtonText: {
+      fontSize: 16,
+      fontWeight: '700',
+    },
   }));
 
   return (
@@ -662,12 +737,11 @@ Formato: Uma dica por linha, sem numeração.`;
         backgroundColor="transparent" 
         translucent 
       />
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
-        <ScrollView 
-          style={styles.scrollView}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
           <Animated.View style={[
             styles.header, 
             { 
@@ -715,40 +789,52 @@ Formato: Uma dica por linha, sem numeração.`;
           </View>
         </Animated.View>
 
-        {/* Personalized Tips Section */}
+        {/* AI-Powered Personalized Tips Section */}
         {userProfile && healthMetrics && (
           <Animated.View style={[styles.sectionContainer, { opacity: fadeAnim }]}>
-            <View style={[styles.sectionCard, { backgroundColor: colors.surfaceElevated }]}>
+            <View style={[styles.aiTipsCard, { backgroundColor: colors.surfaceElevated }]}>
               <View style={styles.sectionHeader}>
                 <View style={[styles.sectionIcon, { backgroundColor: '#007AFF' }]}>
                   <Sparkles color="white" size={24} />
                 </View>
-                <Text style={styles.sectionTitle}>Recomendações Personalizadas</Text>
+                <View style={styles.aiTipsHeader}>
+                  <Text style={styles.sectionTitle}>Nutrição Inteligente</Text>
+                  <Text style={styles.aiSubtitle}>Baseada na sua idade ({userProfile.age} anos) e alimentação</Text>
+                </View>
               </View>
               <Text style={styles.sectionDescription}>
-                Dicas específicas baseadas no seu perfil, objetivos e métricas de saúde.
+                Recomendações personalizadas usando IA, analisando seu perfil, idade e padrão alimentar atual.
               </Text>
               
               {isLoadingTips ? (
                 <View style={styles.loadingContainer}>
-                  <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Gerando recomendações personalizadas...</Text>
+                  <View style={styles.loadingIndicator}>
+                    <Text style={[styles.loadingText, { color: colors.textSecondary }]}>🧠 Analisando seu perfil e alimentação...</Text>
+                    <Text style={[styles.loadingSubtext, { color: colors.textTertiary }]}>Gerando dicas inteligentes</Text>
+                  </View>
                 </View>
               ) : personalizedTips.length > 0 ? (
-                <View style={styles.tipsList}>
+                <View style={styles.aiTipsList}>
                   {personalizedTips.map((tip, index) => (
-                    <View key={`personalized-${index}`} style={styles.tipItem}>
-                      <View style={[styles.tipBullet, { backgroundColor: '#007AFF' }]} />
-                      <Text style={styles.tipText}>{tip}</Text>
+                    <View key={`ai-tip-${index}`} style={styles.aiTipItem}>
+                      <Text style={[styles.aiTipText, { color: colors.text }]}>{tip}</Text>
                     </View>
                   ))}
+                  <TouchableOpacity 
+                    style={styles.refreshButton}
+                    onPress={generatePersonalizedTips}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.refreshButtonText, { color: colors.primary }]}>🔄 Atualizar Recomendações</Text>
+                  </TouchableOpacity>
                 </View>
               ) : (
                 <TouchableOpacity 
-                  style={styles.refreshButton}
+                  style={styles.generateButton}
                   onPress={generatePersonalizedTips}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.refreshButtonText, { color: colors.primary }]}>Gerar Recomendações</Text>
+                  <Text style={[styles.generateButtonText, { color: 'white' }]}>🧠 Gerar Dicas Inteligentes</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -1017,8 +1103,7 @@ Formato: Uma dica por linha, sem numeração.`;
             </View>
           </View>
         </Animated.View>
-        </ScrollView>
-      </SafeAreaView>
+      </ScrollView>
     </View>
   );
 }
