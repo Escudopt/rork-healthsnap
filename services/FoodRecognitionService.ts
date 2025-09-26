@@ -646,6 +646,32 @@ Seja prático e específico. Máximo 4 sugestões de 1-2 frases cada.`;
                     '❌ Not configured';
       console.log(`${name}: ${status} (${api.freeLimit})`);
     });
+    
+    // Test Clarifai API with a simple request
+    if (FREE_FOOD_APIS.clarifai.apiKey !== 'demo-key') {
+      console.log('\n🧪 Testing Clarifai API connection...');
+      try {
+        const testResponse = await fetch('https://api.clarifai.com/v2/users/me', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Key ${FREE_FOOD_APIS.clarifai.apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (testResponse.ok) {
+          const userData = await testResponse.json();
+          console.log('✅ Clarifai API connection successful!');
+          console.log('👤 User ID:', userData.user?.id || 'Unknown');
+        } else {
+          console.error('❌ Clarifai API connection failed:', testResponse.status);
+          const errorText = await testResponse.text();
+          console.error('Error details:', errorText);
+        }
+      } catch (error) {
+        console.error('❌ Clarifai API test failed:', error);
+      }
+    }
   }
 
   // 📊 Get API status for debugging
@@ -668,11 +694,19 @@ Seja prático e específico. Máximo 4 sugestões de 1-2 frases cada.`;
     console.log('🔍 Trying Clarifai Food Recognition...');
     
     const api = FREE_FOOD_APIS.clarifai;
+    
+    // Ensure we have a valid API key
+    if (!api.apiKey || api.apiKey === 'demo-key') {
+      throw new Error('Clarifai API key not configured');
+    }
+    
+    console.log('📡 Making request to Clarifai with API key:', api.apiKey.substring(0, 8) + '...');
+    
     const response = await fetch(api.url, {
       method: 'POST',
       headers: {
-        ...api.headers,
-        'Authorization': api.headers.Authorization.replace('YOUR_API_KEY', api.apiKey)
+        'Authorization': `Key ${api.apiKey}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         inputs: [{
@@ -685,11 +719,17 @@ Seja prático e específico. Máximo 4 sugestões de 1-2 frases cada.`;
       })
     });
     
+    console.log('📡 Clarifai response status:', response.status);
+    console.log('📡 Clarifai response headers:', Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
-      throw new Error(`Clarifai API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('❌ Clarifai API error response:', errorText);
+      throw new Error(`Clarifai API error: ${response.status} - ${errorText}`);
     }
     
     const data = await response.json();
+    console.log('📊 Clarifai response data:', JSON.stringify(data, null, 2));
     return this.parseClarifaiResponse(data);
   }
 

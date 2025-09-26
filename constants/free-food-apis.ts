@@ -8,7 +8,7 @@ export const FREE_FOOD_APIS = {
   // ✅ Features: Food recognition, confidence scores, multiple items
   clarifai: {
     name: 'Clarifai Food Model',
-    url: 'https://api.clarifai.com/v2/models/food-item-recognition/outputs',
+    url: 'https://api.clarifai.com/v2/models/bd367be194cf45149e75f01d59f77ba7/outputs',
     freeLimit: '5000 requests/month',
     features: ['Food item recognition', 'Confidence scores', 'Multiple food detection'],
     apiKey: '2893b19392c74edb8907c9cdf0e06454', // Your Clarifai API key
