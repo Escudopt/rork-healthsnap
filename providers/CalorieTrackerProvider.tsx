@@ -3,7 +3,6 @@ import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Alert } from 'react-native';
 import { Meal, UserProfile, HealthMetrics } from '@/types/food';
-import { generateText } from '@rork/toolkit-sdk';
 
 // Health sync types (mock implementation for demonstration)
 interface HealthRecord {
@@ -206,25 +205,31 @@ Forneça recomendações práticas e específicas sobre:
 
 Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
       
-      let recommendations: string[] = [];
-      try {
-        const response = await generateText({
+      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           messages: [
             {
               role: 'user',
               content: aiPrompt
             }
           ]
-        });
-        
+        })
+      });
+      
+      let recommendations: string[] = [];
+      if (response.ok) {
+        const data = await response.json();
         // Split the AI response into individual recommendations
-        recommendations = response
+        recommendations = data.completion
           .split(/\d+\.\s*/)
           .filter((rec: string) => rec.trim().length > 0)
           .map((rec: string) => rec.trim())
           .slice(0, 4);
-      } catch (aiError) {
-        console.error('Error generating AI recommendations:', aiError);
+      } else {
         // Fallback recommendations
         recommendations = [
           'Mantenha uma alimentação equilibrada com proteínas, carboidratos e gorduras saudáveis.',
