@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,7 +7,6 @@ import {
   Image,
   TouchableOpacity,
   StatusBar,
-  ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,22 +19,17 @@ import {
   TrendingUp,
   Droplets,
   Wheat,
-  Beef,
-  Brain,
-  AlertTriangle
+  Beef
 } from 'lucide-react-native';
 import { BlurCard } from '@/components/BlurCard';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { FoodItem } from '@/types/food';
-import { generateText } from '@rork/toolkit-sdk';
 
 export default function MealDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { meals, userProfile } = useCalorieTracker();
+  const { meals } = useCalorieTracker();
   const { colors, isDark } = useTheme();
-  const [aiAnalysis, setAiAnalysis] = useState<string>('');
-  const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
   
   const meal = useMemo(() => {
     return meals.find(m => m.id === id);
@@ -129,62 +123,6 @@ export default function MealDetailScreen() {
       </BlurCard>
     );
   };
-  
-  const generateMealAnalysis = React.useCallback(async () => {
-    if (!meal || !nutritionTotals || aiAnalysis) return;
-    
-    setIsLoadingAnalysis(true);
-    try {
-      const foodList = meal.foods.map(food => `${food.name} (${food.portion})`).join(', ');
-      const age = userProfile?.age || 30;
-      const weight = userProfile?.weight || 70;
-      const height = userProfile?.height || 170;
-      const activityLevel = userProfile?.activityLevel || 'moderado';
-      
-      const prompt = `Analise esta refeição detalhadamente para uma pessoa de ${age} anos, ${weight}kg, ${height}cm, nível de atividade ${activityLevel}:
-
-Refeição: ${meal.mealType || 'Refeição'}
-Alimentos: ${foodList}
-Calorias totais: ${nutritionTotals.calories}kcal
-Proteína: ${nutritionTotals.protein.toFixed(1)}g
-Carboidratos: ${nutritionTotals.carbs.toFixed(1)}g
-Gorduras: ${nutritionTotals.fat.toFixed(1)}g
-${nutritionTotals.sugar > 0 ? `Açúcar: ${nutritionTotals.sugar.toFixed(1)}g\n` : ''}${nutritionTotals.sodium > 0 ? `Sódio: ${nutritionTotals.sodium.toFixed(0)}mg\n` : ''}
-
-Forneça uma análise detalhada em português brasileiro com:
-
-**PONTOS POSITIVOS:**
-- Aspectos nutricionais benéficos
-- Adequação para a idade e perfil
-- Benefícios específicos dos alimentos
-
-**PONTOS DE ATENÇÃO:**
-- Possíveis excessos ou deficiências
-- Sugestões de melhoria
-- Considerações para o perfil do usuário
-
-**RECOMENDAÇÕES:**
-- Como otimizar esta refeição
-- Sugestões de acompanhamentos
-- Dicas específicas para a idade
-
-Seja específico, educativo e construtivo. Mantenha um tom profissional mas acessível.`;
-      
-      const analysis = await generateText(prompt);
-      setAiAnalysis(analysis);
-    } catch (error) {
-      console.error('Erro ao gerar análise:', error);
-      setAiAnalysis('Não foi possível gerar a análise da refeição no momento.');
-    } finally {
-      setIsLoadingAnalysis(false);
-    }
-  }, [meal, nutritionTotals, aiAnalysis, userProfile]);
-  
-  useEffect(() => {
-    if (meal && nutritionTotals) {
-      generateMealAnalysis();
-    }
-  }, [meal, nutritionTotals, generateMealAnalysis]);
   
   const styles = useThemedStyles((colors, isDark) => createStyles(colors, isDark));
 
@@ -351,30 +289,6 @@ Seja específico, educativo e construtivo. Mantenha um tom profissional mas aces
               )}
             </BlurCard>
           )}
-          
-          {/* AI Analysis */}
-          <BlurCard style={styles.analysisCard}>
-            <View style={styles.analysisHeader}>
-              <Brain color={colors.primary} size={24} />
-              <Text style={[styles.analysisTitle, { color: colors.text }]}>Análise Nutricional Inteligente</Text>
-            </View>
-            
-            {isLoadingAnalysis ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator size="small" color={colors.primary} />
-                <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Analisando sua refeição...</Text>
-              </View>
-            ) : aiAnalysis ? (
-              <View style={styles.analysisContent}>
-                <Text style={[styles.analysisText, { color: colors.text }]}>{aiAnalysis}</Text>
-              </View>
-            ) : (
-              <View style={styles.analysisError}>
-                <AlertTriangle color={colors.textSecondary} size={20} />
-                <Text style={[styles.analysisErrorText, { color: colors.textSecondary }]}>Análise não disponível</Text>
-              </View>
-            )}
-          </BlurCard>
           
           {/* Individual Foods */}
           <View style={styles.foodsSection}>
@@ -630,45 +544,5 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   backToHistoryText: {
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  analysisCard: {
-    padding: 20,
-    marginBottom: 24,
-  },
-  analysisHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 16,
-  },
-  analysisTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 20,
-  },
-  loadingText: {
-    fontSize: 14,
-  },
-  analysisContent: {
-    paddingVertical: 8,
-  },
-  analysisText: {
-    fontSize: 14,
-    lineHeight: 22,
-    textAlign: 'justify',
-  },
-  analysisError: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 16,
-  },
-  analysisErrorText: {
-    fontSize: 14,
   },
 });
