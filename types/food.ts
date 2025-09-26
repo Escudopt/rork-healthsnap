@@ -6,6 +6,11 @@ export interface FoodItem {
   fat: number;
   sugar?: number; // açúcar em gramas
   sodium?: number; // sal/sódio em mg
+  fiber?: number; // fibra em gramas
+  calcium?: number; // cálcio em mg
+  iron?: number; // ferro em mg
+  vitaminC?: number; // vitamina C em mg
+  vitaminD?: number; // vitamina D em UI
   portion: string;
 }
 

@@ -31,11 +31,149 @@ interface Supplement {
   }[];
 }
 
-// Vitamin recommendation system based on age and diet
-const getVitaminRecommendations = (age: number, gender: 'male' | 'female', activityLevel: string, goal: string) => {
+// Intelligent supplement recommendation system based on age, diet, and nutritional analysis
+const getIntelligentSupplementRecommendations = (
+  age: number, 
+  gender: 'male' | 'female', 
+  activityLevel: string, 
+  goal: string,
+  meals: any[],
+  healthMetrics: any
+) => {
   const recommendations: Supplement[] = [];
   
-  // Age-based recommendations
+  // Analyze nutritional intake from recent meals (last 7 days)
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  
+  const recentMeals = meals.filter(meal => {
+    if (!meal?.timestamp) return false;
+    try {
+      return new Date(meal.timestamp) >= oneWeekAgo;
+    } catch {
+      return false;
+    }
+  });
+  
+  // Calculate average daily nutritional intake
+  const nutritionalAnalysis = recentMeals.reduce((acc, meal) => {
+    meal.foods?.forEach((food: any) => {
+      acc.protein += food.protein || 0;
+      acc.carbs += food.carbs || 0;
+      acc.fat += food.fat || 0;
+      acc.fiber += food.fiber || 0;
+      acc.sugar += food.sugar || 0;
+      acc.sodium += food.sodium || 0;
+      acc.calcium += food.calcium || 0;
+      acc.iron += food.iron || 0;
+      acc.vitaminC += food.vitaminC || 0;
+      acc.vitaminD += food.vitaminD || 0;
+    });
+    return acc;
+  }, {
+    protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0,
+    calcium: 0, iron: 0, vitaminC: 0, vitaminD: 0
+  });
+  
+  // Calculate daily averages
+  const daysAnalyzed = Math.max(1, Math.ceil((Date.now() - oneWeekAgo.getTime()) / (1000 * 60 * 60 * 24)));
+  Object.keys(nutritionalAnalysis).forEach(key => {
+    nutritionalAnalysis[key as keyof typeof nutritionalAnalysis] /= daysAnalyzed;
+  });
+  
+  console.log('📊 Nutritional Analysis (daily avg):', nutritionalAnalysis);
+  
+  // INTELLIGENT RECOMMENDATIONS BASED ON NUTRITIONAL DEFICIENCIES
+  
+  // Protein deficiency check
+  const proteinTarget = (healthMetrics?.bmr || 1500) * 0.15 / 4; // 15% of BMR in grams
+  if (nutritionalAnalysis.protein < proteinTarget * 0.8) {
+    recommendations.push({
+      id: 'protein-deficiency',
+      name: 'Whey Protein (Deficiência Detectada)',
+      description: `Sua ingestão média de proteína (${Math.round(nutritionalAnalysis.protein)}g/dia) está abaixo do recomendado (${Math.round(proteinTarget)}g/dia)`,
+      benefits: ['Suprir deficiência proteica', 'Manutenção muscular', 'Saciedade'],
+      dosage: `${Math.round((proteinTarget - nutritionalAnalysis.protein) * 1.2)}g ao dia`,
+      icon: <Zap color="white" size={24} />,
+      color: '#E91E63',
+      priority: 'high' as const
+    });
+  }
+  
+  // Fiber deficiency check
+  const fiberTarget = age < 50 ? (gender === 'male' ? 38 : 25) : (gender === 'male' ? 30 : 21);
+  if (nutritionalAnalysis.fiber < fiberTarget * 0.7) {
+    recommendations.push({
+      id: 'fiber-supplement',
+      name: 'Suplemento de Fibras',
+      description: `Sua ingestão de fibras (${Math.round(nutritionalAnalysis.fiber)}g/dia) está muito baixa. Meta: ${fiberTarget}g/dia`,
+      benefits: ['Saúde digestiva', 'Controle glicêmico', 'Saciedade'],
+      dosage: '10-15g ao dia com bastante água',
+      icon: <Shield color="white" size={24} />,
+      color: '#4CAF50',
+      priority: 'high' as const
+    });
+  }
+  
+  // Iron deficiency (especially for women)
+  const ironTarget = gender === 'female' && age < 51 ? 18 : 8;
+  if (nutritionalAnalysis.iron < ironTarget * 0.6) {
+    recommendations.push({
+      id: 'iron-deficiency',
+      name: 'Ferro + Vitamina C',
+      description: `Baixa ingestão de ferro detectada (${Math.round(nutritionalAnalysis.iron)}mg/dia). Recomendado: ${ironTarget}mg/dia`,
+      benefits: ['Prevenção anemia', 'Energia', 'Transporte de oxigênio'],
+      dosage: `${Math.round(ironTarget - nutritionalAnalysis.iron)}mg com vitamina C`,
+      icon: <Heart color="white" size={24} />,
+      color: '#F44336',
+      priority: 'high' as const
+    });
+  }
+  
+  // Calcium deficiency
+  const calciumTarget = age < 51 ? 1000 : 1200;
+  if (nutritionalAnalysis.calcium < calciumTarget * 0.5) {
+    recommendations.push({
+      id: 'calcium-deficiency',
+      name: 'Cálcio + Magnésio + D3',
+      description: `Ingestão de cálcio muito baixa (${Math.round(nutritionalAnalysis.calcium)}mg/dia). Meta: ${calciumTarget}mg/dia`,
+      benefits: ['Saúde óssea', 'Prevenção osteoporose', 'Função muscular'],
+      dosage: `${Math.round((calciumTarget - nutritionalAnalysis.calcium) * 0.8)}mg com magnésio e D3`,
+      icon: <Bone color="white" size={24} />,
+      color: '#FF9800',
+      priority: 'high' as const
+    });
+  }
+  
+  // High sodium intake warning
+  if (nutritionalAnalysis.sodium > 2300) {
+    recommendations.push({
+      id: 'potassium-high-sodium',
+      name: 'Potássio (Alto Sódio Detectado)',
+      description: `Sua ingestão de sódio (${Math.round(nutritionalAnalysis.sodium)}mg/dia) está alta. Potássio ajuda a equilibrar`,
+      benefits: ['Equilibra sódio', 'Pressão arterial', 'Função cardíaca'],
+      dosage: '3500-4700mg ao dia',
+      icon: <Heart color="white" size={24} />,
+      color: '#2196F3',
+      priority: 'medium' as const
+    });
+  }
+  
+  // High sugar intake warning
+  if (nutritionalAnalysis.sugar > 50) {
+    recommendations.push({
+      id: 'chromium-high-sugar',
+      name: 'Cromo (Alto Açúcar Detectado)',
+      description: `Ingestão elevada de açúcar (${Math.round(nutritionalAnalysis.sugar)}g/dia). Cromo ajuda no controle glicêmico`,
+      benefits: ['Controle glicêmico', 'Reduz desejos por doce', 'Metabolismo'],
+      dosage: '200-400mcg ao dia',
+      icon: <Target color="white" size={24} />,
+      color: '#9C27B0',
+      priority: 'medium' as const
+    });
+  }
+  
+  // AGE-BASED RECOMMENDATIONS
   if (age < 18) {
     recommendations.push({
       id: 'teen-multi',
@@ -402,11 +540,18 @@ export default function SupplementsScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const { colors, isDark } = useTheme();
-  const { userProfile } = useCalorieTracker();
+  const { userProfile, meals, healthMetrics } = useCalorieTracker();
   
-  // Get personalized recommendations
+  // Get intelligent personalized recommendations
   const personalizedRecommendations = userProfile 
-    ? getVitaminRecommendations(userProfile.age, userProfile.gender, userProfile.activityLevel, userProfile.goal)
+    ? getIntelligentSupplementRecommendations(
+        userProfile.age, 
+        userProfile.gender, 
+        userProfile.activityLevel, 
+        userProfile.goal,
+        meals,
+        healthMetrics
+      )
     : [];
 
   useEffect(() => {
@@ -774,6 +919,32 @@ export default function SupplementsScreen() {
       justifyContent: 'center',
       alignItems: 'center',
     },
+    analysisCard: {
+      padding: 20,
+      marginBottom: 20,
+      borderRadius: 20,
+      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.15)' : 'rgba(255, 152, 0, 0.08)',
+      borderWidth: 1.5,
+      borderColor: isDark ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 152, 0, 0.2)',
+    },
+    analysisHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    analysisTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.text,
+      marginLeft: 12,
+      letterSpacing: 0.2,
+    },
+    analysisText: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      lineHeight: 22,
+      fontWeight: '500',
+    },
   }));
 
   return (
@@ -833,9 +1004,43 @@ export default function SupplementsScreen() {
                   <Text style={styles.personalizedTitle}>Recomendações Personalizadas</Text>
                 </View>
                 <Text style={styles.personalizedSubtitle}>
-                  Baseado no seu perfil: {userProfile.age} anos, {userProfile.gender === 'male' ? 'masculino' : 'feminino'}, 
-                  objetivo de {userProfile.goal === 'lose' ? 'perder peso' : userProfile.goal === 'gain' ? 'ganhar peso' : 'manter peso'}
+                  Baseado no seu perfil ({userProfile.age} anos, {userProfile.gender === 'male' ? 'masculino' : 'feminino'}) 
+                  e análise nutricional das suas {meals.filter(m => {
+                    const oneWeekAgo = new Date();
+                    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                    try {
+                      return m?.timestamp && new Date(m.timestamp) >= oneWeekAgo;
+                    } catch { return false; }
+                  }).length} refeições dos últimos 7 dias
                 </Text>
+                
+                {personalizedRecommendations.length === 0 && (
+                  <BlurCard style={[styles.noProfileCard, { backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)' }]}>
+                    <View style={[styles.noProfileIcon, { backgroundColor: '#4CAF50' }]}>
+                      <Target color="white" size={24} />
+                    </View>
+                    <Text style={styles.noProfileTitle}>Parabéns! Nutrição Equilibrada</Text>
+                    <Text style={styles.noProfileText}>
+                      Sua alimentação atual parece estar bem equilibrada. Continue assim! 
+                      Veja as recomendações gerais abaixo baseadas na sua idade.
+                    </Text>
+                  </BlurCard>
+                )}
+                
+                {personalizedRecommendations.length > 0 && (
+                  <View style={styles.analysisCard}>
+                    <View style={styles.analysisHeader}>
+                      <View style={[styles.summaryCardIcon, { backgroundColor: '#FF9800' }]}>
+                        <AlertTriangle color="white" size={20} strokeWidth={2.5} />
+                      </View>
+                      <Text style={styles.analysisTitle}>Deficiências Detectadas</Text>
+                    </View>
+                    <Text style={styles.analysisText}>
+                      Com base na análise das suas refeições, identificamos algumas possíveis deficiências nutricionais. 
+                      Os suplementos abaixo podem ajudar a suprir essas necessidades.
+                    </Text>
+                  </View>
+                )}
                 
                 {personalizedRecommendations.map((supplement, index) => (
                   <Animated.View
