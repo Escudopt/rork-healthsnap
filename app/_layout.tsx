@@ -7,6 +7,7 @@ import { StyleSheet, View } from "react-native";
 import { CalorieTrackerProvider } from "@/providers/CalorieTrackerProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { LanguageProvider } from "@/providers/LanguageProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 
 
@@ -42,17 +43,19 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <GestureHandlerRootView style={styles.container}>
-        <LanguageProvider>
-          <ThemeProvider>
-            <CalorieTrackerProvider>
-              <RootLayoutNav />
-            </CalorieTrackerProvider>
-          </ThemeProvider>
-        </LanguageProvider>
-      </GestureHandlerRootView>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <GestureHandlerRootView style={styles.container}>
+          <LanguageProvider>
+            <ThemeProvider>
+              <CalorieTrackerProvider>
+                <RootLayoutNav />
+              </CalorieTrackerProvider>
+            </ThemeProvider>
+          </LanguageProvider>
+        </GestureHandlerRootView>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

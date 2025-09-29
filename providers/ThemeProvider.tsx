@@ -148,9 +148,7 @@ interface ThemeContextType {
 
 export const [ThemeProvider, useTheme] = createContextHook<ThemeContextType>(() => {
   const [themeMode, setThemeModeState] = useState<ThemeMode>('system');
-  const [systemColorScheme, setSystemColorScheme] = useState<ColorScheme>(
-    Appearance.getColorScheme() === 'dark' ? 'dark' : 'light'
-  );
+  const [systemColorScheme, setSystemColorScheme] = useState<ColorScheme>('light'); // Default to light to prevent hydration mismatch
 
   // Determine the actual color scheme based on theme mode
   const colorScheme: ColorScheme = themeMode === 'system' ? systemColorScheme : themeMode;
@@ -221,9 +219,18 @@ export const [ThemeProvider, useTheme] = createContextHook<ThemeContextType>(() 
     return () => subscription?.remove();
   }, []);
 
-  // Load theme mode on mount
+  // Load theme mode on mount - non-blocking
   useEffect(() => {
-    loadThemeMode();
+    // Set initial system color scheme
+    const initialColorScheme = Appearance.getColorScheme() === 'dark' ? 'dark' : 'light';
+    setSystemColorScheme(initialColorScheme);
+    
+    // Load theme preference in background
+    const timeoutId = setTimeout(() => {
+      loadThemeMode();
+    }, 0);
+    
+    return () => clearTimeout(timeoutId);
   }, [loadThemeMode]);
 
   // Update status bar style based on theme

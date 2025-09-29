@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { BlurCard } from '@/components/BlurCard';
@@ -23,6 +24,9 @@ import {
   Zap,
   Heart,
   Flame,
+  Navigation,
+  Footprints,
+  History,
 } from 'lucide-react-native';
 
 
@@ -71,6 +75,7 @@ interface WorkoutCategory {
 export default function WorkoutsScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { userProfile, healthMetrics, todayCalories, dailyGoal } = useCalorieTracker();
   const [selectedCategory, setSelectedCategory] = useState<string>('casa');
   const [workoutRecommendations, setWorkoutRecommendations] = useState<WorkoutRecommendation[]>([]);
@@ -1235,6 +1240,49 @@ Crie 2 treinos para cada local (Casa, Rua, Ginásio). Responda APENAS com JSON v
           </BlurCard>
         )}
 
+        {/* GPS Workout Section */}
+        <View style={styles.gpsSection}>
+          <BlurCard style={styles.gpsWorkoutCard}>
+            <TouchableOpacity
+              style={styles.gpsWorkoutButton}
+              onPress={() => router.push('/live-workout')}
+              activeOpacity={0.8}
+            >
+              <View style={styles.gpsWorkoutHeader}>
+                <Navigation size={24} color={colors.primary} />
+                <Text style={[styles.gpsWorkoutTitle, { color: colors.text }]}>Treino GPS</Text>
+              </View>
+              <Text style={[styles.gpsWorkoutDescription, { color: colors.textSecondary }]}>
+                Caminhada, corrida e treino ao vivo com rastreamento GPS
+              </Text>
+              <View style={styles.gpsWorkoutModes}>
+                <View style={[styles.gpsMode, { backgroundColor: colors.success + '20' }]}>
+                  <Footprints size={16} color={colors.success} />
+                  <Text style={[styles.gpsModeText, { color: colors.success }]}>Caminhada</Text>
+                </View>
+                <View style={[styles.gpsMode, { backgroundColor: colors.warning + '20' }]}>
+                  <Activity size={16} color={colors.warning} />
+                  <Text style={[styles.gpsModeText, { color: colors.warning }]}>Corrida</Text>
+                </View>
+                <View style={[styles.gpsMode, { backgroundColor: (colors.error || '#F44336') + '20' }]}>
+                  <Zap size={16} color={colors.error || '#F44336'} />
+                  <Text style={[styles.gpsModeText, { color: colors.error || '#F44336' }]}>Live</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          </BlurCard>
+          
+          {/* Workout History Button */}
+          <TouchableOpacity
+            style={[styles.historyButton, { borderColor: colors.border }]}
+            onPress={() => router.push('/workout-history')}
+            activeOpacity={0.7}
+          >
+            <History size={20} color={colors.textSecondary} />
+            <Text style={[styles.historyButtonText, { color: colors.textSecondary }]}>Ver Histórico</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Category Selector */}
         <View style={styles.categorySelector}>
           {categories.map((category) => (
@@ -1416,6 +1464,64 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   categoryText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  
+  // GPS Section
+  gpsSection: {
+    marginBottom: 24,
+    gap: 12,
+  },
+  gpsWorkoutCard: {
+    padding: 0,
+    overflow: 'hidden',
+  },
+  gpsWorkoutButton: {
+    padding: 20,
+  },
+  gpsWorkoutHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 12,
+  },
+  gpsWorkoutTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  gpsWorkoutDescription: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  gpsWorkoutModes: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  gpsMode: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  gpsModeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  historyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 8,
+  },
+  historyButtonText: {
     fontSize: 14,
     fontWeight: '600',
   },

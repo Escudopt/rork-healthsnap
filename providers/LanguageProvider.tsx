@@ -465,9 +465,13 @@ export const [LanguageProvider, useLanguage] = createContextHook<LanguageContext
     return translations[language][key] || key;
   }, [language]);
 
-  // Load language on mount
+  // Load language on mount - non-blocking
   useEffect(() => {
-    loadLanguage();
+    const timeoutId = setTimeout(() => {
+      loadLanguage();
+    }, 0);
+    
+    return () => clearTimeout(timeoutId);
   }, [loadLanguage]);
 
   return useMemo(() => ({
