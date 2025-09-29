@@ -329,106 +329,30 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
 
   const loadWorkoutSessions = useCallback(async () => {
     try {
-      console.log('🔄 Loading workout sessions from storage...');
-      
-      let stored = await AsyncStorage.getItem(WORKOUTS_STORAGE_KEY);
-      
-      // Try backup if primary is empty or corrupted
-      if (!stored || stored === 'null' || stored === '[]' || stored === '') {
-        console.log('🔄 Trying workout sessions backup...');
-        const backupStored = await AsyncStorage.getItem(WORKOUTS_STORAGE_KEY + '_backup');
-        if (backupStored && backupStored !== 'null' && backupStored !== '[]' && backupStored !== '') {
-          stored = backupStored;
-          console.log('✅ Restored workout sessions from backup');
-          // Restore primary from backup
-          await AsyncStorage.setItem(WORKOUTS_STORAGE_KEY, stored);
+      const stored = await AsyncStorage.getItem(WORKOUTS_STORAGE_KEY);
+      if (stored) {
+        try {
+          const sessions = JSON.parse(stored) as WorkoutSession[];
+          if (Array.isArray(sessions)) {
+            setWorkoutSessions(sessions);
+            console.log('🏃 Loaded workout sessions:', sessions.length);
+          }
+        } catch (parseError) {
+          console.error('❌ Error parsing workout sessions:', parseError);
+          await AsyncStorage.removeItem(WORKOUTS_STORAGE_KEY);
         }
       }
-      
-      if (!stored || stored === 'null' || stored === '[]' || stored === '') {
-        console.log('📭 No stored workout sessions found');
-        setWorkoutSessions([]);
-        return;
-      }
-      
-      try {
-        const sessions = JSON.parse(stored) as WorkoutSession[];
-        
-        if (!Array.isArray(sessions)) {
-          console.log('❌ Invalid workout sessions data format');
-          setWorkoutSessions([]);
-          return;
-        }
-        
-        // Filter valid sessions
-        const validSessions = sessions.filter(session => 
-          session && 
-          session.id && 
-          session.type && 
-          typeof session.duration === 'number' && session.duration > 0 &&
-          typeof session.calories === 'number' && session.calories > 0 &&
-          session.date &&
-          session.timestamp
-        );
-        
-        console.log(`✅ Loaded ${validSessions.length} valid workout sessions (${sessions.length - validSessions.length} filtered out)`);
-        setWorkoutSessions(validSessions);
-        
-        // If we filtered out invalid sessions, save the cleaned data
-        if (validSessions.length !== sessions.length) {
-          console.log('🧹 Cleaning up invalid workout sessions in storage');
-          await saveWorkoutSessions(validSessions);
-        }
-        
-      } catch (parseError) {
-        console.error('❌ JSON Parse error for workout sessions:', parseError);
-        // Clear corrupted data
-        await AsyncStorage.removeItem(WORKOUTS_STORAGE_KEY);
-        await AsyncStorage.removeItem(WORKOUTS_STORAGE_KEY + '_backup');
-        setWorkoutSessions([]);
-      }
-      
     } catch (error) {
       console.error('❌ Error loading workout sessions:', error);
-      setWorkoutSessions([]);
     }
-  }, [saveWorkoutSessions]);
+  }, []);
 
   const saveWorkoutSessions = useCallback(async (sessions: WorkoutSession[]) => {
     try {
-      console.log(`💾 Saving ${sessions.length} workout sessions to storage...`);
-      
-      // Validate sessions before saving
-      const validSessions = sessions.filter(session => 
-        session && 
-        session.id && 
-        session.type && 
-        typeof session.duration === 'number' && session.duration > 0 &&
-        typeof session.calories === 'number' && session.calories > 0 &&
-        session.date &&
-        session.timestamp
-      );
-      
-      if (validSessions.length !== sessions.length) {
-        console.warn(`⚠️ Filtered out ${sessions.length - validSessions.length} invalid workout sessions`);
-      }
-      
-      const dataToSave = JSON.stringify(validSessions);
-      await AsyncStorage.setItem(WORKOUTS_STORAGE_KEY, dataToSave);
-      
-      console.log(`✅ Successfully saved ${validSessions.length} workout sessions to storage`);
-      
-      // Create backup
-      try {
-        await AsyncStorage.setItem(WORKOUTS_STORAGE_KEY + '_backup', dataToSave);
-        console.log('✅ Workout sessions backup created');
-      } catch (backupError) {
-        console.error('❌ Failed to create workout sessions backup:', backupError);
-      }
-      
+      await AsyncStorage.setItem(WORKOUTS_STORAGE_KEY, JSON.stringify(sessions));
+      console.log('💾 Saved workout sessions:', sessions.length);
     } catch (error) {
       console.error('❌ Error saving workout sessions:', error);
-      throw error;
     }
   }, []);
 
@@ -939,55 +863,17 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
   // Workout session management
   const addWorkoutSession = useCallback(async (sessionData: Omit<WorkoutSession, 'id' | 'timestamp'>) => {
     try {
-      console.log('🏃 Starting to add workout session:', sessionData);
-      
-      // Validate session data
-      if (!sessionData.type || !sessionData.duration || !sessionData.calories || !sessionData.date) {
-        throw new Error('Invalid workout session data - missing required fields');
-      }
-      
-      if (sessionData.duration <= 0) {
-        throw new Error('Invalid workout duration - must be greater than 0');
-      }
-      
-      if (sessionData.calories <= 0) {
-        throw new Error('Invalid workout calories - must be greater than 0');
-      }
-      
       const newSession: WorkoutSession = {
         ...sessionData,
         id: `workout_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: new Date().toISOString(),
       };
       
-      console.log(`🏃 Adding workout session: ${sessionData.type} - ${sessionData.duration}s - ${sessionData.calories} kcal - ${sessionData.distance?.toFixed(2) || 0}km`);
+      console.log(`🏃 Adding workout session: ${sessionData.type} - ${sessionData.calories} kcal`);
       
       const updatedSessions = [newSession, ...workoutSessions];
       setWorkoutSessions(updatedSessions);
-      
-      // Save to storage with verification
       await saveWorkoutSessions(updatedSessions);
-      
-      // Verify the save worked
-      const verification = await AsyncStorage.getItem(WORKOUTS_STORAGE_KEY);
-      if (verification) {
-        try {
-          const parsed = JSON.parse(verification);
-          console.log(`✅ Verified workout save: ${parsed.length} workouts in storage`);
-          
-          // Double check our new session is in there
-          const foundSession = parsed.find((s: WorkoutSession) => s.id === newSession.id);
-          if (foundSession) {
-            console.log('✅ New workout session confirmed in storage');
-          } else {
-            console.error('❌ New workout session NOT found in storage after save');
-          }
-        } catch (verifyError) {
-          console.error('❌ Verification parse error:', verifyError);
-        }
-      } else {
-        console.error('❌ No workout data found in storage after save');
-      }
       
     } catch (error) {
       console.error('❌ Error adding workout session:', error);
