@@ -197,6 +197,8 @@ export default function LiveWorkoutScreen() {
               timestamp: position.timestamp,
             };
             
+            console.log(`📍 Web GPS Update: Speed: ${location.coords.speed ? (location.coords.speed * 3.6).toFixed(1) : 'N/A'}km/h, Accuracy: ${location.coords.accuracy?.toFixed(0)}m`);
+            
             setCurrentLocation(location);
             
             const locationPoint: LocationPoint = {
@@ -206,12 +208,16 @@ export default function LiveWorkoutScreen() {
               accuracy: location.coords.accuracy || undefined,
             };
             
-            setLocationHistory(prev => [...prev, locationPoint]);
+            setLocationHistory(prev => {
+              const newHistory = [...prev, locationPoint];
+              // Keep only last 100 points to avoid memory issues
+              return newHistory.length > 100 ? newHistory.slice(-100) : newHistory;
+            });
           },
           (error) => {
             console.error('❌ Web geolocation error:', error);
           },
-          { enableHighAccuracy: true, timeout: 5000, maximumAge: 1000 }
+          { enableHighAccuracy: true, timeout: 3000, maximumAge: 500 } // More frequent updates
         );
         
         // Store watchId for cleanup
@@ -225,10 +231,12 @@ export default function LiveWorkoutScreen() {
         const subscription = await Location.watchPositionAsync(
           {
             accuracy: Location.Accuracy.BestForNavigation,
-            timeInterval: 1000,
-            distanceInterval: 1,
+            timeInterval: 500, // More frequent updates for better speed calculation
+            distanceInterval: 0.5, // Smaller distance interval for better tracking
           },
           (location) => {
+            console.log(`📍 GPS Update: Speed: ${location.coords.speed ? (location.coords.speed * 3.6).toFixed(1) : 'N/A'}km/h, Accuracy: ${location.coords.accuracy?.toFixed(0)}m`);
+            
             setCurrentLocation(location);
             
             const locationPoint: LocationPoint = {
@@ -238,7 +246,11 @@ export default function LiveWorkoutScreen() {
               accuracy: location.coords.accuracy || undefined,
             };
             
-            setLocationHistory(prev => [...prev, locationPoint]);
+            setLocationHistory(prev => {
+              const newHistory = [...prev, locationPoint];
+              // Keep only last 100 points to avoid memory issues
+              return newHistory.length > 100 ? newHistory.slice(-100) : newHistory;
+            });
           }
         );
         
@@ -281,25 +293,50 @@ export default function LiveWorkoutScreen() {
     let totalDistance = 0;
     let maxSpeed = 0;
     const speeds: number[] = [];
+    const recentSpeeds: number[] = []; // For more accurate current speed
+    
+    console.log(`📊 Calculating stats from ${locationHistory.length} GPS points`);
     
     for (let i = 1; i < locationHistory.length; i++) {
       const prev = locationHistory[i - 1];
       const curr = locationHistory[i];
       
+      // Calculate distance between consecutive points
       const distance = calculateDistance(prev.latitude, prev.longitude, curr.latitude, curr.longitude);
       totalDistance += distance;
       
-      const timeDiff = (curr.timestamp - prev.timestamp) / 1000 / 3600; // hours
-      const speed = distance / timeDiff; // km/h
+      // Calculate time difference in seconds, then convert to hours for speed calculation
+      const timeDiffSeconds = (curr.timestamp - prev.timestamp) / 1000;
+      const timeDiffHours = timeDiffSeconds / 3600;
       
-      if (speed > 0 && speed < 50) { // Filter out unrealistic speeds
-        speeds.push(speed);
-        maxSpeed = Math.max(maxSpeed, speed);
+      // Only calculate speed if we have a reasonable time difference (avoid division by very small numbers)
+      if (timeDiffSeconds > 0.5 && timeDiffHours > 0) {
+        const speed = distance / timeDiffHours; // km/h
+        
+        // Filter out unrealistic speeds (GPS noise) but be more lenient
+        if (speed >= 0 && speed <= 80) {
+          speeds.push(speed);
+          maxSpeed = Math.max(maxSpeed, speed);
+          
+          // Keep recent speeds for current speed calculation (last 10 points)
+          if (i >= locationHistory.length - 10) {
+            recentSpeeds.push(speed);
+          }
+        }
       }
     }
     
+    // Calculate average speed from all valid speeds
     const avgSpeed = speeds.length > 0 ? speeds.reduce((a, b) => a + b, 0) / speeds.length : 0;
-    // const duration = stats.duration;
+    
+    // Calculate current speed from recent GPS points for more responsive display
+    const currentSpeed = recentSpeeds.length > 0 ? 
+      recentSpeeds.reduce((a, b) => a + b, 0) / recentSpeeds.length : avgSpeed;
+    
+    // Use GPS speed if available (more accurate than calculated speed)
+    const gpsSpeed = currentLocation?.coords?.speed;
+    const displaySpeed = gpsSpeed && gpsSpeed >= 0 ? gpsSpeed * 3.6 : currentSpeed; // Convert m/s to km/h
+    
     const pace = avgSpeed > 0 ? 60 / avgSpeed : 0; // minutes per km
     
     // Calculate calories based on mode and user profile
@@ -321,16 +358,18 @@ export default function LiveWorkoutScreen() {
     const calories = totalDistance * caloriesPerKm;
     const steps = Math.round(totalDistance * 1300); // Rough estimate: 1300 steps per km
     
+    console.log(`📊 Stats updated: Distance: ${totalDistance.toFixed(3)}km, Avg Speed: ${avgSpeed.toFixed(1)}km/h, Current Speed: ${displaySpeed.toFixed(1)}km/h, Max Speed: ${maxSpeed.toFixed(1)}km/h`);
+    
     setStats(prev => ({
       ...prev,
       distance: totalDistance,
-      avgSpeed,
+      avgSpeed: displaySpeed, // Use current speed for real-time display
       maxSpeed,
       calories,
       steps,
       pace,
     }));
-  }, [locationHistory, calculateDistance, selectedMode, userProfile, stats.duration]);
+  }, [locationHistory, calculateDistance, selectedMode, userProfile, currentLocation]);
   
   // Update statistics when location history changes
   useEffect(() => {
@@ -438,18 +477,36 @@ export default function LiveWorkoutScreen() {
         {
           text: 'Finalizar',
           style: 'destructive',
-          onPress: () => {
+          onPress: async () => {
             pauseTimer();
             stopLocationTracking();
             
             // Save workout session
             if (addWorkoutSession && stats.duration > 0) {
-              addWorkoutSession({
+              const workoutData = {
                 type: selectedMode,
                 duration: stats.duration,
                 calories: Math.round(stats.calories),
                 distance: stats.distance,
                 date: new Date().toISOString(),
+              };
+              
+              console.log('💾 Saving workout session:', workoutData);
+              
+              try {
+                await addWorkoutSession(workoutData);
+                console.log('✅ Workout session saved successfully');
+              } catch (error) {
+                console.error('❌ Failed to save workout session:', error);
+                Alert.alert('Erro', 'Não foi possível salvar o treino no histórico.');
+              }
+            } else {
+              console.log('⚠️ Workout not saved - missing data or function');
+              console.log('Debug info:', {
+                hasAddWorkoutSession: !!addWorkoutSession,
+                duration: stats.duration,
+                calories: stats.calories,
+                distance: stats.distance
               });
             }
             
