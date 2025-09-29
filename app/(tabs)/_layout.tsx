@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, BookOpen, Pill, User, Settings, Dumbbell } from 'lucide-react-native';
+import { Home, BookOpen, Pill, User, Settings } from 'lucide-react-native';
 
 import { StyleSheet, Platform, View } from 'react-native';
 import { BlurView } from 'expo-blur';
@@ -114,15 +114,7 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="workouts"
-        options={{
-          title: t('workouts'),
-          tabBarIcon: ({ color, size }) => {
-            return <Dumbbell color={color} size={24} strokeWidth={2} />;
-          },
-        }}
-      />
+
 
       <Tabs.Screen
         name="profile"
