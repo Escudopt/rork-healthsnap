@@ -11,6 +11,17 @@ interface HealthRecord {
   endDate: Date;
 }
 
+// Workout session types
+interface WorkoutSession {
+  id: string;
+  type: 'walking' | 'running' | 'live';
+  duration: number; // in seconds
+  calories: number;
+  distance?: number; // in kilometers
+  date: string; // ISO string
+  timestamp: string;
+}
+
 interface CalorieTrackerContextType {
   meals: Meal[];
   todayCalories: number;
@@ -21,6 +32,7 @@ interface CalorieTrackerContextType {
   healthMetrics: HealthMetrics | null;
   isHealthSyncEnabled: boolean;
   healthSyncStatus: 'idle' | 'syncing' | 'success' | 'error';
+  workoutSessions: WorkoutSession[];
   addMeal: (mealData: Omit<Meal, 'id' | 'timestamp'>) => Promise<void>;
   addManualCalories: (calories: number, description?: string) => Promise<void>;
   deleteMeal: (id: string) => Promise<void>;
@@ -35,6 +47,10 @@ interface CalorieTrackerContextType {
   syncWithHealthApp: () => Promise<void>;
   importHealthData: () => Promise<void>;
   emergencyCleanup: () => Promise<void>;
+  addWorkoutSession: (sessionData: Omit<WorkoutSession, 'id' | 'timestamp'>) => Promise<void>;
+  deleteWorkoutSession: (id: string) => Promise<void>;
+  getTodayWorkouts: () => WorkoutSession[];
+  getWeeklyWorkouts: () => WorkoutSession[];
 }
 
 const STORAGE_KEY = 'calorie_tracker_meals_v4'; // Updated version for better persistence
@@ -44,6 +60,7 @@ const GOAL_STORAGE_KEY = 'calorie_tracker_daily_goal';
 const PROFILE_STORAGE_KEY = 'user_profile';
 const HEALTH_SYNC_KEY = 'health_sync_enabled';
 const LAST_HEALTH_SYNC_KEY = 'last_health_sync';
+const WORKOUTS_STORAGE_KEY = 'workout_sessions_v1';
 
 // Simplified global state management
 let isInitialized = false;
@@ -108,6 +125,7 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
   const [healthMetrics, setHealthMetrics] = useState<HealthMetrics | null>(null);
   const [isHealthSyncEnabled, setIsHealthSyncEnabled] = useState<boolean>(false);
   const [healthSyncStatus, setHealthSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  const [workoutSessions, setWorkoutSessions] = useState<WorkoutSession[]>([]);
   
   console.log('🔢 Provider state - meals count:', meals.length, 'isInitialized:', isInitialized);
 
@@ -309,6 +327,35 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
     }
   }, []);
 
+  const loadWorkoutSessions = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem(WORKOUTS_STORAGE_KEY);
+      if (stored) {
+        try {
+          const sessions = JSON.parse(stored) as WorkoutSession[];
+          if (Array.isArray(sessions)) {
+            setWorkoutSessions(sessions);
+            console.log('🏃 Loaded workout sessions:', sessions.length);
+          }
+        } catch (parseError) {
+          console.error('❌ Error parsing workout sessions:', parseError);
+          await AsyncStorage.removeItem(WORKOUTS_STORAGE_KEY);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error loading workout sessions:', error);
+    }
+  }, []);
+
+  const saveWorkoutSessions = useCallback(async (sessions: WorkoutSession[]) => {
+    try {
+      await AsyncStorage.setItem(WORKOUTS_STORAGE_KEY, JSON.stringify(sessions));
+      console.log('💾 Saved workout sessions:', sessions.length);
+    } catch (error) {
+      console.error('❌ Error saving workout sessions:', error);
+    }
+  }, []);
+
   const loadUserProfile = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
@@ -415,7 +462,8 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
         await Promise.all([
           loadDailyGoal(),
           loadUserProfile(),
-          loadMeals()
+          loadMeals(),
+          loadWorkoutSessions()
         ]);
       } catch (error) {
         console.error('❌ Error during app initialization:', error);
@@ -424,7 +472,7 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
     };
     
     initializeApp();
-  }, [loadMeals, loadDailyGoal, loadUserProfile]);
+  }, [loadMeals, loadDailyGoal, loadUserProfile, loadWorkoutSessions]);
 
   const addMeal = useCallback(async (mealData: Omit<Meal, 'id' | 'timestamp'>) => {
     try {
@@ -812,6 +860,63 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
     }
   }, [isHealthSyncEnabled, importHealthData, todayCalories]);
   
+  // Workout session management
+  const addWorkoutSession = useCallback(async (sessionData: Omit<WorkoutSession, 'id' | 'timestamp'>) => {
+    try {
+      const newSession: WorkoutSession = {
+        ...sessionData,
+        id: `workout_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: new Date().toISOString(),
+      };
+      
+      console.log(`🏃 Adding workout session: ${sessionData.type} - ${sessionData.calories} kcal`);
+      
+      const updatedSessions = [newSession, ...workoutSessions];
+      setWorkoutSessions(updatedSessions);
+      await saveWorkoutSessions(updatedSessions);
+      
+    } catch (error) {
+      console.error('❌ Error adding workout session:', error);
+      throw error;
+    }
+  }, [workoutSessions, saveWorkoutSessions]);
+
+  const deleteWorkoutSession = useCallback(async (id: string) => {
+    try {
+      const updatedSessions = workoutSessions.filter(session => session.id !== id);
+      setWorkoutSessions(updatedSessions);
+      await saveWorkoutSessions(updatedSessions);
+      console.log(`🗑️ Deleted workout session: ${id}`);
+    } catch (error) {
+      console.error('❌ Error deleting workout session:', error);
+      throw error;
+    }
+  }, [workoutSessions, saveWorkoutSessions]);
+
+  const getTodayWorkouts = useCallback(() => {
+    const today = new Date().toDateString();
+    return workoutSessions.filter(session => {
+      try {
+        return new Date(session.date).toDateString() === today;
+      } catch {
+        return false;
+      }
+    });
+  }, [workoutSessions]);
+
+  const getWeeklyWorkouts = useCallback(() => {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    
+    return workoutSessions.filter(session => {
+      try {
+        return new Date(session.date) >= oneWeekAgo;
+      } catch {
+        return false;
+      }
+    });
+  }, [workoutSessions]);
+
   // Emergency cleanup function
   const emergencyCleanup = useCallback(async () => {
     console.log('🚨 Emergency cleanup');
@@ -824,7 +929,8 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
         PROFILE_STORAGE_KEY,
         HEALTH_SYNC_KEY,
         LAST_HEALTH_SYNC_KEY,
-        RESET_FLAG_KEY
+        RESET_FLAG_KEY,
+        WORKOUTS_STORAGE_KEY
       ]);
       
       // Reset state
@@ -847,6 +953,7 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
     setIsHealthSyncEnabled(false);
     setHealthSyncStatus('idle');
     setDailyGoalState(2000);
+    setWorkoutSessions([]);
     
     // Clear storage
     await emergencyCleanup();
@@ -955,6 +1062,7 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
     healthMetrics,
     isHealthSyncEnabled,
     healthSyncStatus,
+    workoutSessions,
     addMeal,
     addManualCalories,
     deleteMeal,
@@ -969,5 +1077,9 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
     syncWithHealthApp,
     importHealthData,
     emergencyCleanup,
+    addWorkoutSession,
+    deleteWorkoutSession,
+    getTodayWorkouts,
+    getWeeklyWorkouts,
   };
 });
