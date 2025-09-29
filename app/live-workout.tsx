@@ -29,6 +29,8 @@ import {
   Navigation,
   Footprints,
   ArrowLeft,
+  X,
+  Menu,
 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
@@ -77,6 +79,7 @@ export default function LiveWorkoutScreen() {
   const [currentLocation, setCurrentLocation] = useState<Location.LocationObject | null>(null);
   const [locationHistory, setLocationHistory] = useState<LocationPoint[]>([]);
   const [locationSubscription, setLocationSubscription] = useState<Location.LocationSubscription | null>(null);
+  const [showExitMenu, setShowExitMenu] = useState<boolean>(false);
   
   // Refs for timers
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -481,13 +484,13 @@ export default function LiveWorkoutScreen() {
             pauseTimer();
             stopLocationTracking();
             
-            // Save workout session
-            if (addWorkoutSession && stats.duration > 0) {
+            // Save workout session only if there's meaningful data
+            if (addWorkoutSession && stats.duration > 10) { // At least 10 seconds
               const workoutData = {
                 type: selectedMode,
                 duration: stats.duration,
-                calories: Math.round(stats.calories),
-                distance: stats.distance,
+                calories: Math.round(Math.max(stats.calories, 1)), // Ensure at least 1 calorie
+                distance: stats.distance || 0,
                 date: new Date().toISOString(),
               };
               
@@ -496,18 +499,23 @@ export default function LiveWorkoutScreen() {
               try {
                 await addWorkoutSession(workoutData);
                 console.log('✅ Workout session saved successfully');
+                Alert.alert('Treino Finalizado', 'Seu treino foi salvo no histórico com sucesso!');
               } catch (error) {
                 console.error('❌ Failed to save workout session:', error);
                 Alert.alert('Erro', 'Não foi possível salvar o treino no histórico.');
               }
             } else {
-              console.log('⚠️ Workout not saved - missing data or function');
+              console.log('⚠️ Workout not saved - insufficient data');
               console.log('Debug info:', {
                 hasAddWorkoutSession: !!addWorkoutSession,
                 duration: stats.duration,
                 calories: stats.calories,
                 distance: stats.distance
               });
+              
+              if (stats.duration <= 10) {
+                Alert.alert('Treino Muito Curto', 'Treinos com menos de 10 segundos não são salvos no histórico.');
+              }
             }
             
             setIsActive(false);
@@ -522,6 +530,36 @@ export default function LiveWorkoutScreen() {
       ]
     );
   }, [pauseTimer, stopLocationTracking, addWorkoutSession, stats, selectedMode, resetTimer, router]);
+  
+  // Exit workout without saving
+  const exitWorkout = useCallback(() => {
+    console.log('🚪 Exiting workout without saving...');
+    
+    Alert.alert(
+      'Sair do Treino',
+      'Deseja sair sem salvar? Todos os dados do treino atual serão perdidos.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sair sem Salvar',
+          style: 'destructive',
+          onPress: () => {
+            pauseTimer();
+            stopLocationTracking();
+            
+            setIsActive(false);
+            setIsPaused(false);
+            resetTimer();
+            setLocationHistory([]);
+            setCurrentLocation(null);
+            setShowExitMenu(false);
+            
+            router.back();
+          }
+        }
+      ]
+    );
+  }, [pauseTimer, stopLocationTracking, resetTimer, router]);
   
   // Format time
   const formatTime = useCallback((seconds: number): string => {
@@ -628,6 +666,14 @@ export default function LiveWorkoutScreen() {
               <ArrowLeft size={24} color={colors.text} />
             </TouchableOpacity>
           ),
+          headerRight: () => isActive ? (
+            <TouchableOpacity
+              onPress={() => setShowExitMenu(!showExitMenu)}
+              style={styles.menuButton}
+            >
+              <Menu size={24} color={colors.text} />
+            </TouchableOpacity>
+          ) : null,
         }}
       />
       
@@ -772,6 +818,40 @@ export default function LiveWorkoutScreen() {
           </BlurCard>
         )}
         
+        {/* Exit Menu */}
+        {showExitMenu && isActive && (
+          <BlurCard style={[styles.exitMenu, { backgroundColor: colors.surface + '95' }]}>
+            <TouchableOpacity
+              style={[styles.exitMenuButton, { backgroundColor: colors.error || '#F44336' }]}
+              onPress={exitWorkout}
+              activeOpacity={0.8}
+            >
+              <X size={20} color="white" />
+              <Text style={styles.exitMenuButtonText}>Sair sem Salvar</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.exitMenuButton, { backgroundColor: colors.success }]}
+              onPress={() => {
+                setShowExitMenu(false);
+                stopWorkout();
+              }}
+              activeOpacity={0.8}
+            >
+              <Square size={20} color="white" />
+              <Text style={styles.exitMenuButtonText}>Finalizar e Salvar</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.exitMenuButton, { backgroundColor: colors.textSecondary }]}
+              onPress={() => setShowExitMenu(false)}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.exitMenuButtonText, { color: colors.text }]}>Cancelar</Text>
+            </TouchableOpacity>
+          </BlurCard>
+        )}
+        
         {/* Control Buttons */}
         <View style={styles.controlsContainer}>
           {!isActive ? (
@@ -810,7 +890,7 @@ export default function LiveWorkoutScreen() {
               <TouchableOpacity
                 style={[
                   styles.controlButton,
-                  { backgroundColor: colors.error || '#F44336' }
+                  { backgroundColor: colors.success }
                 ]}
                 onPress={stopWorkout}
                 activeOpacity={0.8}
@@ -877,6 +957,10 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
     marginLeft: -8,
+  },
+  menuButton: {
+    padding: 8,
+    marginRight: -8,
   },
   
   // Mode Selection
@@ -1058,6 +1142,32 @@ const styles = StyleSheet.create({
   permissionButtonText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: '600',
+  },
+  
+  // Exit Menu
+  exitMenu: {
+    position: 'absolute',
+    top: 80,
+    right: 20,
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+    minWidth: 200,
+    zIndex: 1000,
+  },
+  exitMenuButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    gap: 8,
+  },
+  exitMenuButtonText: {
+    color: 'white',
+    fontSize: 14,
     fontWeight: '600',
   },
 });
