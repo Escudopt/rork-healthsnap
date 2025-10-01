@@ -112,7 +112,14 @@ Crie um plano de treino completo seguindo EXATAMENTE este formato JSON (sem mark
 
 Inclua 6-8 exercícios variados. Seja específico e prático. Retorne APENAS o JSON, sem texto adicional.`;
 
-      const response = await generateText(prompt);
+      const response = await generateText({
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ]
+      });
       
       console.log('🤖 AI Response:', response);
       
