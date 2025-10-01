@@ -21,6 +21,8 @@ import {
   Pill,
   User,
   Shield,
+  FileText,
+  ExternalLink,
 } from 'lucide-react-native';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useLanguage } from '@/providers/LanguageProvider';
@@ -239,6 +241,71 @@ export default function HelpScreen() {
             {helpSections.map(renderHelpSection)}
           </View>
 
+          <BlurCard variant="default" style={styles.referencesSection}>
+            <View style={styles.sectionHeader}>
+              <View style={[styles.sectionIcon, { backgroundColor: colors.primary + '20' }]}>
+                <FileText color={colors.primary} size={24} strokeWidth={2} />
+              </View>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Fontes Oficiais
+              </Text>
+            </View>
+            
+            <Text style={[styles.referencesIntro, { color: colors.textSecondary }]}>
+              Os dados e recomendações apresentados nesta aplicação têm base em fontes oficiais e científicas:
+            </Text>
+            
+            <View style={styles.referencesList}>
+              <View style={styles.referenceItem}>
+                <ExternalLink color={colors.primary} size={16} strokeWidth={2} />
+                <View style={styles.referenceContent}>
+                  <Text style={[styles.referenceTitle, { color: colors.text }]}>
+                    Tabela de Composição de Alimentos – INSA
+                  </Text>
+                  <Text style={[styles.referenceUrl, { color: colors.textTertiary }]}>
+                    portfir.insa.pt/foodcomp
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.referenceItem}>
+                <ExternalLink color={colors.primary} size={16} strokeWidth={2} />
+                <View style={styles.referenceContent}>
+                  <Text style={[styles.referenceTitle, { color: colors.text }]}>
+                    USDA FoodData Central
+                  </Text>
+                  <Text style={[styles.referenceUrl, { color: colors.textTertiary }]}>
+                    fdc.nal.usda.gov
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.referenceItem}>
+                <ExternalLink color={colors.primary} size={16} strokeWidth={2} />
+                <View style={styles.referenceContent}>
+                  <Text style={[styles.referenceTitle, { color: colors.text }]}>
+                    Organização Mundial de Saúde (OMS)
+                  </Text>
+                  <Text style={[styles.referenceUrl, { color: colors.textTertiary }]}>
+                    who.int/health-topics/nutrition
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.referenceItem}>
+                <ExternalLink color={colors.primary} size={16} strokeWidth={2} />
+                <View style={styles.referenceContent}>
+                  <Text style={[styles.referenceTitle, { color: colors.text }]}>
+                    European Food Safety Authority (EFSA)
+                  </Text>
+                  <Text style={[styles.referenceUrl, { color: colors.textTertiary }]}>
+                    efsa.europa.eu/en/topics/topic/dietary-reference-values
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </BlurCard>
+
           <View style={styles.footer}>
             <TouchableOpacity
               onPress={() => router.push('/')}
@@ -252,7 +319,10 @@ export default function HelpScreen() {
             </TouchableOpacity>
             
             <Text style={[styles.footerText, { color: colors.textTertiary }]}>
-              Precisa de mais ajuda? Contacte o nosso suporte através das definições.
+              Aplicação desenvolvida por Tomé Teixeira
+            </Text>
+            <Text style={[styles.footerSubtext, { color: colors.textTertiary }]}>
+              Projeto informativo
             </Text>
           </View>
         </ScrollView>
@@ -379,14 +449,55 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    fontWeight: '400',
+    fontWeight: '600',
     textAlign: 'center',
     maxWidth: 280,
     lineHeight: 20,
+    marginBottom: 4,
+  },
+  footerSubtext: {
+    fontSize: 13,
+    fontWeight: '400',
+    textAlign: 'center',
+    maxWidth: 280,
+    lineHeight: 18,
   },
   helpContent: {
     fontSize: 15,
     lineHeight: 24,
     fontWeight: '400',
+  },
+  referencesSection: {
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 24,
+  },
+  referencesIntro: {
+    fontSize: 15,
+    fontWeight: '400',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  referencesList: {
+    gap: 16,
+  },
+  referenceItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  referenceContent: {
+    flex: 1,
+  },
+  referenceTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    marginBottom: 4,
+    lineHeight: 20,
+  },
+  referenceUrl: {
+    fontSize: 13,
+    fontWeight: '400',
+    lineHeight: 18,
   },
 });
