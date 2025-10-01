@@ -16,7 +16,7 @@ import { Dumbbell, Zap, Target, TrendingUp, Clock, Flame, Award, ChevronRight, R
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme } from '@/providers/ThemeProvider';
 import { BlurCard } from '@/components/BlurCard';
-import { generateText } from '@rork/toolkit-sdk';
+
 
 interface WorkoutRecommendation {
   title: string;
@@ -100,11 +100,31 @@ IMPORTANTE:
 - Seja específico e prático
 - Retorne APENAS o JSON, sem texto adicional`;
 
-      const response = await generateText({ messages: [{ role: 'user', content: prompt }] });
+      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ]
+        })
+      });
       
-      console.log('AI Response:', response);
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const aiResponse = data.completion;
+      
+      console.log('AI Response:', aiResponse);
 
-      let jsonText = response.trim();
+      let jsonText = aiResponse.trim();
       if (jsonText.startsWith('```json')) {
         jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
       } else if (jsonText.startsWith('```')) {
