@@ -193,6 +193,29 @@ export default function PrivacyPolicyScreen() {
               </Text>
             </BlurCard>
 
+            <BlurCard variant="default" style={[styles.referencesCard, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.referencesTitle, { color: colors.text }]}>
+                Referências Médicas e Científicas
+              </Text>
+              <Text style={[styles.referencesText, { color: colors.textSecondary }]}>
+                As informações e cálculos apresentados nesta aplicação têm base em fontes oficiais e científicas:
+              </Text>
+              <View style={styles.referencesList}>
+                <Text style={[styles.referenceItem, { color: colors.textSecondary }]}>
+                  • Tabela de Composição de Alimentos (INSA, Portugal)
+                </Text>
+                <Text style={[styles.referenceItem, { color: colors.textSecondary }]}>
+                  • USDA FoodData Central (EUA)
+                </Text>
+                <Text style={[styles.referenceItem, { color: colors.textSecondary }]}>
+                  • World Health Organization (OMS) – Recomendações nutricionais globais
+                </Text>
+                <Text style={[styles.referenceItem, { color: colors.textSecondary }]}>
+                  • European Food Safety Authority (EFSA) – Valores de referência nutricional
+                </Text>
+              </View>
+            </BlurCard>
+
             <TouchableOpacity
               style={[styles.homeButton, { backgroundColor: colors.primary }]}
               onPress={() => router.back()}
@@ -305,5 +328,29 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  referencesCard: {
+    padding: 20,
+    marginTop: 8,
+  },
+  referencesTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 12,
+    lineHeight: 24,
+  },
+  referencesText: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '400',
+    marginBottom: 12,
+  },
+  referencesList: {
+    gap: 8,
+  },
+  referenceItem: {
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '400',
   },
 });
