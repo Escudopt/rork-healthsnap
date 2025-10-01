@@ -12,11 +12,19 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Dumbbell, Zap, Target, TrendingUp, Clock, Flame, Award, ChevronRight, RefreshCw } from 'lucide-react-native';
+import { Dumbbell, Zap, Target, TrendingUp, Clock, Flame, Award, ChevronRight, RefreshCw, Info, Repeat, Timer, AlertCircle } from 'lucide-react-native';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme } from '@/providers/ThemeProvider';
 import { BlurCard } from '@/components/BlurCard';
 
+
+interface Exercise {
+  name: string;
+  sets: string;
+  reps: string;
+  rest: string;
+  instructions: string;
+}
 
 interface WorkoutRecommendation {
   title: string;
@@ -24,8 +32,11 @@ interface WorkoutRecommendation {
   duration: string;
   intensity: 'Baixa' | 'Moderada' | 'Alta' | 'Muito Alta';
   caloriesBurn: string;
-  exercises: string[];
+  exercises: Exercise[];
   benefits: string[];
+  warmup: string[];
+  cooldown: string[];
+  tips: string[];
 }
 
 export default function WorkoutScreen() {
@@ -64,7 +75,7 @@ export default function WorkoutScreen() {
     setError(null);
 
     try {
-      const prompt = `Você é um personal trainer profissional. Com base nas métricas do usuário, recomende 3 treinos personalizados.
+      const prompt = `Você é um personal trainer profissional. Com base nas métricas do usuário, recomende 3 treinos personalizados DETALHADOS.
 
 Métricas do Usuário:
 - Idade: ${userMetrics.age} anos
@@ -79,7 +90,7 @@ Métricas do Usuário:
 - Calorias consumidas hoje: ${userMetrics.todayCalories} kcal
 - Meta diária: ${userMetrics.dailyGoal} kcal
 
-Forneça EXATAMENTE 3 recomendações de treino em formato JSON válido:
+Forneça EXATAMENTE 3 recomendações de treino DETALHADAS em formato JSON válido:
 
 [
   {
@@ -88,8 +99,19 @@ Forneça EXATAMENTE 3 recomendações de treino em formato JSON válido:
     "duration": "30-45 min",
     "intensity": "Moderada",
     "caloriesBurn": "200-300 kcal",
-    "exercises": ["Exercício 1", "Exercício 2", "Exercício 3", "Exercício 4"],
-    "benefits": ["Benefício 1", "Benefício 2", "Benefício 3"]
+    "exercises": [
+      {
+        "name": "Nome do Exercício",
+        "sets": "3-4 séries",
+        "reps": "10-12 repetições",
+        "rest": "60 segundos",
+        "instructions": "Instruções detalhadas de como executar o exercício corretamente"
+      }
+    ],
+    "benefits": ["Benefício 1", "Benefício 2", "Benefício 3"],
+    "warmup": ["Aquecimento 1", "Aquecimento 2", "Aquecimento 3"],
+    "cooldown": ["Alongamento 1", "Alongamento 2"],
+    "tips": ["Dica importante 1", "Dica importante 2"]
   }
 ]
 
@@ -98,6 +120,9 @@ IMPORTANTE:
 - Adapte os treinos ao objetivo do usuário
 - Considere o IMC e nível de atividade
 - Seja específico e prático
+- Inclua 4-6 exercícios por treino
+- Forneça instruções detalhadas para cada exercício
+- Inclua aquecimento e alongamento
 - Retorne APENAS o JSON, sem texto adicional`;
 
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
@@ -150,8 +175,26 @@ IMPORTANTE:
           duration: '30-40 min',
           intensity: 'Baixa',
           caloriesBurn: '150-200 kcal',
-          exercises: ['Caminhada em ritmo moderado', 'Alongamento dinâmico', 'Respiração profunda'],
+          exercises: [
+            {
+              name: 'Caminhada em ritmo moderado',
+              sets: 'Contínuo',
+              reps: '30 minutos',
+              rest: 'N/A',
+              instructions: 'Mantenha um ritmo confortável onde você consegue conversar. Mantenha a postura ereta e balance os braços naturalmente.'
+            },
+            {
+              name: 'Alongamento dinâmico',
+              sets: '2 séries',
+              reps: '10 repetições',
+              rest: '30 segundos',
+              instructions: 'Realize movimentos suaves e controlados. Foque em pernas, quadris e ombros.'
+            }
+          ],
           benefits: ['Melhora cardiovascular', 'Baixo impacto', 'Reduz estresse'],
+          warmup: ['5 min de caminhada lenta', 'Rotação de tornozelos', 'Rotação de quadril'],
+          cooldown: ['5 min de caminhada lenta', 'Alongamento de panturrilha', 'Alongamento de quadríceps'],
+          tips: ['Use calçado adequado', 'Mantenha-se hidratado', 'Aumente gradualmente a intensidade']
         },
         {
           title: 'Treino HIIT',
@@ -159,8 +202,40 @@ IMPORTANTE:
           duration: '20-30 min',
           intensity: 'Alta',
           caloriesBurn: '300-400 kcal',
-          exercises: ['Burpees', 'Mountain climbers', 'Jump squats', 'High knees'],
+          exercises: [
+            {
+              name: 'Burpees',
+              sets: '4 séries',
+              reps: '10-15 repetições',
+              rest: '45 segundos',
+              instructions: 'Comece em pé, agache, apoie as mãos no chão, estenda as pernas para trás, faça uma flexão, volte à posição de agachamento e salte.'
+            },
+            {
+              name: 'Mountain Climbers',
+              sets: '4 séries',
+              reps: '20 repetições',
+              rest: '45 segundos',
+              instructions: 'Em posição de prancha, traga alternadamente os joelhos em direção ao peito em movimento rápido.'
+            },
+            {
+              name: 'Jump Squats',
+              sets: '4 séries',
+              reps: '12-15 repetições',
+              rest: '60 segundos',
+              instructions: 'Agache até as coxas ficarem paralelas ao chão, depois salte explosivamente. Aterrisse suavemente e repita.'
+            },
+            {
+              name: 'High Knees',
+              sets: '4 séries',
+              reps: '30 segundos',
+              rest: '45 segundos',
+              instructions: 'Corra no lugar elevando os joelhos até a altura do quadril. Mantenha o core ativado e os braços em movimento.'
+            }
+          ],
           benefits: ['Queima calórica elevada', 'Melhora resistência', 'Acelera metabolismo'],
+          warmup: ['Polichinelos - 2 min', 'Corrida estacionária - 2 min', 'Rotação de braços - 1 min'],
+          cooldown: ['Caminhada leve - 3 min', 'Alongamento de pernas', 'Respiração profunda'],
+          tips: ['Mantenha boa forma mesmo cansado', 'Respeite os intervalos', 'Hidrate-se bem']
         },
         {
           title: 'Musculação Funcional',
@@ -168,8 +243,40 @@ IMPORTANTE:
           duration: '45-60 min',
           intensity: 'Moderada',
           caloriesBurn: '250-350 kcal',
-          exercises: ['Agachamento', 'Flexão', 'Prancha', 'Remada'],
+          exercises: [
+            {
+              name: 'Agachamento',
+              sets: '4 séries',
+              reps: '12-15 repetições',
+              rest: '90 segundos',
+              instructions: 'Pés na largura dos ombros, desça até as coxas ficarem paralelas ao chão. Mantenha o peso nos calcanhares e o peito erguido.'
+            },
+            {
+              name: 'Flexão de Braço',
+              sets: '3 séries',
+              reps: '10-15 repetições',
+              rest: '60 segundos',
+              instructions: 'Mãos na largura dos ombros, corpo reto da cabeça aos pés. Desça até o peito quase tocar o chão.'
+            },
+            {
+              name: 'Prancha',
+              sets: '3 séries',
+              reps: '30-60 segundos',
+              rest: '60 segundos',
+              instructions: 'Apoie-se nos antebraços e pontas dos pés. Mantenha o corpo reto, core contraído e respire normalmente.'
+            },
+            {
+              name: 'Remada com Peso',
+              sets: '4 séries',
+              reps: '12 repetições',
+              rest: '75 segundos',
+              instructions: 'Incline o tronco para frente, puxe o peso em direção ao abdômen, mantendo os cotovelos próximos ao corpo.'
+            }
+          ],
           benefits: ['Ganho de força', 'Tonificação muscular', 'Melhora postura'],
+          warmup: ['Mobilidade articular - 5 min', 'Cardio leve - 5 min', 'Séries de aquecimento leves'],
+          cooldown: ['Alongamento completo - 10 min', 'Foam roller', 'Respiração e relaxamento'],
+          tips: ['Foque na técnica antes do peso', 'Progrida gradualmente', 'Descanse adequadamente entre treinos']
         },
       ]);
     } finally {
@@ -410,10 +517,41 @@ IMPORTANTE:
       marginBottom: 10,
     },
     exerciseItem: {
+      marginBottom: 16,
+      padding: 14,
+      borderRadius: 12,
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
+      borderLeftWidth: 3,
+      borderLeftColor: colors.primary,
+    },
+    exerciseName: {
+      fontSize: 15,
+      fontWeight: '700' as const,
+      color: colors.text,
+      marginBottom: 8,
+    },
+    exerciseDetails: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 12,
+      marginBottom: 8,
+    },
+    exerciseDetailItem: {
       flexDirection: 'row',
       alignItems: 'center',
-      marginBottom: 8,
-      gap: 8,
+      gap: 4,
+    },
+    exerciseDetailText: {
+      fontSize: 12,
+      fontWeight: '600' as const,
+      color: colors.textSecondary,
+    },
+    exerciseInstructions: {
+      fontSize: 13,
+      fontWeight: '400' as const,
+      color: colors.textSecondary,
+      lineHeight: 18,
+      marginTop: 4,
     },
     exerciseBullet: {
       width: 6,
@@ -426,6 +564,12 @@ IMPORTANTE:
       fontSize: 14,
       fontWeight: '500' as const,
       color: colors.text,
+    },
+    simpleListItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+      gap: 8,
     },
     benefitsSection: {
       marginBottom: 8,
@@ -619,15 +763,65 @@ IMPORTANTE:
                       </View>
                     </View>
 
+                    {workout.warmup && workout.warmup.length > 0 && (
+                      <View style={styles.exercisesSection}>
+                        <Text style={styles.sectionLabel}>🔥 Aquecimento</Text>
+                        {workout.warmup.map((item, idx) => (
+                          <View key={idx} style={styles.simpleListItem}>
+                            <View style={styles.exerciseBullet} />
+                            <Text style={styles.exerciseText}>{item}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+
                     <View style={styles.exercisesSection}>
-                      <Text style={styles.sectionLabel}>Exercícios</Text>
+                      <Text style={styles.sectionLabel}>💪 Exercícios</Text>
                       {workout.exercises.map((exercise, idx) => (
                         <View key={idx} style={styles.exerciseItem}>
-                          <View style={styles.exerciseBullet} />
-                          <Text style={styles.exerciseText}>{exercise}</Text>
+                          <Text style={styles.exerciseName}>{exercise.name}</Text>
+                          <View style={styles.exerciseDetails}>
+                            <View style={styles.exerciseDetailItem}>
+                              <Repeat color={colors.primary} size={14} strokeWidth={2} />
+                              <Text style={styles.exerciseDetailText}>{exercise.sets}</Text>
+                            </View>
+                            <View style={styles.exerciseDetailItem}>
+                              <Target color={colors.primary} size={14} strokeWidth={2} />
+                              <Text style={styles.exerciseDetailText}>{exercise.reps}</Text>
+                            </View>
+                            <View style={styles.exerciseDetailItem}>
+                              <Timer color={colors.primary} size={14} strokeWidth={2} />
+                              <Text style={styles.exerciseDetailText}>{exercise.rest}</Text>
+                            </View>
+                          </View>
+                          <Text style={styles.exerciseInstructions}>{exercise.instructions}</Text>
                         </View>
                       ))}
                     </View>
+
+                    {workout.cooldown && workout.cooldown.length > 0 && (
+                      <View style={styles.exercisesSection}>
+                        <Text style={styles.sectionLabel}>🧘 Alongamento</Text>
+                        {workout.cooldown.map((item, idx) => (
+                          <View key={idx} style={styles.simpleListItem}>
+                            <View style={styles.exerciseBullet} />
+                            <Text style={styles.exerciseText}>{item}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
+
+                    {workout.tips && workout.tips.length > 0 && (
+                      <View style={styles.exercisesSection}>
+                        <Text style={styles.sectionLabel}>💡 Dicas Importantes</Text>
+                        {workout.tips.map((tip, idx) => (
+                          <View key={idx} style={styles.simpleListItem}>
+                            <AlertCircle color={colors.primary} size={14} strokeWidth={2} />
+                            <Text style={styles.exerciseText}>{tip}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    )}
 
                     <View style={styles.benefitsSection}>
                       <Text style={styles.sectionLabel}>Benefícios</Text>
