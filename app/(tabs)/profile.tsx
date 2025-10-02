@@ -13,7 +13,8 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Save, Activity, Target, Scale, Ruler, TrendingUp, CheckCircle, Trash2, AlertTriangle, History, X } from 'lucide-react-native';
+import { Save, Activity, Target, Scale, Ruler, TrendingUp, CheckCircle, Trash2, AlertTriangle, History, X, Info } from 'lucide-react-native';
+import { router } from 'expo-router';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { UserProfile } from '@/types/food';
@@ -1302,6 +1303,21 @@ export default function ProfileScreen() {
                     </View>
                     
                     <ThemeSelector />
+                    
+                    {/* Sources & References Button */}
+                    <TouchableOpacity
+                      style={[styles.fullWidthCard, { backgroundColor: colors.surfaceElevated }]}
+                      onPress={() => router.push('/sources')}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.summaryCardHeader}>
+                        <View style={[styles.summaryCardIcon, { backgroundColor: '#007AFF' }]}>
+                          <Info color="white" size={16} strokeWidth={2.5} />
+                        </View>
+                        <Text style={[styles.summaryCardTitle, { color: colors.text }]}>Fontes & Referências</Text>
+                      </View>
+                      <Text style={[styles.recommendationText, { color: colors.textSecondary, marginTop: 8 }]}>Veja as bases científicas dos nossos cálculos nutricionais</Text>
+                    </TouchableOpacity>
                     
                     {/* Delete Options */}
                     <View style={[styles.fullWidthCard, { backgroundColor: colors.surfaceElevated }]}>

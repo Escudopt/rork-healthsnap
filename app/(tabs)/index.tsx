@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity } from 'lucide-react-native';
+import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity, Info } from 'lucide-react-native';
 import { FloatingAIChat } from '@/components/FloatingAIChat';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -777,6 +777,23 @@ export default function HomeScreen() {
                   />
                 </View>
               )}
+              
+              {/* Sources Button */}
+              <TouchableOpacity
+                style={[styles.sourcesButton, { backgroundColor: colors.surfaceElevated }]}
+                onPress={() => router.push('/sources')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.sourcesButtonContent}>
+                  <View style={[styles.sourcesButtonIcon, { backgroundColor: colors.primary + '15' }]}>
+                    <Info color={colors.primary} size={18} strokeWidth={2} />
+                  </View>
+                  <View style={styles.sourcesButtonText}>
+                    <Text style={[styles.sourcesButtonTitle, { color: colors.text }]}>Fontes & Referências</Text>
+                    <Text style={[styles.sourcesButtonSubtitle, { color: colors.textSecondary }]}>Bases científicas dos cálculos</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
               
               {/* User Metrics Widgets - Moved to end */}
               {userProfile && healthMetrics && (
@@ -2274,6 +2291,45 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderRadius: 0.5,
     opacity: 0.2,
     marginHorizontal: 8,
+  },
+  
+  sourcesButton: {
+    padding: 18,
+    borderRadius: 16,
+    marginTop: 8,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.3 : 0.08,
+    shadowRadius: isDark ? 3 : 8,
+    elevation: isDark ? 2 : 3,
+    borderWidth: isDark ? 0 : 0.5,
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.05)',
+  },
+  sourcesButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  sourcesButtonIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sourcesButtonText: {
+    flex: 1,
+  },
+  sourcesButtonTitle: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    marginBottom: 2,
+  },
+  sourcesButtonSubtitle: {
+    fontSize: 13,
+    fontWeight: '400' as const,
+    opacity: 0.8,
   },
   
   // Macro Widgets Styles
