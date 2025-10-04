@@ -627,7 +627,7 @@ export default function HomeScreen() {
               <View style={styles.headerLeft}>
                 <View style={styles.greetingContainer}>
                   <Text style={[styles.greeting, { color: colors.text }]}>
-                    Resumo
+                    {userProfile ? `Olá, ${userProfile.name}` : 'Resumo'}
                   </Text>
                   <Animated.View style={[
                     styles.sparkleIcon,
@@ -648,7 +648,7 @@ export default function HomeScreen() {
                   </Animated.View>
                 </View>
                 <Text style={[styles.date, { color: colors.textSecondary }]}>
-                  {new Date().toLocaleDateString('pt-BR', { 
+                  {userProfile ? `${userProfile.age} anos • ` : ''}{new Date().toLocaleDateString('pt-BR', { 
                     weekday: 'long', 
                     day: 'numeric', 
                     month: 'long' 
