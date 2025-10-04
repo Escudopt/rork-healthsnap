@@ -16,7 +16,7 @@ interface MacroChartProps {
 }
 
 export function MacroChart({ foods, title = 'Distribuição de Macros', chartType = 'bar' }: MacroChartProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   
   const totals = foods.reduce((acc, food) => ({
     protein: acc.protein + (food.protein || 0),
@@ -76,7 +76,7 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
               <Text style={[styles.barLabel, { color: colors.text }]}>
                 {macro.name}
               </Text>
-              <View style={styles.barTrack}>
+              <View style={[styles.barTrack, { backgroundColor: colors.surfaceSecondary }]}>
                 <View 
                   style={[
                     styles.barFill,
@@ -185,8 +185,10 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
     );
   };
 
+  const styles = createStyles(colors, isDark);
+  
   return (
-    <View style={[styles.container, { backgroundColor: '#141414' }]}>
+    <View style={[styles.container, { backgroundColor: colors.surfaceElevated }]}>
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       
       {chartType === 'bar' ? renderBarChart() : renderEnhancedPieChart()}
@@ -194,17 +196,23 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     padding: 14,
     marginBottom: 14,
     borderRadius: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.2 : 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: isDark ? 0 : 0.5,
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.05)',
   },
   title: {
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 10,
-    color: '#FFFFFF',
   },
   emptyState: {
     alignItems: 'center',
@@ -227,12 +235,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     width: 90,
-    color: '#FFFFFF',
   },
   barTrack: {
     flex: 1,
     height: 18,
-    backgroundColor: '#1E1E1E',
     borderRadius: 9,
     overflow: 'hidden' as const,
   },
@@ -245,7 +251,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     width: 40,
     textAlign: 'right' as const,
-    color: '#FFFFFF',
   },
   
   // Improved Pie Chart Styles
