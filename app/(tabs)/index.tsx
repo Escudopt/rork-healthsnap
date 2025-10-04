@@ -30,6 +30,7 @@ import { MacroChart } from '@/components/MacroChart';
 import { MacroWidget } from '@/components/MacroWidget';
 import { Meal } from '@/types/food';
 import * as Haptics from 'expo-haptics';
+import { Toast } from '@/components/Toast';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -56,6 +57,8 @@ export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<'today' | 'history'>('today');
   const [selectedHistoryDate, setSelectedHistoryDate] = useState<string | null>(null);
   const [showQuickGoals, setShowQuickGoals] = useState(false);
+  const [showGoalToast, setShowGoalToast] = useState(false);
+  const [hasShownGoalToast, setHasShownGoalToast] = useState(false);
 
   useEffect(() => {
     // Staggered entrance animations
@@ -145,6 +148,21 @@ export default function HomeScreen() {
     setTimeout(startSparkle, 1500);
     setTimeout(startMotivationPulse, 2000);
   }, [fadeAnim, scaleAnim, headerSlideAnim, statsSlideAnim, floatingAnim, sparkleAnim, motivationAnim]);
+
+  useEffect(() => {
+    if (todayCalories >= dailyGoal && todayCalories > 0 && !hasShownGoalToast) {
+      setShowGoalToast(true);
+      setHasShownGoalToast(true);
+      
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+    }
+    
+    if (todayCalories < dailyGoal) {
+      setHasShownGoalToast(false);
+    }
+  }, [todayCalories, dailyGoal, hasShownGoalToast]);
 
   const handleCameraPress = async () => {
     if (Platform.OS !== 'web') {
@@ -1082,6 +1100,15 @@ export default function HomeScreen() {
             </View>
           </View>
         </Modal>
+
+        <Toast
+          message="Meta diária atingida! 🎯"
+          visible={showGoalToast}
+          duration={3000}
+          onHide={() => setShowGoalToast(false)}
+          backgroundColor="#2196F3"
+          textColor="#FFFFFF"
+        />
       </SafeAreaView>
     </View>
   );
