@@ -71,14 +71,14 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
   return (
     <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
       <LinearGradient
-        colors={isDark ? ['#0F1A2B', '#0B0B0C'] : ['#FFFFFF', '#F8F9FE']}
+        colors={isDark ? ['#1A1D26', '#161821'] : ['#FFFFFF', '#FAFBFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={[styles.card, {
-          shadowColor: isDark ? '#000' : '#007AFF',
-          shadowOpacity: isDark ? 0.25 : 0.08,
-          borderWidth: isDark ? 0 : 1,
-          borderColor: isDark ? 'transparent' : 'rgba(0, 122, 255, 0.1)',
+          shadowColor: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 122, 255, 0.15)',
+          shadowOpacity: isDark ? 0.4 : 0.12,
+          borderWidth: isDark ? 1 : 1,
+          borderColor: isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0, 122, 255, 0.08)',
         }]}
       >
         <View style={styles.content}>
@@ -88,7 +88,7 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                 cx={size / 2}
                 cy={size / 2}
                 r={radius}
-                stroke={isDark ? '#1E1E1E' : 'rgba(0, 122, 255, 0.15)'}
+                stroke={isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 122, 255, 0.12)'}
                 strokeWidth={strokeWidth}
                 fill="none"
               />
@@ -194,14 +194,14 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   card: {
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 14,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
   content: {
     flexDirection: 'row' as const,
@@ -236,16 +236,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   cameraButton: {
-    borderRadius: 30,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.6,
-    shadowRadius: 14,
-    elevation: 8,
+    borderRadius: 32,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 18,
+    elevation: 10,
   },
   cameraButtonGradient: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },

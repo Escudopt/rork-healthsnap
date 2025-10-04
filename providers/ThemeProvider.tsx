@@ -50,87 +50,87 @@ export interface ThemeColors {
 }
 
 const lightTheme: ThemeColors = {
-  // Background colors
-  background: '#FFFFFF',
-  backgroundSecondary: '#F2F2F7',
+  // Background colors - Soft, clean whites
+  background: '#FAFBFF',
+  backgroundSecondary: '#F5F7FA',
   backgroundTertiary: '#FFFFFF',
   
-  // Surface colors
+  // Surface colors - Elevated with subtle depth
   surface: '#FFFFFF',
-  surfaceSecondary: 'rgba(0, 122, 255, 0.08)',
+  surfaceSecondary: 'rgba(0, 122, 255, 0.06)',
   surfaceElevated: '#FFFFFF',
   
-  // Text colors
-  text: '#1C1C1E',
-  textSecondary: 'rgba(60, 60, 67, 0.6)',
-  textTertiary: 'rgba(60, 60, 67, 0.3)',
+  // Text colors - High contrast, readable
+  text: '#1A1A1C',
+  textSecondary: 'rgba(60, 60, 67, 0.65)',
+  textTertiary: 'rgba(60, 60, 67, 0.4)',
   
-  // Border colors
-  border: 'rgba(60, 60, 67, 0.29)',
-  borderSecondary: 'rgba(60, 60, 67, 0.12)',
+  // Border colors - Subtle separation
+  border: 'rgba(0, 0, 0, 0.08)',
+  borderSecondary: 'rgba(0, 0, 0, 0.04)',
   
-  // Accent colors
+  // Accent colors - Vibrant iOS blue
   primary: '#007AFF',
   primaryLight: '#5AC8FA',
   primaryDark: '#0051D5',
   
-  // Status colors
+  // Status colors - iOS standard
   success: '#34C759',
   warning: '#FF9500',
   error: '#FF3B30',
   
-  // Glass/blur effects
-  glassBackground: 'rgba(255, 255, 255, 0.8)',
-  glassBorder: 'rgba(60, 60, 67, 0.18)',
-  glassOverlay: 'rgba(255, 255, 255, 0.5)',
+  // Glass/blur effects - Premium frosted glass
+  glassBackground: 'rgba(255, 255, 255, 0.85)',
+  glassBorder: 'rgba(0, 0, 0, 0.06)',
+  glassOverlay: 'rgba(255, 255, 255, 0.6)',
   
-  // Tab bar
-  tabBarBackground: 'rgba(255, 255, 255, 0.8)',
-  tabBarBorder: 'rgba(60, 60, 67, 0.18)',
+  // Tab bar - Clean and modern
+  tabBarBackground: 'rgba(255, 255, 255, 0.92)',
+  tabBarBorder: 'rgba(0, 0, 0, 0.06)',
   tabBarActive: '#007AFF',
   tabBarInactive: 'rgba(60, 60, 67, 0.6)',
 };
 
 const darkTheme: ThemeColors = {
-  // Background colors - Deep dark premium
-  background: '#0B0B0C',
-  backgroundSecondary: '#141414',
-  backgroundTertiary: '#1A1F24',
+  // Background colors - Rich, deep blacks with subtle blue tint
+  background: '#0A0B0D',
+  backgroundSecondary: '#12141A',
+  backgroundTertiary: '#1A1D26',
   
-  // Surface colors - Subtle elevation
-  surface: '#141414',
-  surfaceSecondary: '#1E1E1E',
-  surfaceElevated: '#141414',
+  // Surface colors - Elevated with depth
+  surface: '#161821',
+  surfaceSecondary: '#1E2230',
+  surfaceElevated: '#1C1F2E',
   
-  // Text colors - High contrast
+  // Text colors - Crystal clear whites
   text: '#FFFFFF',
-  textSecondary: '#9E9E9E',
-  textTertiary: '#A0A0A0',
+  textSecondary: '#A8B0C0',
+  textTertiary: '#6B7280',
   
-  // Border colors - Subtle separation
-  border: 'rgba(255, 255, 255, 0.1)',
-  borderSecondary: 'rgba(255, 255, 255, 0.05)',
+  // Border colors - Subtle glowing edges
+  border: 'rgba(255, 255, 255, 0.08)',
+  borderSecondary: 'rgba(255, 255, 255, 0.04)',
   
-  // Accent colors - Vibrant blue
-  primary: '#2196F3',
-  primaryLight: '#64B5F6',
-  primaryDark: '#1976D2',
+  // Accent colors - Electric blue with glow
+  primary: '#3B82F6',
+  primaryLight: '#60A5FA',
+  primaryDark: '#2563EB',
   
-  // Status colors
-  success: '#00C2A9',
-  warning: '#FFD54F',
-  error: '#F15C5C',
+  // Status colors - Vibrant and clear
+  success: '#10B981',
+  warning: '#F59E0B',
+  error: '#EF4444',
   
-  // Glass/blur effects
-  glassBackground: 'rgba(20, 20, 20, 0.85)',
-  glassBorder: 'rgba(33, 150, 243, 0.15)',
-  glassOverlay: 'rgba(255, 255, 255, 0.05)',
+  // Glass/blur effects - Premium frosted dark glass
+  glassBackground: 'rgba(22, 24, 33, 0.88)',
+  glassBorder: 'rgba(59, 130, 246, 0.12)',
+  glassOverlay: 'rgba(255, 255, 255, 0.03)',
   
-  // Tab bar
-  tabBarBackground: 'rgba(20, 20, 20, 0.95)',
-  tabBarBorder: 'rgba(33, 150, 243, 0.2)',
-  tabBarActive: '#2196F3',
-  tabBarInactive: '#9E9E9E',
+  // Tab bar - Sleek and modern
+  tabBarBackground: 'rgba(22, 24, 33, 0.95)',
+  tabBarBorder: 'rgba(59, 130, 246, 0.15)',
+  tabBarActive: '#3B82F6',
+  tabBarInactive: '#6B7280',
 };
 
 interface ThemeContextType {
