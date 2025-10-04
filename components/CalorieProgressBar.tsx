@@ -156,14 +156,14 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                   {isAnalyzing ? (
                     <ActivityIndicator color="#FFFFFF" size="small" />
                   ) : (
-                    <Camera color="#FFFFFF" size={26} strokeWidth={2} />
+                    <Camera color="#FFFFFF" size={28} strokeWidth={2} />
                   )}
                 </LinearGradient>
               </TouchableOpacity>
             </Animated.View>
             {isAnalyzing ? (
               <Text style={styles.analyzingText}>
-                A analisar refeição...
+                🍽️ A analisar refeição...
               </Text>
             ) : (
               <Text style={styles.goalText}>
@@ -234,9 +234,9 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   cameraButtonGradient: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
