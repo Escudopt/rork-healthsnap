@@ -595,13 +595,11 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <LinearGradient
         colors={isDark ? [
-          '#0B0B0C',
-          '#0F1A2B',
-          '#0B0B0C'
+          '#0B1220',
+          '#000000'
         ] : [
-          '#FAFBFF',
-          '#F8F9FE',
-          '#F2F4F8'
+          '#EAF4FF',
+          '#FFFFFF'
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -654,7 +652,7 @@ export default function HomeScreen() {
                     weekday: 'long', 
                     day: 'numeric', 
                     month: 'long' 
-                  })}
+                  })} — continue assim 💪
                 </Text>
 
               </View>
@@ -695,6 +693,13 @@ export default function HomeScreen() {
                 onGoalPress={handleGoalPress}
                 onCameraPress={handleCameraPress}
               />
+              
+              {/* Dynamic Subtitle */}
+              {todayCalories > 0 && todayCalories < dailyGoal && (
+                <Text style={[styles.dynamicSubtitle, { color: colors.textSecondary }]}>
+                  Você ainda tem {dailyGoal - todayCalories} kcal restantes hoje 🍏
+                </Text>
+              )}
               
               {/* Enhanced Achievement Badge */}
               {todayCalories >= dailyGoal && (
@@ -2387,5 +2392,17 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   // Macro Chart Styles
   macroChartsSection: {
     marginTop: 14,
+  },
+  
+  // Dynamic subtitle style
+  dynamicSubtitle: {
+    fontSize: 15,
+    fontWeight: '500' as const,
+    textAlign: 'center' as const,
+    marginTop: 12,
+    marginBottom: 8,
+    lineHeight: 20,
+    opacity: 0.8,
+    letterSpacing: 0.1,
   },
 });
