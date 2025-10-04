@@ -36,7 +36,7 @@ const { width: screenWidth } = Dimensions.get('window');
 
 
 export default function HomeScreen() {
-  const { meals, todayCalories, weeklyAverage, dailyGoal, isLoading, resetData, addManualCalories, setDailyGoal, userProfile, healthMetrics } = useCalorieTracker();
+  const { meals, todayCalories, weeklyAverage, dailyGoal, isLoading, resetData, addManualCalories, setDailyGoal, userProfile, healthMetrics, deleteMeal } = useCalorieTracker();
   const { colors, isDark, getTypographyStyle } = useTheme();
   const { t } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -479,6 +479,96 @@ export default function HomeScreen() {
     );
   };
 
+  const renderMealsList = () => {
+    if (todayMeals.length === 0) {
+      return (
+        <View style={[styles.emptyMealsState, { backgroundColor: colors.surfaceElevated }]}>
+          <Text style={[styles.emptyMealsText, { color: colors.textSecondary }]}>
+            Nenhuma refeição registrada hoje
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.mealsListContainer}>
+        {todayMeals.map((meal, index) => {
+          const mealTime = meal.timestamp ? new Date(meal.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+          const mealType = meal.name || 'Refeição';
+          const mealDescription = meal.foods.map(f => f.name).join(', ');
+          
+          return (
+            <TouchableOpacity
+              key={meal.id}
+              style={[styles.mealItemCard, { backgroundColor: colors.surfaceElevated }]}
+              onPress={() => router.push({ pathname: '/meal-detail', params: { mealId: meal.id } })}
+              activeOpacity={0.7}
+            >
+              <View style={styles.mealItemRow}>
+                <View style={[styles.mealItemImagePlaceholder, { backgroundColor: colors.surfaceSecondary }]}>
+                  <Activity color={colors.primary} size={20} strokeWidth={2} />
+                </View>
+                
+                <View style={styles.mealItemContent}>
+                  <Text style={[styles.mealItemType, { color: colors.primary }]}>
+                    {mealType.toUpperCase()} {mealTime && `• ${mealTime}`}
+                  </Text>
+                  <Text style={[styles.mealItemDescription, { color: colors.text }]} numberOfLines={2}>
+                    {mealDescription}
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.mealItemFooter}>
+                <Text style={[styles.mealItemCalories, { color: colors.text }]}>
+                  {meal.totalCalories} kcal
+                </Text>
+                <View style={styles.mealItemActions}>
+                  <TouchableOpacity
+                    style={[styles.mealItemActionButton, { backgroundColor: colors.surfaceSecondary }]}
+                    onPress={() => router.push({ pathname: '/meal-detail', params: { mealId: meal.id } })}
+                    activeOpacity={0.6}
+                  >
+                    <Activity color={colors.primary} size={14} strokeWidth={2} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.mealItemActionButton, { backgroundColor: colors.surfaceSecondary }]}
+                    onPress={async () => {
+                      Alert.alert(
+                        'Excluir Refeição',
+                        'Tem certeza que deseja excluir esta refeição?',
+                        [
+                          { text: 'Cancelar', style: 'cancel' },
+                          {
+                            text: 'Excluir',
+                            style: 'destructive',
+                            onPress: async () => {
+                              try {
+                                await deleteMeal(meal.id);
+                                if (Platform.OS !== 'web') {
+                                  await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                                }
+                              } catch (error) {
+                                Alert.alert('Erro', 'Não foi possível excluir a refeição.');
+                              }
+                            }
+                          }
+                        ]
+                      );
+                    }}
+                    activeOpacity={0.6}
+                  >
+                    <X color="#FF5C5C" size={14} strokeWidth={2} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    );
+  };
+
   const renderTabContent = () => {
     if (selectedHistoryDate && selectedDayData) {
       return (
@@ -512,50 +602,8 @@ export default function HomeScreen() {
             <BlurCard style={styles.loadingCard}>
               <Text style={styles.loadingText}>Carregando refeições...</Text>
             </BlurCard>
-          ) : todayMeals.length === 0 ? (
-            <View style={[styles.emptyState, { backgroundColor: colors.surfaceElevated }]}>
-              <LinearGradient
-                colors={[colors.primary + '10', colors.primary + '05']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.emptyStateGradient}
-              >
-                <Animated.View style={[
-                  styles.emptyIcon, 
-                  { 
-                    backgroundColor: colors.surfaceSecondary,
-                    transform: [{
-                      scale: motivationAnim.interpolate({
-                        inputRange: [0, 0.5, 1],
-                        outputRange: [1, 1.1, 1],
-                      })
-                    }]
-                  }
-                ]}>
-                  <Target color={colors.primary} size={48} strokeWidth={1.5} />
-                </Animated.View>
-                <Text style={[styles.emptyTitle, { color: colors.text }]}>
-                  Pronto para começar?
-                </Text>
-                <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-                  Toque no botão ✨ para adicionar sua primeira refeição e começar a acompanhar seus objetivos
-                </Text>
-                <View style={styles.emptyActions}>
-                  <TouchableOpacity
-                    style={[styles.emptyActionButton, { backgroundColor: colors.primary + '15' }]}
-                    onPress={handleCameraPress}
-                    activeOpacity={0.8}
-                  >
-                    <Camera color={colors.primary} size={16} strokeWidth={2} />
-                    <Text style={[styles.emptyActionText, { color: colors.primary }]}>Adicionar Refeição</Text>
-                  </TouchableOpacity>
-                </View>
-              </LinearGradient>
-            </View>
           ) : (
-            todayMeals.map((meal) => (
-              <MealCard key={meal.id} meal={meal} />
-            ))
+            renderMealsList()
           )}
         </>
       );
@@ -627,36 +675,15 @@ export default function HomeScreen() {
           ]}>
             <View style={styles.headerTop}>
               <View style={styles.headerLeft}>
-                <View style={styles.greetingContainer}>
-                  <Text style={[styles.greeting, { color: colors.text }]}>
-                    Resumo
-                  </Text>
-                  <Animated.View style={[
-                    styles.sparkleIcon,
-                    {
-                      opacity: sparkleAnim.interpolate({
-                        inputRange: [0, 0.5, 1],
-                        outputRange: [0.4, 1, 0.4],
-                      }),
-                      transform: [{
-                        rotate: sparkleAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg'],
-                        })
-                      }]
-                    }
-                  ]}>
-                    <Sparkles color={colors.primary} size={20} strokeWidth={2} />
-                  </Animated.View>
-                </View>
-                <Text style={[styles.date, { color: colors.textSecondary }]}>
-                  {new Date().toLocaleDateString('pt-BR', { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long' 
-                  })}
+                <Text style={[styles.greeting, { color: colors.textSecondary }]}>
+                  {(() => {
+                    const hour = new Date().getHours();
+                    const name = userProfile?.name || 'Utilizador';
+                    if (hour < 12) return `Bom dia, ${name} ☀️ — continua forte!`;
+                    if (hour < 18) return `Boa tarde, ${name} 🌤️ — continua forte!`;
+                    return `Boa noite, ${name} 🌙 — continua forte!`;
+                  })()}
                 </Text>
-
               </View>
               <View style={styles.headerButtons}>
                 <FloatingAIChat isHeaderButton={true} />
@@ -730,56 +757,16 @@ export default function HomeScreen() {
               
 
               
-              {/* Food Widgets Section */}
+              {/* Meals Section */}
               <View style={styles.foodWidgetsSection}>
-                <View style={styles.sectionHeader}>
-                  <View style={[styles.segmentedControl, { backgroundColor: colors.surfaceSecondary }]}>
-                    <TouchableOpacity 
-                      onPress={() => {
-                        setActiveTab('today');
-                        setSelectedHistoryDate(null);
-                      }}
-                      style={[
-                        styles.segmentButton,
-                        activeTab === 'today' && [styles.activeSegmentButton, { backgroundColor: colors.surface }]
-                      ]}
-                    >
-                      <Calendar 
-                        color={activeTab === 'today' ? colors.primary : colors.textSecondary} 
-                        size={16} 
-                        strokeWidth={2}
-                      />
-                      <Text style={[
-                        styles.segmentText,
-                        { color: activeTab === 'today' ? colors.primary : colors.textSecondary }
-                      ]}>Hoje</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity 
-                      onPress={() => {
-                        setActiveTab('history');
-                        setSelectedHistoryDate(null);
-                      }}
-                      style={[
-                        styles.segmentButton,
-                        activeTab === 'history' && [styles.activeSegmentButton, { backgroundColor: colors.surface }]
-                      ]}
-                    >
-                      <Clock 
-                        color={activeTab === 'history' ? colors.primary : colors.textSecondary} 
-                        size={16} 
-                        strokeWidth={2}
-                      />
-                      <Text style={[
-                        styles.segmentText,
-                        { color: activeTab === 'history' ? colors.primary : colors.textSecondary }
-                      ]}>Histórico</Text>
-                    </TouchableOpacity>
-                  </View>
+                <View style={styles.mealsSectionHeader}>
+                  <Text style={[styles.mealsSectionTitle, { color: colors.text }]}>
+                    Refeições de hoje 🍽️
+                  </Text>
                 </View>
                 
                 <View style={styles.tabContent}>
-                  {renderTabContent()}
+                  {renderMealsList()}
                 </View>
               </View>
               
@@ -1201,10 +1188,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignSelf: 'center',
   },
   greeting: {
-    fontSize: 22,
-    fontWeight: '700' as const,
-    marginBottom: 2,
-    letterSpacing: -0.3,
+    fontSize: 16,
+    fontWeight: '400' as const,
+    marginBottom: 10,
+    letterSpacing: 0,
+    lineHeight: 20,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -2387,5 +2375,100 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   // Macro Chart Styles
   macroChartsSection: {
     marginTop: 14,
+  },
+  
+  // Meals List Styles
+  mealsListContainer: {
+    gap: 12,
+  },
+  mealItemCard: {
+    borderRadius: 14,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.2 : 0.05,
+    shadowRadius: isDark ? 4 : 8,
+    elevation: isDark ? 2 : 3,
+    borderWidth: isDark ? 0 : 0.5,
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.05)',
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  mealItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  mealItemImage: {
+    width: 55,
+    height: 55,
+    borderRadius: 10,
+    marginRight: 10,
+    overflow: 'hidden',
+  },
+  mealItemImagePlaceholder: {
+    width: 55,
+    height: 55,
+    borderRadius: 10,
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mealItemContent: {
+    flex: 1,
+  },
+  mealItemType: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    marginBottom: 4,
+    letterSpacing: 0.3,
+  },
+  mealItemDescription: {
+    fontSize: 13,
+    fontWeight: '400' as const,
+    lineHeight: 16,
+  },
+  mealItemFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  mealItemCalories: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+  },
+  mealItemActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  mealItemActionButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyMealsState: {
+    padding: 24,
+    borderRadius: 14,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: isDark ? 0.2 : 0.05,
+    shadowRadius: isDark ? 2 : 4,
+    elevation: isDark ? 1 : 2,
+  },
+  emptyMealsText: {
+    fontSize: 14,
+    fontWeight: '400' as const,
+    textAlign: 'center' as const,
+  },
+  mealsSectionHeader: {
+    marginBottom: 12,
+  },
+  mealsSectionTitle: {
+    fontSize: 15,
+    fontWeight: '600' as const,
   },
 });
