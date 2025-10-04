@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity, Info, Search, Trash2 } from 'lucide-react-native';
+import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity, Info } from 'lucide-react-native';
 import { FloatingAIChat } from '@/components/FloatingAIChat';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -36,7 +36,7 @@ const { width: screenWidth } = Dimensions.get('window');
 
 
 export default function HomeScreen() {
-  const { meals, todayCalories, weeklyAverage, dailyGoal, isLoading, resetData, addManualCalories, setDailyGoal, userProfile, healthMetrics, deleteMeal } = useCalorieTracker();
+  const { meals, todayCalories, weeklyAverage, dailyGoal, isLoading, resetData, addManualCalories, setDailyGoal, userProfile, healthMetrics } = useCalorieTracker();
   const { colors, isDark, getTypographyStyle } = useTheme();
   const { t } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -513,7 +513,6 @@ export default function HomeScreen() {
               <Text style={styles.loadingText}>Carregando refeições...</Text>
             </BlurCard>
           ) : todayMeals.length === 0 ? (
-            <View style={styles.mealListContainer}>
             <View style={[styles.emptyState, { backgroundColor: colors.surfaceElevated }]}>
               <LinearGradient
                 colors={[colors.primary + '10', colors.primary + '05']}
@@ -553,69 +552,10 @@ export default function HomeScreen() {
                 </View>
               </LinearGradient>
             </View>
-            </View>
           ) : (
-            <View style={styles.mealListContainer}>
-              {todayMeals.map((meal) => (
-                <View key={meal.id} style={styles.mealItemContainer}>
-                  <View style={styles.mealItemCard}>
-                    <View style={styles.mealItemHeader}>
-                      <View style={styles.mealImageContainer}>
-                        <Text style={styles.mealImagePlaceholder}>🍽️</Text>
-                      </View>
-                      <View style={styles.mealItemInfo}>
-                        <Text style={styles.mealItemType}>{meal.name?.toUpperCase() || 'REFEIÇÃO'}</Text>
-                        <Text style={styles.mealItemDescription} numberOfLines={2}>
-                          {meal.foods.map(f => f.name).join(', ')}
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={styles.mealItemFooter}>
-                      <Text style={styles.mealItemCalories}>{meal.totalCalories} kcal</Text>
-                      <View style={styles.mealItemActions}>
-                        <TouchableOpacity 
-                          style={styles.mealActionButton}
-                          onPress={() => router.push({
-                            pathname: '/meal-detail',
-                            params: { mealId: meal.id }
-                          })}
-                        >
-                          <Search color="#2196F3" size={16} strokeWidth={2} />
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                          style={[styles.mealActionButton, { marginLeft: 8 }]}
-                          onPress={async () => {
-                            Alert.alert(
-                              'Eliminar Refeição',
-                              'Tem certeza que deseja eliminar esta refeição?',
-                              [
-                                { text: 'Cancelar', style: 'cancel' },
-                                { 
-                                  text: 'Eliminar', 
-                                  style: 'destructive',
-                                  onPress: async () => {
-                                    try {
-                                      await deleteMeal(meal.id);
-                                      if (Platform.OS !== 'web') {
-                                        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                                      }
-                                    } catch (error) {
-                                      Alert.alert('Erro', 'Não foi possível eliminar a refeição.');
-                                    }
-                                  }
-                                }
-                              ]
-                            );
-                          }}
-                        >
-                          <Trash2 color="#FF5C5C" size={16} strokeWidth={2} />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-              ))}
-            </View>
+            todayMeals.map((meal) => (
+              <MealCard key={meal.id} meal={meal} />
+            ))
           )}
         </>
       );
@@ -687,9 +627,53 @@ export default function HomeScreen() {
           ]}>
             <View style={styles.headerTop}>
               <View style={styles.headerLeft}>
-                <Text style={[styles.greeting, { color: '#B0B0B0' }]}>
-                  Boa noite, {userProfile?.name || 'Utilizador'} 🌙 — já somas {todayCalories} kcal hoje.
+                <View style={styles.greetingContainer}>
+                  <Text style={[styles.greeting, { color: colors.text }]}>
+                    Resumo
+                  </Text>
+                  <Animated.View style={[
+                    styles.sparkleIcon,
+                    {
+                      opacity: sparkleAnim.interpolate({
+                        inputRange: [0, 0.5, 1],
+                        outputRange: [0.4, 1, 0.4],
+                      }),
+                      transform: [{
+                        rotate: sparkleAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', '180deg'],
+                        })
+                      }]
+                    }
+                  ]}>
+                    <Sparkles color={colors.primary} size={20} strokeWidth={2} />
+                  </Animated.View>
+                </View>
+                <Text style={[styles.date, { color: colors.textSecondary }]}>
+                  {new Date().toLocaleDateString('pt-BR', { 
+                    weekday: 'long', 
+                    day: 'numeric', 
+                    month: 'long' 
+                  })}
                 </Text>
+
+              </View>
+              <View style={styles.headerButtons}>
+                <FloatingAIChat isHeaderButton={true} />
+                <TouchableOpacity
+                  onPress={() => router.push('/(tabs)/settings')}
+                  style={[styles.headerIconButton, { backgroundColor: colors.surfaceElevated }]}
+                  activeOpacity={0.6}
+                >
+                  <Settings color={colors.textSecondary} size={16} strokeWidth={2} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => router.push('/profile')}
+                  style={[styles.headerIconButton, { backgroundColor: colors.surfaceElevated }]}
+                  activeOpacity={0.6}
+                >
+                  <User color={colors.textSecondary} size={16} strokeWidth={2} />
+                </TouchableOpacity>
               </View>
             </View>
           </Animated.View>
@@ -1217,11 +1201,10 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignSelf: 'center',
   },
   greeting: {
-    fontSize: 16,
-    fontWeight: '400' as const,
-    marginBottom: 10,
-    letterSpacing: 0,
-    lineHeight: 22,
+    fontSize: 22,
+    fontWeight: '700' as const,
+    marginBottom: 2,
+    letterSpacing: -0.3,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
@@ -2404,79 +2387,5 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   // Macro Chart Styles
   macroChartsSection: {
     marginTop: 14,
-  },
-  
-  // Meal List Styles
-  mealListContainer: {
-    gap: 10,
-    marginBottom: 18,
-  },
-  mealItemContainer: {
-    marginBottom: 10,
-  },
-  mealItemCard: {
-    backgroundColor: '#141414',
-    borderRadius: 14,
-    padding: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#2196F3',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: isDark ? 0.3 : 0.08,
-    shadowRadius: isDark ? 3 : 8,
-    elevation: isDark ? 2 : 3,
-  },
-  mealItemHeader: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    marginBottom: 8,
-  },
-  mealImageContainer: {
-    width: 55,
-    height: 55,
-    borderRadius: 10,
-    backgroundColor: '#1E1E1E',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    marginRight: 10,
-  },
-  mealImagePlaceholder: {
-    fontSize: 24,
-  },
-  mealItemInfo: {
-    flex: 1,
-  },
-  mealItemType: {
-    color: '#2196F3',
-    fontSize: 12,
-    fontWeight: '600' as const,
-    marginBottom: 4,
-    letterSpacing: 0.5,
-  },
-  mealItemDescription: {
-    fontSize: 13,
-    color: '#FFFFFF',
-    lineHeight: 16,
-  },
-  mealItemFooter: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    alignItems: 'center' as const,
-    marginTop: 6,
-  },
-  mealItemCalories: {
-    fontSize: 16,
-    fontWeight: '600' as const,
-    color: '#FFFFFF',
-  },
-  mealItemActions: {
-    flexDirection: 'row' as const,
-  },
-  mealActionButton: {
-    backgroundColor: '#1E1E1E',
-    borderRadius: 20,
-    padding: 6,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
   },
 });
