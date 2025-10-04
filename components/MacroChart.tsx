@@ -45,93 +45,54 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
 
   const macros = [
     {
-      name: 'Proteína',
-      value: totals.protein,
-      percentage: (totals.protein / totalMacros) * 100,
-      color: '#FF6B6B',
-      icon: Beef,
-    },
-    {
       name: 'Carboidratos',
       value: totals.carbs,
       percentage: (totals.carbs / totalMacros) * 100,
-      color: '#4ECDC4',
+      color: '#00C2A9',
       icon: Wheat,
+    },
+    {
+      name: 'Proteína',
+      value: totals.protein,
+      percentage: (totals.protein / totalMacros) * 100,
+      color: '#F15C5C',
+      icon: Beef,
     },
     {
       name: 'Gorduras',
       value: totals.fat,
       percentage: (totals.fat / totalMacros) * 100,
-      color: '#FFE66D',
+      color: '#FFD54F',
       icon: Droplets,
     },
-  ].sort((a, b) => b.percentage - a.percentage);
+  ];
 
   const renderBarChart = () => {
-    const maxValue = Math.max(...macros.map(m => m.value));
-    
     return (
       <View style={styles.barChartContainer}>
-        <View style={styles.barsRow}>
-          {macros.map((macro, index) => {
-            const barHeight = maxValue > 0 ? (macro.value / maxValue) * 100 : 0;
-            
-            return (
-              <View key={macro.name} style={styles.barItem}>
-                <View style={styles.barContainer}>
-                  {/* Background bar */}
-                  <View style={[styles.barBackground, { backgroundColor: colors.surfaceSecondary }]} />
-                  {/* Animated bar with gradient effect */}
-                  <View 
-                    style={[
-                      styles.bar,
-                      {
-                        height: `${barHeight}%`,
-                        backgroundColor: macro.color,
-                        shadowColor: macro.color,
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.2,
-                        shadowRadius: 3,
-                        elevation: 2,
-                      }
-                    ]}
-                  >
-                    {/* Inner glow effect */}
-                    <View style={[
-                      styles.barGlow,
-                      { backgroundColor: macro.color + '30' }
-                    ]} />
-                  </View>
-                </View>
-                <View style={styles.barValueLabel}>
-                  <Text style={[styles.barValue, { color: colors.text }]}>
-                    {macro.value.toFixed(0)}g
-                  </Text>
-                </View>
+        {macros.map((macro) => {
+          return (
+            <View key={macro.name} style={styles.barRow}>
+              <Text style={[styles.barLabel, { color: colors.text }]}>
+                {macro.name}
+              </Text>
+              <View style={styles.barTrack}>
+                <View 
+                  style={[
+                    styles.barFill,
+                    {
+                      width: `${macro.percentage}%`,
+                      backgroundColor: macro.color,
+                    }
+                  ]}
+                />
               </View>
-            );
-          })}
-        </View>
-        
-        {/* Legend below bars */}
-        <View style={styles.barLegend}>
-          {macros.map((macro) => {
-            const IconComponent = macro.icon;
-            return (
-              <View key={macro.name} style={styles.barLegendItem}>
-                <View style={[styles.barLegendIcon, { backgroundColor: macro.color }]}>
-                  <IconComponent color="white" size={12} strokeWidth={2.5} />
-                </View>
-                <Text style={[styles.barLegendText, { color: colors.text }]}>
-                  {macro.name}
-                </Text>
-                <Text style={[styles.barLegendPercentage, { color: macro.color }]}>
-                  {macro.percentage.toFixed(0)}%
-                </Text>
-              </View>
-            );
-          })}
-        </View>
+              <Text style={[styles.barValue, { color: colors.text }]}>
+                {macro.value.toFixed(0)}
+              </Text>
+            </View>
+          );
+        })}
       </View>
     );
   };
@@ -225,33 +186,25 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
   };
 
   return (
-    <BlurCard style={[styles.container, { backgroundColor: colors.surfaceElevated }]}>
+    <View style={[styles.container, { backgroundColor: '#141414' }]}>
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       
       {chartType === 'bar' ? renderBarChart() : renderEnhancedPieChart()}
-    </BlurCard>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    marginBottom: 16,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-    borderWidth: 0.5,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
+    padding: 14,
+    marginBottom: 14,
+    borderRadius: 14,
   },
   title: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
-    marginBottom: 16,
-    textAlign: 'center',
-    letterSpacing: -0.2,
+    marginBottom: 10,
+    color: '#FFFFFF',
   },
   emptyState: {
     alignItems: 'center',
@@ -262,86 +215,37 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   
-  // Improved Bar Chart Styles
   barChartContainer: {
-    gap: 16,
+    gap: 10,
   },
-  barsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'flex-end',
-    height: 100,
-    paddingHorizontal: 8,
+  barRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 10,
   },
-  barItem: {
-    alignItems: 'center',
+  barLabel: {
+    fontSize: 13,
+    fontWeight: '500',
+    width: 90,
+    color: '#FFFFFF',
+  },
+  barTrack: {
     flex: 1,
-    maxWidth: 60,
+    height: 18,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 9,
+    overflow: 'hidden' as const,
   },
-  barContainer: {
-    height: 80,
-    width: 20,
-    justifyContent: 'flex-end',
-    marginBottom: 8,
-    position: 'relative',
-  },
-  barBackground: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
+  barFill: {
     height: '100%',
-    borderRadius: 10,
-    opacity: 0.15,
-  },
-  bar: {
-    width: '100%',
-    borderRadius: 10,
-    minHeight: 4,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  barGlow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '40%',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  barValueLabel: {
-    alignItems: 'center',
+    borderRadius: 9,
   },
   barValue: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '600',
-    textAlign: 'center',
-  },
-  barLegend: {
-    gap: 8,
-    paddingTop: 8,
-  },
-  barLegendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 6,
-  },
-  barLegendIcon: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  barLegendText: {
-    fontSize: 12,
-    fontWeight: '500',
-    flex: 1,
-  },
-  barLegendPercentage: {
-    fontSize: 12,
-    fontWeight: '600',
+    width: 40,
+    textAlign: 'right' as const,
+    color: '#FFFFFF',
   },
   
   // Improved Pie Chart Styles

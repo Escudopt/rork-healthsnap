@@ -9,8 +9,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { Trash2, Clock, Utensils, ChevronRight } from 'lucide-react-native';
-import { BlurCard } from './BlurCard';
+import { Trash2, Utensils, ChevronRight } from 'lucide-react-native';
 import { Meal } from '@/types/food';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -58,7 +57,6 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
               });
             } catch (error) {
               console.error('Error deleting meal:', error);
-              // Reset animation on error
               Animated.timing(scaleAnim, {
                 toValue: 1,
                 duration: 200,
@@ -77,14 +75,6 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
     );
   };
 
-  const formatTime = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('pt-BR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
   const styles = createStyles(colors, isDark);
 
   return (
@@ -92,236 +82,147 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
       styles.container,
       { transform: [{ scale: scaleAnim }] }
     ]}>
-      <BlurCard variant="default" style={styles.card}>
+      <View style={styles.card}>
         <View style={styles.content}>
-          {meal.imageBase64 ? (
-            <Image
-              source={{ uri: `data:image/jpeg;base64,${meal.imageBase64}` }}
-              style={styles.thumbnail}
-            />
-          ) : (
-            <View style={styles.placeholderThumbnail}>
-              <Utensils color={colors.textTertiary} size={24} strokeWidth={1.5} />
-            </View>
-          )}
-          
-          <View style={styles.info}>
-            <View style={styles.header}>
+          <View style={styles.imageRow}>
+            {meal.imageBase64 ? (
+              <Image
+                source={{ uri: `data:image/jpeg;base64,${meal.imageBase64}` }}
+                style={styles.thumbnail}
+              />
+            ) : (
+              <View style={styles.placeholderThumbnail}>
+                <Utensils color={colors.textTertiary} size={24} strokeWidth={1.5} />
+              </View>
+            )}
+            
+            <View style={styles.info}>
               <View style={styles.mealTypeContainer}>
                 <Text style={styles.mealType}>{meal.mealType}</Text>
               </View>
-              <View style={styles.timeContainer}>
-                <Clock color={colors.textSecondary} size={12} strokeWidth={2} />
-                <Text style={[styles.time, { color: colors.textSecondary }]}>{formatTime(meal.timestamp)}</Text>
-              </View>
-            </View>
-            
-            <View style={styles.foodsContainer}>
               <Text style={[styles.foods, { color: colors.text }]} numberOfLines={2}>
                 {meal.foods.map(f => f.name).join(', ')}
               </Text>
-              {meal.foods.length > 2 && (
-                <Text style={[styles.foodCount, { color: colors.textTertiary }]}>
-                  +{meal.foods.length - 2} mais
-                </Text>
-              )}
             </View>
-            
-            <View style={styles.footer}>
-              <View style={styles.caloriesContainer}>
-                <Text style={[styles.calories, { color: colors.text }]}>{meal.totalCalories}</Text>
-                <Text style={[styles.caloriesUnit, { color: colors.textSecondary }]}>kcal</Text>
-              </View>
-              <View style={styles.actionButtons}>
-                {showDetailButton && (
-                  <TouchableOpacity onPress={handleViewDetails} style={styles.detailButton}>
-                    <View style={styles.detailButtonInner}>
-                      <ChevronRight color={colors.primary} size={18} strokeWidth={2} />
-                    </View>
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-                  <View style={styles.deleteButtonInner}>
-                    <Trash2 color={colors.error} size={18} strokeWidth={2} />
+          </View>
+          
+          <View style={styles.footer}>
+            <View style={styles.caloriesContainer}>
+              <Text style={[styles.calories, { color: colors.text }]}>{meal.totalCalories} kcal</Text>
+            </View>
+            <View style={styles.actionButtons}>
+              {showDetailButton && (
+                <TouchableOpacity onPress={handleViewDetails} style={styles.detailButton}>
+                  <View style={[styles.detailButtonInner, { backgroundColor: '#1E1E1E' }]}>
+                    <ChevronRight color="#2196F3" size={18} strokeWidth={2} />
                   </View>
                 </TouchableOpacity>
-              </View>
+              )}
+              <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+                <View style={[styles.deleteButtonInner, { backgroundColor: '#1E1E1E' }]}>
+                  <Trash2 color="#FF5C5C" size={18} strokeWidth={2} />
+                </View>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
-      </BlurCard>
+      </View>
     </Animated.View>
   );
 }
 
 const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 14,
   },
   card: {
-    padding: 20,
-    backgroundColor: colors.surfaceElevated,
-    borderRadius: 16,
+    backgroundColor: '#141414',
+    borderRadius: 14,
+    padding: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.2,
     shadowRadius: 8,
-    elevation: 3,
-    borderWidth: 0.5,
-    borderColor: 'rgba(0, 0, 0, 0.05)',
+    elevation: 4,
   },
   content: {
-    flexDirection: 'row',
-    gap: 16,
+    gap: 8,
+  },
+  imageRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 10,
+    marginBottom: 8,
   },
   thumbnail: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    width: 55,
+    height: 55,
+    borderRadius: 10,
   },
   placeholderThumbnail: {
-    width: 64,
-    height: 64,
-    borderRadius: 12,
+    width: 55,
+    height: 55,
+    borderRadius: 10,
     backgroundColor: colors.surfaceSecondary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
   info: {
     flex: 1,
-    justifyContent: 'space-between',
-    paddingVertical: 2,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    gap: 4,
   },
   mealTypeContainer: {
-    backgroundColor: '#007AFF' + '15',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    backgroundColor: '#2196F3' + '20',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start' as const,
+    marginBottom: 4,
   },
   mealType: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600' as const,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
-    color: '#007AFF',
-    ...Platform.select({
-      ios: {
-        fontFamily: 'System',
-      },
-    }),
-  },
-  timeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  time: {
-    fontSize: 13,
-    fontWeight: '400' as const,
-    letterSpacing: 0.1,
-    ...Platform.select({
-      ios: {
-        fontFamily: 'System',
-      },
-    }),
-  },
-  foodsContainer: {
-    marginBottom: 12,
-    gap: 4,
+    color: '#2196F3',
   },
   foods: {
-    fontSize: 16,
-    fontWeight: '400' as const,
-    lineHeight: 22,
-    letterSpacing: -0.24,
-    ...Platform.select({
-      ios: {
-        fontFamily: 'System',
-      },
-    }),
-  },
-  foodCount: {
     fontSize: 13,
     fontWeight: '400' as const,
-    letterSpacing: 0.1,
-    opacity: 0.6,
-    ...Platform.select({
-      ios: {
-        fontFamily: 'System',
-      },
-    }),
+    lineHeight: 16,
+    color: '#FFFFFF',
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginTop: 6,
   },
   caloriesContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 4,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
   },
   calories: {
-    fontSize: 28,
-    fontWeight: '300' as const,
-    letterSpacing: -0.8,
-    ...Platform.select({
-      ios: {
-        fontFamily: 'System',
-      },
-    }),
-  },
-  caloriesUnit: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: '600' as const,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 0.5,
-    opacity: 0.6,
-    ...Platform.select({
-      ios: {
-        fontFamily: 'System',
-      },
-    }),
-  },
-  deleteButton: {
-    borderRadius: 12,
+    color: '#FFFFFF',
   },
   actionButtons: {
-    flexDirection: 'row',
+    flexDirection: 'row' as const,
     gap: 8,
   },
   detailButton: {
-    borderRadius: 12,
+    borderRadius: 20,
+  },
+  deleteButton: {
+    borderRadius: 20,
   },
   detailButtonInner: {
-    padding: 10,
-    borderRadius: 12,
-    backgroundColor: colors.primary + '15',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    padding: 6,
+    borderRadius: 20,
   },
   deleteButtonInner: {
-    padding: 10,
-    borderRadius: 12,
-    backgroundColor: colors.error + '15',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
+    padding: 6,
+    borderRadius: 20,
   },
 });

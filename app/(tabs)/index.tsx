@@ -613,7 +613,7 @@ export default function HomeScreen() {
               <View style={styles.headerLeft}>
                 <View style={styles.greetingContainer}>
                   <Text style={[styles.greeting, { color: colors.text }]}>
-                    {userProfile?.name ? `Olá, ${userProfile.name}` : 'Resumo'}
+                    Resumo
                   </Text>
                   <Animated.View style={[
                     styles.sparkleIcon,
@@ -778,19 +778,18 @@ export default function HomeScreen() {
                 </View>
               )}
               
-              {/* Sources Button */}
               <TouchableOpacity
-                style={[styles.sourcesButton, { backgroundColor: colors.surfaceElevated }]}
+                style={[styles.sourcesButton, { backgroundColor: 'rgba(20,20,20,0.85)', borderTopWidth: 1, borderTopColor: '#2196F3' }]}
                 onPress={() => router.push('/sources')}
                 activeOpacity={0.7}
               >
                 <View style={styles.sourcesButtonContent}>
-                  <View style={[styles.sourcesButtonIcon, { backgroundColor: colors.primary + '15' }]}>
-                    <Info color={colors.primary} size={18} strokeWidth={2} />
+                  <View style={[styles.sourcesButtonIcon, { backgroundColor: 'rgba(33,150,243,0.15)' }]}>
+                    <Info color="#2196F3" size={18} strokeWidth={2} />
                   </View>
                   <View style={styles.sourcesButtonText}>
                     <Text style={[styles.sourcesButtonTitle, { color: colors.text }]}>Fontes & Referências</Text>
-                    <Text style={[styles.sourcesButtonSubtitle, { color: colors.textSecondary }]}>Bases científicas dos cálculos</Text>
+                    <Text style={[styles.sourcesButtonSubtitle, { color: '#9E9E9E', fontStyle: 'italic' as const }]}>Bases científicas dos cálculos</Text>
                   </View>
                 </View>
               </TouchableOpacity>
@@ -1177,7 +1176,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignSelf: 'center',
   },
   greeting: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: '700' as const,
     marginBottom: 2,
     letterSpacing: -0.3,
@@ -2329,7 +2328,6 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   sourcesButtonSubtitle: {
     fontSize: 13,
     fontWeight: '400' as const,
-    opacity: 0.8,
   },
   
   // Macro Widgets Styles
