@@ -16,7 +16,7 @@ interface MacroChartProps {
 }
 
 export function MacroChart({ foods, title = 'Distribuição de Macros', chartType = 'bar' }: MacroChartProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   
   const totals = foods.reduce((acc, food) => ({
     protein: acc.protein + (food.protein || 0),
@@ -186,7 +186,16 @@ export function MacroChart({ foods, title = 'Distribuição de Macros', chartTyp
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: '#141414' }]}>
+    <View style={[styles.container, { 
+      backgroundColor: colors.surfaceElevated,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: isDark ? 0.2 : 0.05,
+      shadowRadius: isDark ? 8 : 12,
+      elevation: isDark ? 3 : 2,
+      borderWidth: isDark ? 0 : 0.5,
+      borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.05)',
+    }]}>
       <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
       
       {chartType === 'bar' ? renderBarChart() : renderEnhancedPieChart()}
@@ -204,7 +213,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     marginBottom: 10,
-    color: '#FFFFFF',
   },
   emptyState: {
     alignItems: 'center',
@@ -227,12 +235,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '500',
     width: 90,
-    color: '#FFFFFF',
   },
   barTrack: {
     flex: 1,
     height: 18,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
     borderRadius: 9,
     overflow: 'hidden' as const,
   },
@@ -245,7 +252,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     width: 40,
     textAlign: 'right' as const,
-    color: '#FFFFFF',
   },
   
   // Improved Pie Chart Styles

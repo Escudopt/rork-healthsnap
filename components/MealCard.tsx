@@ -113,14 +113,14 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
             <View style={styles.actionButtons}>
               {showDetailButton && (
                 <TouchableOpacity onPress={handleViewDetails} style={styles.detailButton}>
-                  <View style={[styles.detailButtonInner, { backgroundColor: '#1E1E1E' }]}>
-                    <ChevronRight color="#2196F3" size={18} strokeWidth={2} />
+                  <View style={styles.detailButtonInner}>
+                    <ChevronRight color={colors.primary} size={18} strokeWidth={2} />
                   </View>
                 </TouchableOpacity>
               )}
               <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-                <View style={[styles.deleteButtonInner, { backgroundColor: '#1E1E1E' }]}>
-                  <Trash2 color="#FF5C5C" size={18} strokeWidth={2} />
+                <View style={styles.deleteButtonInner}>
+                  <Trash2 color={colors.error} size={18} strokeWidth={2} />
                 </View>
               </TouchableOpacity>
             </View>
@@ -136,14 +136,16 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     marginBottom: 14,
   },
   card: {
-    backgroundColor: '#141414',
+    backgroundColor: colors.surfaceElevated,
     borderRadius: 14,
     padding: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOpacity: isDark ? 0.2 : 0.05,
+    shadowRadius: isDark ? 8 : 12,
+    elevation: isDark ? 4 : 3,
+    borderWidth: isDark ? 0 : 0.5,
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.05)',
   },
   content: {
     gap: 8,
@@ -163,7 +165,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     width: 55,
     height: 55,
     borderRadius: 10,
-    backgroundColor: colors.surfaceSecondary,
+    backgroundColor: isDark ? colors.surfaceSecondary : 'rgba(0, 122, 255, 0.08)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
@@ -172,7 +174,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     gap: 4,
   },
   mealTypeContainer: {
-    backgroundColor: '#2196F3' + '20',
+    backgroundColor: colors.primary + (isDark ? '20' : '15'),
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -184,13 +186,12 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     fontWeight: '600' as const,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
-    color: '#2196F3',
+    color: colors.primary,
   },
   foods: {
     fontSize: 13,
     fontWeight: '400' as const,
     lineHeight: 16,
-    color: '#FFFFFF',
   },
   footer: {
     flexDirection: 'row' as const,
@@ -205,7 +206,6 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   calories: {
     fontSize: 16,
     fontWeight: '600' as const,
-    color: '#FFFFFF',
   },
   actionButtons: {
     flexDirection: 'row' as const,
@@ -220,9 +220,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   detailButtonInner: {
     padding: 6,
     borderRadius: 20,
+    backgroundColor: isDark ? '#1E1E1E' : 'rgba(0, 122, 255, 0.1)',
   },
   deleteButtonInner: {
     padding: 6,
     borderRadius: 20,
+    backgroundColor: isDark ? '#1E1E1E' : 'rgba(255, 59, 48, 0.1)',
   },
 });
