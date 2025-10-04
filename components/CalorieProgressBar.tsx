@@ -25,7 +25,7 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
   const percentage = Math.min((currentCalories / dailyGoal) * 100, 100);
   const progressColor = '#2196F3';
   
-  const size = 80;
+  const size = 90;
   const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -34,7 +34,7 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
     Animated.parallel([
       Animated.timing(progressAnim, {
         toValue: percentage,
-        duration: 800,
+        duration: 1000,
         useNativeDriver: false,
       }),
       Animated.spring(scaleAnim, {
