@@ -1,8 +1,9 @@
-import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
+import React, { useRef, useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Camera } from 'lucide-react-native';
 import Svg, { Circle } from 'react-native-svg';
+import * as Haptics from 'expo-haptics';
 
 interface CalorieProgressBarProps {
   currentCalories: number;
@@ -17,6 +18,9 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
   const progressAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const cameraButtonScale = useRef(new Animated.Value(1)).current;
+  
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const percentage = Math.min((currentCalories / dailyGoal) * 100, 100);
   const progressColor = '#2196F3';
@@ -102,25 +106,70 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
           </View>
           
           <View style={styles.rightContent}>
-            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+            <Animated.View style={{ transform: [{ scale: Animated.multiply(pulseAnim, cameraButtonScale) }] }}>
               <TouchableOpacity 
-                onPress={onCameraPress} 
+                onPress={async () => {
+                  if (isAnalyzing || !onCameraPress) return;
+                  
+                  // Haptic feedback
+                  if (Platform.OS !== 'web') {
+                    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+                  
+                  // Scale down animation
+                  Animated.sequence([
+                    Animated.timing(cameraButtonScale, {
+                      toValue: 0.85,
+                      duration: 200,
+                      useNativeDriver: true,
+                    }),
+                    Animated.timing(cameraButtonScale, {
+                      toValue: 1,
+                      duration: 200,
+                      useNativeDriver: true,
+                    }),
+                  ]).start();
+                  
+                  // Show loading state
+                  setIsAnalyzing(true);
+                  
+                  // Call the camera press handler
+                  try {
+                    await onCameraPress();
+                  } finally {
+                    // Hide loading after a delay to show the analyzing message
+                    setTimeout(() => {
+                      setIsAnalyzing(false);
+                    }, 2500);
+                  }
+                }} 
                 style={styles.cameraButton}
                 activeOpacity={0.7}
+                disabled={isAnalyzing}
               >
                 <LinearGradient
-                  colors={['#2196F3', '#1976D2']}
+                  colors={isAnalyzing ? ['#1976D2', '#1565C0'] : ['#2196F3', '#1976D2']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.cameraButtonGradient}
                 >
-                  <Camera color="#FFFFFF" size={24} strokeWidth={2} />
+                  {isAnalyzing ? (
+                    <ActivityIndicator color="#FFFFFF" size="small" />
+                  ) : (
+                    <Camera color="#FFFFFF" size={26} strokeWidth={2} />
+                  )}
                 </LinearGradient>
               </TouchableOpacity>
             </Animated.View>
-            <Text style={styles.goalText}>
-              Meta: {dailyGoal} kcal ({Math.round(percentage)}%)
-            </Text>
+            {isAnalyzing ? (
+              <Text style={styles.analyzingText}>
+                A analisar refeição...
+              </Text>
+            ) : (
+              <Text style={styles.goalText}>
+                Meta: {dailyGoal} kcal ({Math.round(percentage)}%)
+              </Text>
+            )}
           </View>
         </View>
       </LinearGradient>
@@ -196,5 +245,13 @@ const styles = StyleSheet.create({
     color: '#A0A0A0',
     textAlign: 'right' as const,
     marginTop: 8,
+  },
+  analyzingText: {
+    fontSize: 13,
+    color: '#2196F3',
+    textAlign: 'right' as const,
+    marginTop: 8,
+    fontWeight: '600' as const,
+    fontStyle: 'italic' as const,
   },
 });
