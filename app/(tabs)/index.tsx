@@ -577,15 +577,13 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <LinearGradient
         colors={isDark ? [
-          '#000000',
-          '#0A0A0B',
-          '#1C1C1E',
-          '#2C2C2E'
+          '#0B0B0C',
+          '#0F1A2B',
+          '#0B0B0C'
         ] : [
           '#FAFBFF',
           '#F8F9FE',
-          '#F2F4F8',
-          '#EBEEF5'
+          '#F2F4F8'
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -1092,7 +1090,7 @@ export default function HomeScreen() {
 const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isDark ? '#000000' : '#FAFBFF',
+    backgroundColor: isDark ? '#0B0B0C' : '#FAFBFF',
   },
   safeArea: {
     flex: 1,

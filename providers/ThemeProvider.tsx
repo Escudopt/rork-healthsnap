@@ -92,45 +92,45 @@ const lightTheme: ThemeColors = {
 };
 
 const darkTheme: ThemeColors = {
-  // Background colors
-  background: '#000000',
-  backgroundSecondary: '#0A0A0B',
-  backgroundTertiary: '#1A1A1C',
+  // Background colors - Deep dark premium
+  background: '#0B0B0C',
+  backgroundSecondary: '#141414',
+  backgroundTertiary: '#1A1F24',
   
-  // Surface colors
-  surface: 'rgba(10, 132, 255, 0.08)',
-  surfaceSecondary: 'rgba(10, 132, 255, 0.12)',
-  surfaceElevated: 'rgba(255, 255, 255, 0.05)',
+  // Surface colors - Subtle elevation
+  surface: '#141414',
+  surfaceSecondary: '#1E1E1E',
+  surfaceElevated: '#141414',
   
-  // Text colors
+  // Text colors - High contrast
   text: '#FFFFFF',
-  textSecondary: 'rgba(235, 235, 245, 0.6)',
-  textTertiary: 'rgba(235, 235, 245, 0.3)',
+  textSecondary: '#9E9E9E',
+  textTertiary: '#A0A0A0',
   
-  // Border colors
-  border: 'rgba(84, 84, 88, 0.65)',
-  borderSecondary: 'rgba(84, 84, 88, 0.36)',
+  // Border colors - Subtle separation
+  border: 'rgba(255, 255, 255, 0.1)',
+  borderSecondary: 'rgba(255, 255, 255, 0.05)',
   
-  // Accent colors
-  primary: '#0A84FF',
-  primaryLight: '#64D2FF',
-  primaryDark: '#0056CC',
+  // Accent colors - Vibrant blue
+  primary: '#2196F3',
+  primaryLight: '#64B5F6',
+  primaryDark: '#1976D2',
   
   // Status colors
-  success: '#30D158',
-  warning: '#FF9F0A',
-  error: '#FF453A',
+  success: '#00C2A9',
+  warning: '#FFD54F',
+  error: '#F15C5C',
   
   // Glass/blur effects
-  glassBackground: 'rgba(28, 28, 30, 0.8)',
-  glassBorder: 'rgba(84, 84, 88, 0.65)',
+  glassBackground: 'rgba(20, 20, 20, 0.85)',
+  glassBorder: 'rgba(33, 150, 243, 0.15)',
   glassOverlay: 'rgba(255, 255, 255, 0.05)',
   
   // Tab bar
-  tabBarBackground: 'rgba(28, 28, 30, 0.8)',
-  tabBarBorder: 'rgba(84, 84, 88, 0.65)',
-  tabBarActive: '#0A84FF',
-  tabBarInactive: 'rgba(235, 235, 245, 0.6)',
+  tabBarBackground: 'rgba(20, 20, 20, 0.95)',
+  tabBarBorder: 'rgba(33, 150, 243, 0.2)',
+  tabBarActive: '#2196F3',
+  tabBarInactive: '#9E9E9E',
 };
 
 interface ThemeContextType {
