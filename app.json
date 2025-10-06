@@ -2,7 +2,7 @@
   "expo": {
     "name": "HealthSnap",
     "slug": "healthsnap-rh5rl8h",
-    "version": "1.1.5",
+    "version": "1.1.6",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -23,9 +23,7 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Precisamos da sua localização para adaptar recomendações de saúde e nutrição ao seu contexto.",
         "NSLocationAlwaysUsageDescription": "Precisamos da sua localização para adaptar recomendações de saúde e nutrição ao seu contexto.",
         "NSLocationWhenInUseUsageDescription": "Precisamos da sua localização para adaptar recomendações de saúde e nutrição ao seu contexto.",
-        "UIBackgroundModes": [
-          "location"
-        ]
+      
       }
     },
     "android": {
