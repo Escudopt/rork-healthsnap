@@ -74,6 +74,14 @@ export default function SettingsScreen() {
       onPress: () => router.push('/privacy-policy'),
     },
     {
+      id: 'sources',
+      title: 'Fontes & Referências',
+      subtitle: 'Bases científicas dos cálculos nutricionais',
+      icon: Info,
+      type: 'navigation' as const,
+      onPress: () => router.push('/sources'),
+    },
+    {
       id: 'help',
       title: t('help'),
       subtitle: t('faqSupport'),

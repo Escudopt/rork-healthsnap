@@ -20,19 +20,19 @@ export default function SourcesScreen() {
 
   const sources = [
     {
-      title: 'USDA FoodData Central',
-      description: 'Base de dados oficial de composição de alimentos dos Estados Unidos',
+      title: 'World Health Organization (WHO)',
+      description: 'Global health and nutrition recommendations, BMI classification, and dietary guidelines',
+      url: 'https://www.who.int',
+    },
+    {
+      title: 'U.S. Department of Agriculture Food Database (USDA)',
+      description: 'Official food composition database from the United States Department of Agriculture',
       url: 'https://fdc.nal.usda.gov',
     },
     {
-      title: 'EFSA - Autoridade Europeia para a Segurança Alimentar',
-      description: 'Valores de referência dietética e recomendações nutricionais europeias',
-      url: 'https://www.efsa.europa.eu/en/topics/topic/dietary-reference-values',
-    },
-    {
-      title: 'WHO - Organização Mundial da Saúde',
-      description: 'Classificação de IMC e recomendações globais de saúde e nutrição',
-      url: 'https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight',
+      title: 'European Food Safety Authority (EFSA)',
+      description: 'European dietary reference values and nutritional recommendations',
+      url: 'https://www.efsa.europa.eu',
     },
   ];
 
