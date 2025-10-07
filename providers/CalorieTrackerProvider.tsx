@@ -457,31 +457,16 @@ Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
 
   // Initialize app data - non-blocking
   useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        // Load data in background without blocking render
-        const timeoutId = setTimeout(async () => {
-          await Promise.all([
-            loadDailyGoal(),
-            loadUserProfile(),
-            loadMeals(),
-            loadWorkoutSessions()
-          ]);
-        }, 0);
-        
-        return () => clearTimeout(timeoutId);
-      } catch (error) {
-        console.error('❌ Error during app initialization:', error);
-        setIsLoading(false);
-      }
-    };
-    
-    const cleanup = initializeApp();
-    return () => {
-      if (cleanup instanceof Promise) {
-        cleanup.then(cleanupFn => cleanupFn?.());
-      }
-    };
+    // Load data asynchronously without blocking render
+    Promise.all([
+      loadDailyGoal(),
+      loadUserProfile(),
+      loadMeals(),
+      loadWorkoutSessions()
+    ]).catch(error => {
+      console.error('❌ Error during app initialization:', error);
+      setIsLoading(false);
+    });
   }, [loadMeals, loadDailyGoal, loadUserProfile, loadWorkoutSessions]);
 
   const addMeal = useCallback(async (mealData: Omit<Meal, 'id' | 'timestamp'>) => {
