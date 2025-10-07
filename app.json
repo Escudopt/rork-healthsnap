@@ -2,7 +2,7 @@
   "expo": {
     "name": "HealthSnap",
     "slug": "healthsnap-rh5rl8h",
-    "version": "1.1.8",
+    "version": "1.1.7",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
@@ -59,7 +59,15 @@
           "photosPermission": "A app acede às suas fotos para permitir carregar imagens de refeições e calcular a informação nutricional."
         }
       ],
-      []
+      [
+        "expo-location",
+        {
+          "isAndroidForegroundServiceEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true,
+          "isIosBackgroundLocationEnabled": true,
+          "locationAlwaysAndWhenInUsePermission": "Precisamos da sua localização para adaptar recomendações de saúde e nutrição ao seu contexto."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
