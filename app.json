@@ -19,10 +19,7 @@
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Precisamos de aceder às suas fotos para carregar imagens das refeições e calcular valores nutricionais.",
         "NSCameraUsageDescription": "Precisamos da câmara para permitir tirar fotos das suas refeições e assim gerar informação nutricional.",
-        "NSMicrophoneUsageDescription": "Precisamos do microfone para permitir gravar notas de voz relacionadas com as suas refeições.",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Precisamos da sua localização para adaptar recomendações de saúde e nutrição ao seu contexto.",
-        "NSLocationAlwaysUsageDescription": "Precisamos da sua localização para adaptar recomendações de saúde e nutrição ao seu contexto.",
-        "NSLocationWhenInUseUsageDescription": "Precisamos da sua localização para adaptar recomendações de saúde e nutrição ao seu contexto."
+        "NSMicrophoneUsageDescription": "Precisamos do microfone para permitir gravar notas de voz relacionadas com as suas refeições."
       }
     },
     "android": {
