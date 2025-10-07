@@ -59,9 +59,9 @@
       [
         "expo-location",
         {
-          "isAndroidForegroundServiceEnabled": true,
-          "isAndroidBackgroundLocationEnabled": true,
-          "isIosBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isIosBackgroundLocationEnabled": false,
           "locationAlwaysAndWhenInUsePermission": "Precisamos da sua localização para adaptar recomendações de saúde e nutrição ao seu contexto."
         }
       ]
