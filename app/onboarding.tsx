@@ -10,11 +10,13 @@ import {
   StatusBar,
   Platform,
   KeyboardAvoidingView,
+  Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Save, User, Scale, Activity, Sparkles } from 'lucide-react-native';
+import { Save, User, Scale, Activity, Sparkles, Camera } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { UserProfile } from '@/types/food';
@@ -51,6 +53,7 @@ export default function OnboardingScreen() {
     gender: 'male',
     activityLevel: 'moderate',
     goal: 'maintain',
+    profilePhoto: undefined,
   });
 
   const handleNext = () => {
@@ -87,6 +90,67 @@ export default function OnboardingScreen() {
     }
   };
 
+  const pickImage = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (permissionResult.granted === false) {
+        Alert.alert('Permissão Necessária', 'É necessário permitir acesso à galeria de fotos.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setFormData({ ...formData, profilePhoto: result.assets[0].uri });
+      }
+    } catch (error) {
+      console.error('❌ Error picking image:', error);
+      Alert.alert('Erro', 'Não foi possível selecionar a imagem.');
+    }
+  };
+
+  const takePhoto = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (permissionResult.granted === false) {
+        Alert.alert('Permissão Necessária', 'É necessário permitir acesso à câmera.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setFormData({ ...formData, profilePhoto: result.assets[0].uri });
+      }
+    } catch (error) {
+      console.error('❌ Error taking photo:', error);
+      Alert.alert('Erro', 'Não foi possível tirar a foto.');
+    }
+  };
+
+  const handleProfilePhotoPress = () => {
+    Alert.alert(
+      'Foto de Perfil',
+      'Escolha uma opção',
+      [
+        { text: 'Tirar Foto', onPress: takePhoto },
+        { text: 'Escolher da Galeria', onPress: pickImage },
+        { text: 'Cancelar', style: 'cancel' }
+      ]
+    );
+  };
+
   const handleComplete = async () => {
     try {
       setLoading(true);
@@ -106,16 +170,39 @@ export default function OnboardingScreen() {
 
   const renderStep1 = () => (
     <View style={styles.stepContainer}>
-      <View style={styles.iconContainer}>
-        <LinearGradient
-          colors={['#007AFF', '#5AC8FA']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.iconGradient}
-        >
-          <User color="white" size={40} strokeWidth={2} />
-        </LinearGradient>
-      </View>
+      <TouchableOpacity 
+        style={styles.profilePhotoContainer}
+        onPress={handleProfilePhotoPress}
+        activeOpacity={0.8}
+      >
+        {formData.profilePhoto ? (
+          <Image 
+            source={{ uri: formData.profilePhoto }} 
+            style={styles.profilePhoto}
+          />
+        ) : (
+          <View style={styles.profilePhotoPlaceholder}>
+            <LinearGradient
+              colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFillObject}
+            />
+            <User color="white" size={40} strokeWidth={2} />
+          </View>
+        )}
+        <View style={styles.cameraIconContainer}>
+          <LinearGradient
+            colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.cameraIconGradient}
+          >
+            <Camera color="white" size={16} strokeWidth={2.5} />
+          </LinearGradient>
+        </View>
+      </TouchableOpacity>
+
       <Text style={[styles.stepTitle, { color: colors.text }]}>Bem-vindo! ✨</Text>
       <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>Informações básicas</Text>
       
@@ -570,7 +657,8 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 24,
+    flexGrow: 1,
   },
   card: {
     borderRadius: 30,
@@ -593,6 +681,7 @@ const styles = StyleSheet.create({
   },
   stepContainer: {
     alignItems: 'center',
+    paddingBottom: 20,
   },
   iconContainer: {
     width: 70,
@@ -632,7 +721,7 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     width: '100%',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   inputLabel: {
     fontSize: 14,
@@ -815,5 +904,52 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700' as const,
     letterSpacing: -0.2,
+  },
+  profilePhotoContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 16,
+    position: 'relative' as const,
+    shadowColor: '#007AFF',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  profilePhoto: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  profilePhotoPlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  cameraIconContainer: {
+    position: 'absolute' as const,
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  cameraIconGradient: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

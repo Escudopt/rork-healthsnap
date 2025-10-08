@@ -40,6 +40,7 @@ export interface UserProfile {
   gender: 'male' | 'female';
   activityLevel: 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active';
   goal: 'lose' | 'maintain' | 'gain';
+  profilePhoto?: string; // base64 or URI
 }
 
 export interface HealthMetrics {
