@@ -30,6 +30,7 @@ import { MealCard } from '@/components/MealCard';
 import { MacroChart } from '@/components/MacroChart';
 import { MacroWidget } from '@/components/MacroWidget';
 import { TopFoodsTable } from '@/components/TopFoodsTable';
+import { FoodPieChart } from '@/components/FoodPieChart';
 import { Meal } from '@/types/food';
 import * as Haptics from 'expo-haptics';
 import { Toast } from '@/components/Toast';
@@ -855,6 +856,9 @@ export default function HomeScreen() {
               
               {/* Top Foods Table */}
               {meals.length > 0 && <TopFoodsTable />}
+              
+              {/* Food Pie Chart */}
+              {meals.length > 0 && <FoodPieChart />}
               
               {/* Macro Distribution Chart */}
               {todayFoods.length > 0 && (
