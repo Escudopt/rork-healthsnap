@@ -1195,29 +1195,41 @@ export default function HomeScreen() {
           <KeyboardAvoidingView 
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.modalOverlay}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
           >
-            <View style={styles.modalContainer}>
-              <LinearGradient
-                colors={['rgba(0, 0, 0, 0.8)', 'rgba(26, 26, 46, 0.9)', 'rgba(22, 33, 62, 0.8)']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.modalGradient}
+            <TouchableOpacity 
+              activeOpacity={1} 
+              style={styles.modalOverlay}
+              onPress={() => setShowManualMealModal(false)}
+            >
+              <TouchableOpacity 
+                activeOpacity={1} 
+                style={styles.modalContainer}
+                onPress={(e) => e.stopPropagation()}
               >
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Adicionar Refeição Manual</Text>
-                  <TouchableOpacity
-                    onPress={() => setShowManualMealModal(false)}
-                    style={styles.closeButton}
-                  >
-                    <X color={colors.text} size={24} />
-                  </TouchableOpacity>
-                </View>
-                
-                <ScrollView 
-                  style={styles.modalContent} 
-                  showsVerticalScrollIndicator={false}
-                  keyboardShouldPersistTaps="handled"
+                <LinearGradient
+                  colors={['rgba(0, 0, 0, 0.8)', 'rgba(26, 26, 46, 0.9)', 'rgba(22, 33, 62, 0.8)']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.modalGradient}
                 >
+                  <View style={styles.modalHeader}>
+                    <Text style={styles.modalTitle}>Adicionar Refeição Manual</Text>
+                    <TouchableOpacity
+                      onPress={() => setShowManualMealModal(false)}
+                      style={styles.closeButton}
+                    >
+                      <X color={colors.text} size={24} />
+                    </TouchableOpacity>
+                  </View>
+                  
+                  <ScrollView 
+                    style={styles.modalContent} 
+                    contentContainerStyle={styles.modalScrollContent}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    bounces={false}
+                  >
                   <View style={styles.inputContainer}>
                     <Utensils color="rgba(255, 255, 255, 0.8)" size={20} />
                     <TextInput
@@ -1319,31 +1331,32 @@ export default function HomeScreen() {
                     </View>
                   </View>
                   
-                  <View style={styles.modalButtons}>
-                    <TouchableOpacity
-                      style={styles.cancelButton}
-                      onPress={() => setShowManualMealModal(false)}
-                    >
-                      <Text style={styles.cancelButtonText}>Cancelar</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity
-                      style={styles.submitButton}
-                      onPress={handleManualMealSubmit}
-                    >
-                      <LinearGradient
-                        colors={['rgba(0, 122, 255, 0.9)', 'rgba(88, 86, 214, 0.9)']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.submitButtonGradient}
+                    <View style={styles.modalButtons}>
+                      <TouchableOpacity
+                        style={styles.cancelButton}
+                        onPress={() => setShowManualMealModal(false)}
                       >
-                        <Text style={styles.submitButtonText}>Adicionar</Text>
-                      </LinearGradient>
-                    </TouchableOpacity>
-                  </View>
-                </ScrollView>
-              </LinearGradient>
-            </View>
+                        <Text style={styles.cancelButtonText}>Cancelar</Text>
+                      </TouchableOpacity>
+                      
+                      <TouchableOpacity
+                        style={styles.submitButton}
+                        onPress={handleManualMealSubmit}
+                      >
+                        <LinearGradient
+                          colors={['rgba(0, 122, 255, 0.9)', 'rgba(88, 86, 214, 0.9)']}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                          style={styles.submitButtonGradient}
+                        >
+                          <Text style={styles.submitButtonText}>Adicionar</Text>
+                        </LinearGradient>
+                      </TouchableOpacity>
+                    </View>
+                  </ScrollView>
+                </LinearGradient>
+              </TouchableOpacity>
+            </TouchableOpacity>
           </KeyboardAvoidingView>
         </Modal>
       </SafeAreaView>
@@ -1954,6 +1967,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   modalContainer: {
     width: '100%',
     maxWidth: 400,
+    maxHeight: '85%',
     borderRadius: 24,
     overflow: 'hidden',
     shadowColor: 'rgba(0, 122, 255, 0.5)',
@@ -1982,9 +1996,12 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     padding: 4,
   },
   modalContent: {
+    flex: 1,
+  },
+  modalScrollContent: {
     padding: 20,
     paddingTop: 10,
-    maxHeight: Platform.OS === 'web' ? undefined : '70%',
+    paddingBottom: 40,
   },
   inputContainer: {
     flexDirection: 'row',
