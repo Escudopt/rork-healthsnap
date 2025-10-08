@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,12 +9,13 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { ChefHat, X, Clock, Users, Flame } from 'lucide-react-native';
+import { ChefHat, X, Clock, Users, Flame, MessageCircle, Sparkles } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { generateText } from '@rork/toolkit-sdk';
 import * as Haptics from 'expo-haptics';
+import { FloatingAIChat } from './FloatingAIChat';
 
 interface Recipe {
   name: string;
@@ -31,6 +32,14 @@ interface Recipe {
   };
 }
 
+const dynamicPhrases = [
+  'Sentes fome agora? O que posso sugerir?',
+  'Precisa de ideias para a próxima refeição?',
+  'Que tal uma sugestão personalizada?',
+  'Está com dúvidas sobre o que comer?',
+  'Posso ajudar a escolher algo saudável?',
+];
+
 export function DailyRecipe() {
   const { colors, isDark } = useTheme();
   const { meals, dailyGoal, todayCalories, userProfile } = useCalorieTracker();
@@ -38,6 +47,9 @@ export function DailyRecipe() {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [currentPhrase] = useState(() => dynamicPhrases[Math.floor(Math.random() * dynamicPhrases.length)]);
+  const aiChatRef = useRef<any>(null);
 
   const generateRecipe = async () => {
     if (Platform.OS !== 'web') {
@@ -188,35 +200,78 @@ Responda APENAS com o JSON válido, sem texto adicional.`;
     setError(null);
   };
 
+  const handleOpenAIChat = async () => {
+    if (Platform.OS !== 'web') {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+    setShowAIChat(true);
+  };
+
   return (
     <>
-      <TouchableOpacity
-        onPress={generateRecipe}
-        activeOpacity={0.8}
-        style={styles.container}
-      >
-        <LinearGradient
-          colors={isDark 
-            ? ['rgba(255, 107, 107, 0.15)', 'rgba(255, 159, 64, 0.15)']
-            : ['rgba(255, 107, 107, 0.1)', 'rgba(255, 159, 64, 0.1)']
-          }
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.gradient, { borderColor: isDark ? 'rgba(255, 107, 107, 0.3)' : 'rgba(255, 107, 107, 0.2)' }]}
-        >
+      <View style={styles.container}>
+        <View style={styles.headerRow}>
           <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 107, 107, 0.2)' }]}>
             <ChefHat color="#FF6B6B" size={18} strokeWidth={2} />
           </View>
-          <View style={styles.textContainer}>
-            <Text style={[styles.title, { color: colors.text }]}>
-              Sugestão Inteligente (IA)
+          <Text style={[styles.title, { color: colors.text }]}>
+            Sugestão Inteligente (IA)
+          </Text>
+        </View>
+
+        <TouchableOpacity
+          onPress={handleOpenAIChat}
+          activeOpacity={0.7}
+          style={styles.aiChatButton}
+        >
+          <LinearGradient
+            colors={['#667EEA', '#764BA2']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.aiChatGradient}
+          >
+            <View style={styles.aiChatContent}>
+              <View style={styles.aiChatLeft}>
+                <View style={styles.sparkleIcon}>
+                  <Sparkles color="#FFF" size={18} strokeWidth={2} fill="#FFF" />
+                </View>
+                <View style={styles.aiChatTextContainer}>
+                  <Text style={styles.aiChatText}>{currentPhrase}</Text>
+                  <Text style={styles.aiChatSubtext}>Converse com a IA para sugestões personalizadas</Text>
+                </View>
+              </View>
+              <MessageCircle color="rgba(255, 255, 255, 0.8)" size={20} strokeWidth={2} />
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={generateRecipe}
+          activeOpacity={0.8}
+          style={styles.recipeButton}
+        >
+          <LinearGradient
+            colors={isDark 
+              ? ['rgba(255, 107, 107, 0.15)', 'rgba(255, 159, 64, 0.15)']
+              : ['rgba(255, 107, 107, 0.1)', 'rgba(255, 159, 64, 0.1)']
+            }
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.recipeGradient, { borderColor: isDark ? 'rgba(255, 107, 107, 0.3)' : 'rgba(255, 107, 107, 0.2)' }]}
+          >
+            <Text style={[styles.recipeButtonText, { color: colors.text }]}>
+              Ou gerar receita automática
             </Text>
-            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-              Toque para ver uma receita personalizada
-            </Text>
-          </View>
-        </LinearGradient>
-      </TouchableOpacity>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+
+      {showAIChat && (
+        <FloatingAIChat 
+          ref={aiChatRef}
+          isHeaderButton={false}
+        />
+      )}
 
       <Modal
         visible={showModal}
@@ -349,33 +404,85 @@ const styles = StyleSheet.create({
   container: {
     marginTop: 8,
     marginBottom: 6,
+    gap: 10,
   },
-  gradient: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-    borderRadius: 16,
-    borderWidth: 1,
-    gap: 12,
+    gap: 10,
+    marginBottom: 4,
   },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  textContainer: {
+  title: {
+    fontSize: 16,
+    fontWeight: '700' as const,
+  },
+  aiChatButton: {
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#667EEA',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  aiChatGradient: {
+    padding: 16,
+    borderRadius: 16,
+  },
+  aiChatContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  aiChatLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
     flex: 1,
   },
-  title: {
+  sparkleIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aiChatTextContainer: {
+    flex: 1,
+    gap: 2,
+  },
+  aiChatText: {
     fontSize: 15,
     fontWeight: '600' as const,
-    marginBottom: 2,
+    color: '#FFFFFF',
+    lineHeight: 20,
   },
-  subtitle: {
+  aiChatSubtext: {
     fontSize: 12,
     fontWeight: '400' as const,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  recipeButton: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  recipeGradient: {
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  recipeButtonText: {
+    fontSize: 13,
+    fontWeight: '500' as const,
   },
   modalOverlay: {
     flex: 1,
