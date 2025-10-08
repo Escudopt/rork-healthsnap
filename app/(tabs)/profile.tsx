@@ -12,9 +12,10 @@ import {
   Modal,
   Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Save, Activity, Target, Scale, Ruler, TrendingUp, CheckCircle, Trash2, AlertTriangle, History, X, Info } from 'lucide-react-native';
+import { Save, Activity, Target, Scale, Ruler, TrendingUp, CheckCircle, Trash2, AlertTriangle, History, X, Info, Camera } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
@@ -75,24 +76,24 @@ export default function ProfileScreen() {
       flex: 1,
     },
     scrollContent: {
-      paddingBottom: 120,
+      paddingBottom: 100,
     },
     header: {
       paddingHorizontal: 20,
-      paddingTop: 8,
-      paddingBottom: 16,
+      paddingTop: 4,
+      paddingBottom: 12,
     },
     headerTop: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      marginBottom: 24,
+      marginBottom: 16,
     },
     headerLeft: {
       flex: 1,
     },
     greeting: {
-      fontSize: 34,
+      fontSize: 28,
       fontWeight: '700' as const,
       marginBottom: 2,
       letterSpacing: -0.4,
@@ -103,10 +104,10 @@ export default function ProfileScreen() {
       }),
     },
     date: {
-      fontSize: 17,
+      fontSize: 15,
       fontWeight: '400' as const,
       textTransform: 'capitalize' as const,
-      lineHeight: 22,
+      lineHeight: 20,
       opacity: 0.6,
     },
     headerButtons: {
@@ -128,18 +129,15 @@ export default function ProfileScreen() {
       fontSize: 14,
     },
     formCard: {
-      padding: 24,
-      marginBottom: 20,
+      padding: 20,
+      marginBottom: 16,
     },
-    formTitle: {
-      fontSize: 20,
-      fontWeight: 'bold',
-      color: colors.text,
-      marginBottom: 20,
-      textAlign: 'center',
+    profilePhotoEditContainer: {
+      alignItems: 'center',
+      marginBottom: 16,
     },
     inputGroup: {
-      marginBottom: 20,
+      marginBottom: 14,
     },
     inputLabel: {
       fontSize: 16,
@@ -239,28 +237,67 @@ export default function ProfileScreen() {
       marginLeft: 8,
     },
     profileCard: {
-      padding: 24,
+      padding: 20,
       alignItems: 'center',
-      marginBottom: 20,
+      marginBottom: 16,
     },
     profilePhoto: {
-      width: 100,
-      height: 100,
-      borderRadius: 50,
-      marginBottom: 16,
+      width: 90,
+      height: 90,
+      borderRadius: 45,
+      marginBottom: 12,
       borderWidth: 3,
       borderColor: colors.primary,
     },
+    profilePhotoContainer: {
+      width: 90,
+      height: 90,
+      borderRadius: 45,
+      marginBottom: 12,
+      position: 'relative' as const,
+    },
+    profilePhotoPlaceholder: {
+      width: 90,
+      height: 90,
+      borderRadius: 45,
+      justifyContent: 'center',
+      alignItems: 'center',
+      overflow: 'hidden',
+      borderWidth: 3,
+      borderColor: colors.primary,
+    },
+    cameraIconContainer: {
+      position: 'absolute' as const,
+      bottom: 0,
+      right: 0,
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      overflow: 'hidden',
+      borderWidth: 2,
+      borderColor: colors.surface,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+      elevation: 4,
+    },
+    cameraIconGradient: {
+      width: '100%',
+      height: '100%',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
     profileName: {
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: 'bold',
       color: colors.text,
-      marginBottom: 8,
+      marginBottom: 6,
     },
     profileDetails: {
-      fontSize: 16,
+      fontSize: 15,
       color: colors.textSecondary,
-      marginBottom: 8,
+      marginBottom: 6,
     },
     profileGoal: {
       fontSize: 14,
@@ -270,23 +307,23 @@ export default function ProfileScreen() {
     summaryCards: {
       flexDirection: 'row',
       paddingHorizontal: 20,
-      gap: 12,
-      marginBottom: 16,
+      gap: 10,
+      marginBottom: 12,
     },
     summaryCardsColumn: {
       paddingHorizontal: 20,
-      gap: 16,
-      marginBottom: 16,
+      gap: 12,
+      marginBottom: 12,
     },
     widgetGrid: {
       paddingHorizontal: 20,
-      gap: 16,
-      marginBottom: 16,
+      gap: 12,
+      marginBottom: 12,
     },
     summaryCard: {
       flex: 1,
-      padding: 18,
-      borderRadius: 16,
+      padding: 14,
+      borderRadius: 14,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: isDark ? 0.3 : 0.08,
@@ -296,8 +333,8 @@ export default function ProfileScreen() {
       borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.05)',
     },
     fullWidthCard: {
-      padding: 18,
-      borderRadius: 16,
+      padding: 14,
+      borderRadius: 14,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: isDark ? 0.3 : 0.08,
@@ -746,6 +783,67 @@ export default function ProfileScreen() {
     }
   };
 
+  const pickImage = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (permissionResult.granted === false) {
+        Alert.alert('Permissão Necessária', 'É necessário permitir acesso à galeria de fotos.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setFormData({ ...formData, profilePhoto: result.assets[0].uri });
+      }
+    } catch (error) {
+      console.error('❌ Error picking image:', error);
+      Alert.alert('Erro', 'Não foi possível selecionar a imagem.');
+    }
+  };
+
+  const takePhoto = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      
+      if (permissionResult.granted === false) {
+        Alert.alert('Permissão Necessária', 'É necessário permitir acesso à câmera.');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setFormData({ ...formData, profilePhoto: result.assets[0].uri });
+      }
+    } catch (error) {
+      console.error('❌ Error taking photo:', error);
+      Alert.alert('Erro', 'Não foi possível tirar a foto.');
+    }
+  };
+
+  const handleProfilePhotoPress = () => {
+    Alert.alert(
+      'Foto de Perfil',
+      'Escolha uma opção',
+      [
+        { text: 'Tirar Foto', onPress: takePhoto },
+        { text: 'Escolher da Galeria', onPress: pickImage },
+        { text: 'Cancelar', style: 'cancel' }
+      ]
+    );
+  };
+
   const handleSave = async () => {
     if (!formData.name.trim()) {
       Alert.alert('Erro', 'Por favor, insira seu nome.');
@@ -982,7 +1080,40 @@ export default function ProfileScreen() {
 
           {isEditing ? (
             <BlurCard variant="premium" style={styles.formCard}>
-              <Text style={styles.formTitle}>Informações Pessoais</Text>
+              <View style={styles.profilePhotoEditContainer}>
+                <TouchableOpacity 
+                  style={styles.profilePhotoContainer}
+                  onPress={handleProfilePhotoPress}
+                  activeOpacity={0.8}
+                >
+                  {formData.profilePhoto ? (
+                    <Image 
+                      source={{ uri: formData.profilePhoto }} 
+                      style={styles.profilePhoto}
+                    />
+                  ) : (
+                    <View style={styles.profilePhotoPlaceholder}>
+                      <LinearGradient
+                        colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={StyleSheet.absoluteFillObject}
+                      />
+                      <Save color="white" size={32} strokeWidth={2} />
+                    </View>
+                  )}
+                  <View style={styles.cameraIconContainer}>
+                    <LinearGradient
+                      colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.cameraIconGradient}
+                    >
+                      <Camera color="white" size={14} strokeWidth={2.5} />
+                    </LinearGradient>
+                  </View>
+                </TouchableOpacity>
+              </View>
               
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Nome</Text>
