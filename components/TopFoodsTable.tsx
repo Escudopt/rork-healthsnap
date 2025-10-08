@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, View, ScrollView, Platform } from 'react-native';
+import { StyleSheet, Text, View, Platform } from 'react-native';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme } from '@/providers/ThemeProvider';
-import { TrendingUp, Award } from 'lucide-react-native';
+import { TrendingUp } from 'lucide-react-native';
 
 interface FoodFrequency {
   name: string;
@@ -38,7 +38,7 @@ export function TopFoodsTable() {
 
     return Array.from(foodMap.values())
       .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
+      .slice(0, 5);
   }, [meals]);
 
   if (topFoods.length === 0) {
@@ -51,103 +51,59 @@ export function TopFoodsTable() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerIcon}>
-          <TrendingUp color={colors.primary} size={18} strokeWidth={2} />
+          <TrendingUp color={colors.primary} size={16} strokeWidth={2} />
         </View>
         <Text style={[styles.title, { color: colors.text }]}>
-          Alimentos Mais Ingeridos
+          Top 5 Alimentos
         </Text>
       </View>
 
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <View style={styles.table}>
-          <View style={[styles.tableHeader, { backgroundColor: colors.surfaceSecondary }]}>
-            <View style={styles.rankColumn}>
-              <Text style={[styles.headerText, { color: colors.textSecondary }]}>#</Text>
-            </View>
-            <View style={styles.nameColumn}>
-              <Text style={[styles.headerText, { color: colors.textSecondary }]}>Alimento</Text>
-            </View>
-            <View style={styles.countColumn}>
-              <Text style={[styles.headerText, { color: colors.textSecondary }]}>Vezes</Text>
-            </View>
-            <View style={styles.caloriesColumn}>
-              <Text style={[styles.headerText, { color: colors.textSecondary }]}>Calorias Médias</Text>
-            </View>
-            <View style={styles.totalColumn}>
-              <Text style={[styles.headerText, { color: colors.textSecondary }]}>Total</Text>
-            </View>
-          </View>
-
-          {topFoods.map((food, index) => (
-            <View 
-              key={food.name} 
-              style={[
-                styles.tableRow,
-                { 
-                  backgroundColor: index % 2 === 0 
-                    ? colors.surface 
-                    : colors.surfaceElevated 
-                }
-              ]}
-            >
-              <View style={styles.rankColumn}>
-                {index < 3 ? (
-                  <View style={[
-                    styles.medalBadge,
-                    { backgroundColor: index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32' }
-                  ]}>
-                    <Award color="white" size={12} strokeWidth={2.5} />
-                  </View>
-                ) : (
-                  <Text style={[styles.rankText, { color: colors.textSecondary }]}>
+      <View style={styles.compactList}>
+        {topFoods.map((food, index) => (
+          <View 
+            key={food.name} 
+            style={[
+              styles.compactRow,
+              { borderBottomColor: colors.surfaceSecondary }
+            ]}
+          >
+            <View style={styles.compactLeft}>
+              {index < 3 ? (
+                <View style={[
+                  styles.compactMedal,
+                  { backgroundColor: index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32' }
+                ]}>
+                  <Text style={styles.compactMedalText}>{index + 1}</Text>
+                </View>
+              ) : (
+                <View style={[styles.compactRank, { backgroundColor: colors.surfaceSecondary }]}>
+                  <Text style={[styles.compactRankText, { color: colors.textSecondary }]}>
                     {index + 1}
                   </Text>
-                )}
-              </View>
-              <View style={styles.nameColumn}>
+                </View>
+              )}
+              <View style={styles.compactInfo}>
                 <Text 
-                  style={[styles.nameText, { color: colors.text }]}
-                  numberOfLines={2}
+                  style={[styles.compactName, { color: colors.text }]}
+                  numberOfLines={1}
                 >
                   {food.name}
                 </Text>
-              </View>
-              <View style={styles.countColumn}>
-                <View style={[styles.countBadge, { backgroundColor: colors.primary + '15' }]}>
-                  <Text style={[styles.countText, { color: colors.primary }]}>
-                    {food.count}x
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.caloriesColumn}>
-                <Text style={[styles.caloriesText, { color: colors.text }]}>
-                  {Math.round(food.avgCalories)}
-                </Text>
-                <Text style={[styles.unitText, { color: colors.textSecondary }]}>
-                  kcal
-                </Text>
-              </View>
-              <View style={styles.totalColumn}>
-                <Text style={[styles.totalText, { color: colors.text }]}>
-                  {Math.round(food.totalCalories)}
-                </Text>
-                <Text style={[styles.unitText, { color: colors.textSecondary }]}>
-                  kcal
+                <Text style={[styles.compactStats, { color: colors.textSecondary }]}>
+                  {food.count}x • {Math.round(food.avgCalories)} kcal
                 </Text>
               </View>
             </View>
-          ))}
-        </View>
-      </ScrollView>
-
-      <View style={[styles.footer, { backgroundColor: colors.surfaceSecondary }]}>
-        <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-          Mostrando os {topFoods.length} alimentos mais consumidos
-        </Text>
+            <View style={styles.compactRight}>
+              <Text style={[styles.compactTotal, { color: colors.text }]}>
+                {Math.round(food.totalCalories)}
+              </Text>
+              <Text style={[styles.compactUnit, { color: colors.textSecondary }]}>
+                kcal
+              </Text>
+            </View>
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -171,22 +127,22 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    gap: 8,
+    borderBottomWidth: 0.5,
+    borderBottomColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.04)',
   },
   headerIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: colors.primary + '15',
     justifyContent: 'center',
     alignItems: 'center',
   },
   title: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600' as const,
     letterSpacing: -0.2,
     ...Platform.select({
@@ -195,107 +151,70 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
       },
     }),
   },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  compactList: {
+    paddingVertical: 4,
   },
-  table: {
-    minWidth: 600,
-  },
-  tableHeader: {
+  compactRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
     paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 4,
+    borderBottomWidth: 0.5,
   },
-  tableRow: {
+  compactLeft: {
     flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 2,
     alignItems: 'center',
-  },
-  rankColumn: {
-    width: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  nameColumn: {
+    gap: 10,
     flex: 1,
-    minWidth: 180,
-    paddingHorizontal: 8,
   },
-  countColumn: {
-    width: 70,
-    alignItems: 'center',
-  },
-  caloriesColumn: {
-    width: 100,
-    alignItems: 'center',
-  },
-  totalColumn: {
-    width: 100,
-    alignItems: 'center',
-  },
-  headerText: {
-    fontSize: 11,
-    fontWeight: '600' as const,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 0.5,
-  },
-  medalBadge: {
+  compactMedal: {
     width: 24,
     height: 24,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  rankText: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-  },
-  nameText: {
-    fontSize: 14,
-    fontWeight: '500' as const,
-    lineHeight: 18,
-  },
-  countBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  countText: {
-    fontSize: 13,
-    fontWeight: '600' as const,
-  },
-  caloriesText: {
-    fontSize: 15,
-    fontWeight: '600' as const,
-    marginBottom: 2,
-  },
-  totalText: {
-    fontSize: 15,
-    fontWeight: '700' as const,
-    marginBottom: 2,
-  },
-  unitText: {
-    fontSize: 10,
-    fontWeight: '500' as const,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 0.3,
-  },
-  footer: {
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderTopWidth: 1,
-    borderTopColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
-  },
-  footerText: {
+  compactMedalText: {
+    color: 'white',
     fontSize: 11,
+    fontWeight: '700' as const,
+  },
+  compactRank: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  compactRankText: {
+    fontSize: 11,
+    fontWeight: '600' as const,
+  },
+  compactInfo: {
+    flex: 1,
+  },
+  compactName: {
+    fontSize: 13,
     fontWeight: '500' as const,
-    textAlign: 'center' as const,
-    fontStyle: 'italic' as const,
+    marginBottom: 2,
+    letterSpacing: -0.1,
+  },
+  compactStats: {
+    fontSize: 11,
+    fontWeight: '400' as const,
+  },
+  compactRight: {
+    alignItems: 'flex-end',
+  },
+  compactTotal: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    letterSpacing: -0.3,
+  },
+  compactUnit: {
+    fontSize: 10,
+    fontWeight: '400' as const,
+    marginTop: 1,
   },
 });
