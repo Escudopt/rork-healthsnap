@@ -876,7 +876,7 @@ export default function HomeScreen() {
               >
                 <View style={styles.sourcesButtonContent}>
                   <View style={[styles.sourcesButtonIcon, { backgroundColor: colors.primary + '15' }]}>
-                    <Info color={colors.primary} size={18} strokeWidth={2} />
+                    <Info color={colors.primary} size={16} strokeWidth={2.5} />
                   </View>
                   <View style={styles.sourcesButtonText}>
                     <Text style={[styles.sourcesButtonTitle, { color: colors.text }]}>Fontes & Referências</Text>
