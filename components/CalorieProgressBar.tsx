@@ -70,15 +70,13 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
   
   return (
     <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
-      <LinearGradient
-        colors={isDark ? ['#1A1D26', '#161821'] : ['#FFFFFF', '#FAFBFF']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+      <View
         style={[styles.card, {
-          shadowColor: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 122, 255, 0.15)',
-          shadowOpacity: isDark ? 0.4 : 0.12,
-          borderWidth: isDark ? 1 : 1,
-          borderColor: isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0, 122, 255, 0.08)',
+          backgroundColor: isDark ? 'rgba(22, 24, 33, 0.75)' : 'rgba(255, 255, 255, 0.85)',
+          shadowColor: isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(0, 122, 255, 0.2)',
+          shadowOpacity: isDark ? 0.5 : 0.15,
+          borderWidth: 1,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 122, 255, 0.12)',
         }]}
       >
         <View style={styles.content}>
@@ -184,7 +182,7 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
             )}
           </View>
         </View>
-      </LinearGradient>
+      </View>
     </Animated.View>
   );
 }
@@ -194,14 +192,15 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   card: {
-    borderRadius: 20,
-    padding: 18,
+    borderRadius: 24,
+    padding: 20,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowRadius: 20,
+    elevation: 10,
+    overflow: 'hidden' as const,
   },
   content: {
     flexDirection: 'row' as const,
