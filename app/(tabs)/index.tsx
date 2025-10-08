@@ -698,9 +698,28 @@ export default function HomeScreen() {
           ]}>
             <View style={styles.headerTop}>
               <View style={styles.headerLeft}>
-                <Text style={[styles.greeting, { color: colors.text }]}>
-                  Resumo
-                </Text>
+                <View style={styles.greetingContainer}>
+                  {userProfile?.profilePhoto ? (
+                    <Image 
+                      source={{ uri: userProfile.profilePhoto }} 
+                      style={styles.greetingProfileImage}
+                    />
+                  ) : (
+                    <View style={[styles.greetingProfilePlaceholder, { backgroundColor: colors.surfaceElevated }]}>
+                      <User color={colors.textSecondary} size={24} strokeWidth={2} />
+                    </View>
+                  )}
+                  <View style={styles.greetingTextContainer}>
+                    <Text style={[styles.greeting, { color: colors.text }]}>
+                      Resumo
+                    </Text>
+                    {userProfile?.name && (
+                      <Text style={[styles.userName, { color: colors.textSecondary }]}>
+                        {userProfile.name}
+                      </Text>
+                    )}
+                  </View>
+                </View>
               </View>
               <View style={styles.headerButtons}>
                 <FloatingAIChat isHeaderButton={true} />
@@ -2142,6 +2161,17 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   greetingTextContainer: {
     flex: 1,
+  },
+  userName: {
+    fontSize: 15,
+    fontWeight: '500' as const,
+    marginTop: 2,
+    letterSpacing: -0.2,
+    ...Platform.select({
+      ios: {
+        fontFamily: 'System',
+      },
+    }),
   },
   motivationBadge: {
     marginTop: 8,
