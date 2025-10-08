@@ -188,7 +188,7 @@ export default function OnboardingScreen() {
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFillObject}
             />
-            <User color="white" size={40} strokeWidth={2} />
+            <User color="white" size={36} strokeWidth={2} />
           </View>
         )}
         <View style={styles.cameraIconContainer}>
@@ -300,7 +300,7 @@ export default function OnboardingScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.iconGradient}
         >
-          <Scale color="white" size={40} strokeWidth={2} />
+          <Scale color="white" size={36} strokeWidth={2} />
         </LinearGradient>
       </View>
       <Text style={[styles.stepTitle, { color: colors.text }]}>Medidas 📏</Text>
@@ -345,7 +345,7 @@ export default function OnboardingScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.iconGradient}
         >
-          <Activity color="white" size={40} strokeWidth={2} />
+          <Activity color="white" size={36} strokeWidth={2} />
         </LinearGradient>
       </View>
       <Text style={[styles.stepTitle, { color: colors.text }]}>Atividade 💪</Text>
@@ -398,7 +398,7 @@ export default function OnboardingScreen() {
           end={{ x: 1, y: 1 }}
           style={styles.iconGradient}
         >
-          <Sparkles color="white" size={40} strokeWidth={2} />
+          <Sparkles color="white" size={36} strokeWidth={2} />
         </LinearGradient>
       </View>
       <Text style={[styles.stepTitle, { color: colors.text }]}>Objetivo 🎯</Text>
@@ -629,14 +629,14 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 8,
-    paddingBottom: 16,
+    paddingTop: 4,
+    paddingBottom: 8,
     alignItems: 'center',
   },
   progressContainer: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   progressDot: {
     width: 50,
@@ -660,71 +660,71 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 120,
+    paddingBottom: 20,
     flexGrow: 1,
   },
   card: {
-    borderRadius: 30,
+    borderRadius: 24,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(0, 122, 255, 0.1)',
     shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.15,
-    shadowRadius: 30,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 8,
   },
   cardAndroid: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    padding: 20,
+    padding: 16,
   },
   cardInner: {
-    padding: 20,
+    padding: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
   stepContainer: {
     alignItems: 'center',
-    paddingBottom: 40,
+    paddingBottom: 16,
   },
   iconContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
     shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 6,
   },
   iconGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 35,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '800' as const,
     color: '#1A1A1C',
-    marginBottom: 6,
+    marginBottom: 4,
     textAlign: 'center' as const,
     letterSpacing: -0.5,
   },
   stepSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: 'rgba(60, 60, 67, 0.6)',
-    marginBottom: 20,
+    marginBottom: 16,
     textAlign: 'center' as const,
-    lineHeight: 20,
+    lineHeight: 18,
     fontWeight: '500' as const,
   },
   inputGroup: {
     width: '100%',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   row: {
     flexDirection: 'row',
@@ -735,27 +735,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600' as const,
     color: '#1A1A1C',
-    marginBottom: 8,
+    marginBottom: 6,
     letterSpacing: -0.2,
   },
   glassInputContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: 'rgba(0, 122, 255, 0.15)',
     overflow: 'hidden',
     shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   textInput: {
-    padding: 14,
-    fontSize: 16,
+    padding: 12,
+    fontSize: 15,
     color: '#1A1A1C',
     fontWeight: '500' as const,
   },
@@ -767,24 +767,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 14,
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 8,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(0, 122, 255, 0.15)',
     overflow: 'hidden',
     shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   genderButtonActive: {
     borderColor: '#007AFF',
     borderWidth: 2,
   },
   genderButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600' as const,
     color: 'rgba(60, 60, 67, 0.6)',
   },
@@ -794,20 +794,20 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     width: '100%',
-    gap: 12,
+    gap: 8,
   },
   optionButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 14,
-    padding: 14,
+    padding: 12,
     borderWidth: 1,
     borderColor: 'rgba(0, 122, 255, 0.15)',
     overflow: 'hidden',
     shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   optionButtonActive: {
     borderColor: '#007AFF',
@@ -817,10 +817,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600' as const,
     color: '#1A1A1C',
-    marginBottom: 2,
+    marginBottom: 1,
     letterSpacing: -0.2,
   },
   optionTitleActive: {
@@ -828,7 +828,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
   },
   optionDescription: {
-    fontSize: 13,
+    fontSize: 12,
     color: 'rgba(60, 60, 67, 0.6)',
     fontWeight: '500' as const,
   },
@@ -840,14 +840,14 @@ const styles = StyleSheet.create({
   },
   footerBlur: {
     paddingHorizontal: 24,
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 8,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0, 122, 255, 0.1)',
   },
   footerAndroid: {
     paddingHorizontal: 24,
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderTopWidth: 1,
@@ -861,14 +861,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 122, 255, 0.08)',
     borderRadius: 14,
-    paddingVertical: 14,
+    paddingVertical: 12,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(0, 122, 255, 0.2)',
   },
   backButtonText: {
     color: '#007AFF',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '600' as const,
     letterSpacing: -0.2,
   },
@@ -886,7 +886,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonGradient: {
-    paddingVertical: 14,
+    paddingVertical: 12,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -894,7 +894,7 @@ const styles = StyleSheet.create({
   },
   nextButtonText: {
     color: 'white',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700' as const,
     letterSpacing: -0.2,
   },
@@ -913,31 +913,31 @@ const styles = StyleSheet.create({
   },
   completeButtonText: {
     color: 'white',
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700' as const,
     letterSpacing: -0.2,
   },
   profilePhotoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 16,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    marginBottom: 12,
     position: 'relative' as const,
     shadowColor: '#007AFF',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 6,
   },
   profilePhoto: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
   },
   profilePhotoPlaceholder: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
