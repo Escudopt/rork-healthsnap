@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Camera } from 'lucide-react-native';
+import { Camera, Edit3 } from 'lucide-react-native';
 import Svg, { Circle } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -11,16 +11,18 @@ interface CalorieProgressBarProps {
   dailyGoal: number;
   onGoalPress?: () => void;
   onCameraPress?: () => void;
+  onManualPress?: () => void;
 }
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, onCameraPress }: CalorieProgressBarProps) {
+export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, onCameraPress, onManualPress }: CalorieProgressBarProps) {
   const { colors, isDark } = useTheme();
   const progressAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const cameraButtonScale = useRef(new Animated.Value(1)).current;
+  const manualButtonScale = useRef(new Animated.Value(1)).current;
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
@@ -111,8 +113,50 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
           </View>
           
           <View style={styles.rightContent}>
-            <Animated.View style={{ transform: [{ scale: Animated.multiply(pulseAnim, cameraButtonScale) }] }}>
-              <TouchableOpacity 
+            <View style={styles.buttonsRow}>
+              <Animated.View style={{ transform: [{ scale: manualButtonScale }] }}>
+                <TouchableOpacity 
+                  onPress={async () => {
+                    if (isAnalyzing || !onManualPress) return;
+                    
+                    if (Platform.OS !== 'web') {
+                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                    
+                    Animated.sequence([
+                      Animated.timing(manualButtonScale, {
+                        toValue: 0.85,
+                        duration: 200,
+                        useNativeDriver: true,
+                      }),
+                      Animated.timing(manualButtonScale, {
+                        toValue: 1,
+                        duration: 200,
+                        useNativeDriver: true,
+                      }),
+                    ]).start();
+                    
+                    onManualPress();
+                  }} 
+                  style={[styles.manualButton, {
+                    shadowColor: colors.primary,
+                  }]}
+                  activeOpacity={0.7}
+                  disabled={isAnalyzing}
+                >
+                  <LinearGradient
+                    colors={[colors.surfaceElevated, colors.surfaceSecondary]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.manualButtonGradient}
+                  >
+                    <Edit3 color={colors.primary} size={20} strokeWidth={2} />
+                  </LinearGradient>
+                </TouchableOpacity>
+              </Animated.View>
+              
+              <Animated.View style={{ transform: [{ scale: Animated.multiply(pulseAnim, cameraButtonScale) }] }}>
+                <TouchableOpacity 
                 onPress={async () => {
                   if (isAnalyzing || !onCameraPress) return;
                   
@@ -170,7 +214,8 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                   )}
                 </LinearGradient>
               </TouchableOpacity>
-            </Animated.View>
+              </Animated.View>
+            </View>
             {isAnalyzing ? (
               <Text style={[styles.analyzingText, { color: colors.primary }]}>
                 🍽️ A analisar refeição...
@@ -233,6 +278,27 @@ const styles = StyleSheet.create({
   rightContent: {
     alignItems: 'flex-end' as const,
     gap: 8,
+  },
+  buttonsRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 10,
+  },
+  manualButton: {
+    borderRadius: 24,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  manualButtonGradient: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   cameraButton: {
     borderRadius: 32,

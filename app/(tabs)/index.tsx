@@ -759,6 +759,7 @@ export default function HomeScreen() {
                 dailyGoal={dailyGoal}
                 onGoalPress={handleGoalPress}
                 onCameraPress={handleCameraPress}
+                onManualPress={() => setShowManualMealModal(true)}
               />
               
 
