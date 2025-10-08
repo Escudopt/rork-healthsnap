@@ -19,6 +19,7 @@ import { router } from 'expo-router';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { UserProfile } from '@/types/food';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '@/providers/ThemeProvider';
 
 const ONBOARDING_COMPLETE_KEY = 'onboarding_complete';
 
@@ -38,6 +39,7 @@ const goals = [
 
 export default function OnboardingScreen() {
   const { updateUserProfile } = useCalorieTracker();
+  const { colors, isDark } = useTheme();
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   
@@ -88,11 +90,14 @@ export default function OnboardingScreen() {
   const handleComplete = async () => {
     try {
       setLoading(true);
+      console.log('💾 Saving user profile:', formData);
       await updateUserProfile(formData);
+      console.log('✅ Profile saved successfully');
       await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
+      console.log('✅ Onboarding marked as complete');
       router.replace('/(tabs)');
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      console.error('❌ Error completing onboarding:', error);
       Alert.alert('Erro', 'Erro ao salvar perfil. Tente novamente.');
     } finally {
       setLoading(false);
@@ -111,43 +116,44 @@ export default function OnboardingScreen() {
           <User color="white" size={40} strokeWidth={2} />
         </LinearGradient>
       </View>
-      <Text style={styles.stepTitle}>Bem-vindo ao HealthSnap! ✨</Text>
-      <Text style={styles.stepSubtitle}>Vamos começar com suas informações básicas</Text>
+      <Text style={[styles.stepTitle, { color: colors.text }]}>Bem-vindo! ✨</Text>
+      <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>Informações básicas</Text>
       
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Nome</Text>
-        <View style={styles.glassInputContainer}>
+        <Text style={[styles.inputLabel, { color: colors.text }]}>Nome</Text>
+        <View style={[styles.glassInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, { color: colors.text }]}
             value={formData.name}
             onChangeText={(text) => setFormData({ ...formData, name: text })}
             placeholder="Seu nome"
-            placeholderTextColor="rgba(60, 60, 67, 0.3)"
+            placeholderTextColor={colors.textTertiary}
             autoFocus
           />
         </View>
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Idade</Text>
-        <View style={styles.glassInputContainer}>
+        <Text style={[styles.inputLabel, { color: colors.text }]}>Idade</Text>
+        <View style={[styles.glassInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, { color: colors.text }]}
             value={formData.age.toString()}
             onChangeText={(text) => setFormData({ ...formData, age: parseInt(text) || 0 })}
             placeholder="25"
-            placeholderTextColor="rgba(60, 60, 67, 0.3)"
+            placeholderTextColor={colors.textTertiary}
             keyboardType="numeric"
           />
         </View>
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Sexo</Text>
+        <Text style={[styles.inputLabel, { color: colors.text }]}>Sexo</Text>
         <View style={styles.genderContainer}>
           <TouchableOpacity
             style={[
               styles.genderButton,
+              { backgroundColor: colors.surface, borderColor: colors.border },
               formData.gender === 'male' && styles.genderButtonActive
             ]}
             onPress={() => setFormData({ ...formData, gender: 'male' })}
@@ -155,7 +161,7 @@ export default function OnboardingScreen() {
           >
             {formData.gender === 'male' && (
               <LinearGradient
-                colors={['#007AFF', '#5AC8FA']}
+                colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFillObject}
@@ -163,12 +169,14 @@ export default function OnboardingScreen() {
             )}
             <Text style={[
               styles.genderButtonText,
+              { color: colors.textSecondary },
               formData.gender === 'male' && styles.genderButtonTextActive
             ]}>Masculino</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
               styles.genderButton,
+              { backgroundColor: colors.surface, borderColor: colors.border },
               formData.gender === 'female' && styles.genderButtonActive
             ]}
             onPress={() => setFormData({ ...formData, gender: 'female' })}
@@ -176,7 +184,7 @@ export default function OnboardingScreen() {
           >
             {formData.gender === 'female' && (
               <LinearGradient
-                colors={['#007AFF', '#5AC8FA']}
+                colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFillObject}
@@ -184,6 +192,7 @@ export default function OnboardingScreen() {
             )}
             <Text style={[
               styles.genderButtonText,
+              { color: colors.textSecondary },
               formData.gender === 'female' && styles.genderButtonTextActive
             ]}>Feminino</Text>
           </TouchableOpacity>
@@ -204,32 +213,32 @@ export default function OnboardingScreen() {
           <Scale color="white" size={40} strokeWidth={2} />
         </LinearGradient>
       </View>
-      <Text style={styles.stepTitle}>Medidas Corporais 📏</Text>
-      <Text style={styles.stepSubtitle}>Precisamos dessas informações para calcular suas metas</Text>
+      <Text style={[styles.stepTitle, { color: colors.text }]}>Medidas 📏</Text>
+      <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>Para calcular suas metas</Text>
       
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Peso (kg)</Text>
-        <View style={styles.glassInputContainer}>
+        <Text style={[styles.inputLabel, { color: colors.text }]}>Peso (kg)</Text>
+        <View style={[styles.glassInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, { color: colors.text }]}
             value={formData.weight.toString()}
             onChangeText={(text) => setFormData({ ...formData, weight: parseFloat(text) || 0 })}
             placeholder="70"
-            placeholderTextColor="rgba(60, 60, 67, 0.3)"
+            placeholderTextColor={colors.textTertiary}
             keyboardType="numeric"
           />
         </View>
       </View>
 
       <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Altura (cm)</Text>
-        <View style={styles.glassInputContainer}>
+        <Text style={[styles.inputLabel, { color: colors.text }]}>Altura (cm)</Text>
+        <View style={[styles.glassInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <TextInput
-            style={styles.textInput}
+            style={[styles.textInput, { color: colors.text }]}
             value={formData.height.toString()}
             onChangeText={(text) => setFormData({ ...formData, height: parseInt(text) || 0 })}
             placeholder="170"
-            placeholderTextColor="rgba(60, 60, 67, 0.3)"
+            placeholderTextColor={colors.textTertiary}
             keyboardType="numeric"
           />
         </View>
@@ -249,8 +258,8 @@ export default function OnboardingScreen() {
           <Activity color="white" size={40} strokeWidth={2} />
         </LinearGradient>
       </View>
-      <Text style={styles.stepTitle}>Nível de Atividade 💪</Text>
-      <Text style={styles.stepSubtitle}>Com que frequência você se exercita?</Text>
+      <Text style={[styles.stepTitle, { color: colors.text }]}>Atividade 💪</Text>
+      <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>Frequência de exercícios</Text>
       
       <View style={styles.optionsContainer}>
         {activityLevels.map((level) => (
@@ -258,6 +267,7 @@ export default function OnboardingScreen() {
             key={level.key}
             style={[
               styles.optionButton,
+              { backgroundColor: colors.surface, borderColor: colors.border },
               formData.activityLevel === level.key && styles.optionButtonActive
             ]}
             onPress={() => setFormData({ ...formData, activityLevel: level.key as any })}
@@ -265,7 +275,7 @@ export default function OnboardingScreen() {
           >
             {formData.activityLevel === level.key && (
               <LinearGradient
-                colors={['rgba(0, 122, 255, 0.1)', 'rgba(90, 200, 250, 0.1)']}
+                colors={isDark ? ['rgba(59, 130, 246, 0.15)', 'rgba(96, 165, 250, 0.15)'] : ['rgba(0, 122, 255, 0.1)', 'rgba(90, 200, 250, 0.1)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFillObject}
@@ -274,11 +284,13 @@ export default function OnboardingScreen() {
             <View style={styles.optionContent}>
               <Text style={[
                 styles.optionTitle,
-                formData.activityLevel === level.key && styles.optionTitleActive
+                { color: colors.text },
+                formData.activityLevel === level.key && { color: colors.primary }
               ]}>{level.label}</Text>
               <Text style={[
                 styles.optionDescription,
-                formData.activityLevel === level.key && styles.optionDescriptionActive
+                { color: colors.textSecondary },
+                formData.activityLevel === level.key && { color: colors.primary }
               ]}>{level.description}</Text>
             </View>
           </TouchableOpacity>
@@ -299,8 +311,8 @@ export default function OnboardingScreen() {
           <Sparkles color="white" size={40} strokeWidth={2} />
         </LinearGradient>
       </View>
-      <Text style={styles.stepTitle}>Seu Objetivo 🎯</Text>
-      <Text style={styles.stepSubtitle}>O que você deseja alcançar?</Text>
+      <Text style={[styles.stepTitle, { color: colors.text }]}>Objetivo 🎯</Text>
+      <Text style={[styles.stepSubtitle, { color: colors.textSecondary }]}>O que deseja alcançar?</Text>
       
       <View style={styles.optionsContainer}>
         {goals.map((goal) => (
@@ -308,6 +320,7 @@ export default function OnboardingScreen() {
             key={goal.key}
             style={[
               styles.optionButton,
+              { backgroundColor: colors.surface, borderColor: colors.border },
               formData.goal === goal.key && styles.optionButtonActive
             ]}
             onPress={() => setFormData({ ...formData, goal: goal.key as any })}
@@ -315,7 +328,7 @@ export default function OnboardingScreen() {
           >
             {formData.goal === goal.key && (
               <LinearGradient
-                colors={['rgba(0, 122, 255, 0.1)', 'rgba(90, 200, 250, 0.1)']}
+                colors={isDark ? ['rgba(59, 130, 246, 0.15)', 'rgba(96, 165, 250, 0.15)'] : ['rgba(0, 122, 255, 0.1)', 'rgba(90, 200, 250, 0.1)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
                 style={StyleSheet.absoluteFillObject}
@@ -324,11 +337,13 @@ export default function OnboardingScreen() {
             <View style={styles.optionContent}>
               <Text style={[
                 styles.optionTitle,
-                formData.goal === goal.key && styles.optionTitleActive
+                { color: colors.text },
+                formData.goal === goal.key && { color: colors.primary }
               ]}>{goal.label}</Text>
               <Text style={[
                 styles.optionDescription,
-                formData.goal === goal.key && styles.optionDescriptionActive
+                { color: colors.textSecondary },
+                formData.goal === goal.key && { color: colors.primary }
               ]}>{goal.description}</Text>
             </View>
           </TouchableOpacity>
@@ -340,13 +355,13 @@ export default function OnboardingScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#EAF4FF', '#D4E9FF', '#FFFFFF']}
+        colors={isDark ? ['#0B1220', '#000000'] : ['#EAF4FF', '#D4E9FF', '#FFFFFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
         style={StyleSheet.absoluteFillObject}
       />
       
-      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor="transparent" translucent />
       
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <KeyboardAvoidingView 
@@ -360,12 +375,13 @@ export default function OnboardingScreen() {
                   key={step}
                   style={[
                     styles.progressDot,
+                    { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(0, 122, 255, 0.15)' },
                     currentStep >= step && styles.progressDotActive
                   ]}
                 >
                   {currentStep >= step && (
                     <LinearGradient
-                      colors={['#007AFF', '#5AC8FA']}
+                      colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
                       style={StyleSheet.absoluteFillObject}
@@ -374,7 +390,7 @@ export default function OnboardingScreen() {
                 </View>
               ))}
             </View>
-            <Text style={styles.stepIndicator}>Passo {currentStep} de 4</Text>
+            <Text style={[styles.stepIndicator, { color: colors.primary }]}>Passo {currentStep} de 4</Text>
           </View>
 
           <ScrollView 
@@ -384,8 +400,8 @@ export default function OnboardingScreen() {
             keyboardShouldPersistTaps="handled"
           >
             {Platform.OS === 'ios' ? (
-              <BlurView intensity={20} tint="light" style={styles.card}>
-                <View style={styles.cardInner}>
+              <BlurView intensity={isDark ? 30 : 20} tint={isDark ? 'dark' : 'light'} style={styles.card}>
+                <View style={[styles.cardInner, { backgroundColor: isDark ? 'rgba(22, 24, 33, 0.4)' : 'rgba(255, 255, 255, 0.4)' }]}>
                   {currentStep === 1 && renderStep1()}
                   {currentStep === 2 && renderStep2()}
                   {currentStep === 3 && renderStep3()}
@@ -393,7 +409,7 @@ export default function OnboardingScreen() {
                 </View>
               </BlurView>
             ) : (
-              <View style={[styles.card, styles.cardAndroid]}>
+              <View style={[styles.card, styles.cardAndroid, { backgroundColor: colors.surface }]}>
                 {currentStep === 1 && renderStep1()}
                 {currentStep === 2 && renderStep2()}
                 {currentStep === 3 && renderStep3()}
@@ -404,15 +420,15 @@ export default function OnboardingScreen() {
 
           <View style={styles.footer}>
             {Platform.OS === 'ios' ? (
-              <BlurView intensity={30} tint="light" style={styles.footerBlur}>
+              <BlurView intensity={isDark ? 40 : 30} tint={isDark ? 'dark' : 'light'} style={[styles.footerBlur, { borderTopColor: colors.border }]}>
                 <View style={styles.buttonContainer}>
                   {currentStep > 1 && (
                     <TouchableOpacity
-                      style={styles.backButton}
+                      style={[styles.backButton, { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0, 122, 255, 0.08)', borderColor: colors.border }]}
                       onPress={handleBack}
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.backButtonText}>Voltar</Text>
+                      <Text style={[styles.backButtonText, { color: colors.primary }]}>Voltar</Text>
                     </TouchableOpacity>
                   )}
                   
@@ -423,7 +439,7 @@ export default function OnboardingScreen() {
                       activeOpacity={0.8}
                     >
                       <LinearGradient
-                        colors={['#007AFF', '#5AC8FA']}
+                        colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.buttonGradient}
@@ -439,7 +455,7 @@ export default function OnboardingScreen() {
                       activeOpacity={0.8}
                     >
                       <LinearGradient
-                        colors={['#34C759', '#30D158']}
+                        colors={isDark ? ['#10B981', '#059669'] : ['#34C759', '#30D158']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.buttonGradient}
@@ -454,15 +470,15 @@ export default function OnboardingScreen() {
                 </View>
               </BlurView>
             ) : (
-              <View style={styles.footerAndroid}>
+              <View style={[styles.footerAndroid, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
                 <View style={styles.buttonContainer}>
                   {currentStep > 1 && (
                     <TouchableOpacity
-                      style={styles.backButton}
+                      style={[styles.backButton, { backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0, 122, 255, 0.08)', borderColor: colors.border }]}
                       onPress={handleBack}
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.backButtonText}>Voltar</Text>
+                      <Text style={[styles.backButtonText, { color: colors.primary }]}>Voltar</Text>
                     </TouchableOpacity>
                   )}
                   
@@ -473,7 +489,7 @@ export default function OnboardingScreen() {
                       activeOpacity={0.8}
                     >
                       <LinearGradient
-                        colors={['#007AFF', '#5AC8FA']}
+                        colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.buttonGradient}
@@ -489,7 +505,7 @@ export default function OnboardingScreen() {
                       activeOpacity={0.8}
                     >
                       <LinearGradient
-                        colors={['#34C759', '#30D158']}
+                        colors={isDark ? ['#10B981', '#059669'] : ['#34C759', '#30D158']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.buttonGradient}
@@ -523,8 +539,8 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
+    paddingTop: 8,
+    paddingBottom: 16,
     alignItems: 'center',
   },
   progressContainer: {
@@ -534,8 +550,8 @@ const styles = StyleSheet.create({
   },
   progressDot: {
     width: 50,
-    height: 5,
-    borderRadius: 3,
+    height: 4,
+    borderRadius: 2,
     backgroundColor: 'rgba(0, 122, 255, 0.15)',
     overflow: 'hidden',
   },
@@ -554,7 +570,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 16,
   },
   card: {
     borderRadius: 30,
@@ -569,22 +585,22 @@ const styles = StyleSheet.create({
   },
   cardAndroid: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    padding: 28,
+    padding: 20,
   },
   cardInner: {
-    padding: 28,
+    padding: 20,
     backgroundColor: 'rgba(255, 255, 255, 0.4)',
   },
   stepContainer: {
     alignItems: 'center',
   },
   iconContainer: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 28,
+    marginBottom: 16,
     shadowColor: '#007AFF',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
@@ -594,35 +610,35 @@ const styles = StyleSheet.create({
   iconGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 45,
+    borderRadius: 35,
     justifyContent: 'center',
     alignItems: 'center',
   },
   stepTitle: {
-    fontSize: 30,
+    fontSize: 24,
     fontWeight: '800' as const,
     color: '#1A1A1C',
-    marginBottom: 10,
+    marginBottom: 6,
     textAlign: 'center' as const,
     letterSpacing: -0.5,
   },
   stepSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: 'rgba(60, 60, 67, 0.6)',
-    marginBottom: 36,
+    marginBottom: 20,
     textAlign: 'center' as const,
-    lineHeight: 24,
+    lineHeight: 20,
     fontWeight: '500' as const,
   },
   inputGroup: {
     width: '100%',
-    marginBottom: 20,
+    marginBottom: 12,
   },
   inputLabel: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600' as const,
     color: '#1A1A1C',
-    marginBottom: 10,
+    marginBottom: 8,
     letterSpacing: -0.2,
   },
   glassInputContainer: {
@@ -638,8 +654,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   textInput: {
-    padding: 18,
-    fontSize: 17,
+    padding: 14,
+    fontSize: 16,
     color: '#1A1A1C',
     fontWeight: '500' as const,
   },
@@ -650,8 +666,8 @@ const styles = StyleSheet.create({
   genderButton: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 14,
+    padding: 14,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(0, 122, 255, 0.15)',
@@ -681,8 +697,8 @@ const styles = StyleSheet.create({
   },
   optionButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: 16,
-    padding: 18,
+    borderRadius: 14,
+    padding: 14,
     borderWidth: 1,
     borderColor: 'rgba(0, 122, 255, 0.15)',
     overflow: 'hidden',
@@ -700,10 +716,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionTitle: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '600' as const,
     color: '#1A1A1C',
-    marginBottom: 4,
+    marginBottom: 2,
     letterSpacing: -0.2,
   },
   optionTitleActive: {
@@ -711,7 +727,7 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
   },
   optionDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: 'rgba(60, 60, 67, 0.6)',
     fontWeight: '500' as const,
   },
@@ -723,15 +739,15 @@ const styles = StyleSheet.create({
   },
   footerBlur: {
     paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 12,
+    paddingTop: 16,
+    paddingBottom: 8,
     borderTopWidth: 1,
     borderTopColor: 'rgba(0, 122, 255, 0.1)',
   },
   footerAndroid: {
     paddingHorizontal: 24,
-    paddingTop: 20,
-    paddingBottom: 12,
+    paddingTop: 16,
+    paddingBottom: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderTopWidth: 1,
     borderTopColor: 'rgba(0, 122, 255, 0.1)',
@@ -743,8 +759,8 @@ const styles = StyleSheet.create({
   backButton: {
     flex: 1,
     backgroundColor: 'rgba(0, 122, 255, 0.08)',
-    borderRadius: 16,
-    paddingVertical: 18,
+    borderRadius: 14,
+    paddingVertical: 14,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(0, 122, 255, 0.2)',
@@ -757,7 +773,7 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     flex: 2,
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'hidden',
     shadowColor: '#007AFF',
     shadowOffset: { width: 0, height: 8 },
@@ -769,7 +785,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   buttonGradient: {
-    paddingVertical: 18,
+    paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
@@ -783,7 +799,7 @@ const styles = StyleSheet.create({
   },
   completeButton: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'hidden',
     shadowColor: '#34C759',
     shadowOffset: { width: 0, height: 8 },
