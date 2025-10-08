@@ -698,30 +698,9 @@ export default function HomeScreen() {
           ]}>
             <View style={styles.headerTop}>
               <View style={styles.headerLeft}>
-                <View style={styles.greetingContainer}>
-                  {userProfile?.profilePhoto ? (
-                    <Image 
-                      source={{ uri: userProfile.profilePhoto }} 
-                      style={styles.greetingProfileImage}
-                    />
-                  ) : (
-                    <View style={[styles.greetingProfilePlaceholder, { backgroundColor: colors.surfaceElevated }]}>
-                      <User color={colors.textSecondary} size={20} strokeWidth={2} />
-                    </View>
-                  )}
-                  <View style={styles.greetingTextContainer}>
-                    <Text style={[styles.greeting, { color: colors.text }]}>
-                      {userProfile ? `Olá, ${userProfile.name}` : 'Resumo'}
-                    </Text>
-                    <Text style={[styles.date, { color: colors.textSecondary }]}>
-                      {userProfile ? `${userProfile.age} anos • ` : ''}{new Date().toLocaleDateString('pt-BR', { 
-                        weekday: 'long', 
-                        day: 'numeric', 
-                        month: 'long' 
-                      })} — continue assim 💪
-                    </Text>
-                  </View>
-                </View>
+                <Text style={[styles.greeting, { color: colors.text }]}>
+                  Resumo
+                </Text>
               </View>
               <View style={styles.headerButtons}>
                 <FloatingAIChat isHeaderButton={true} />
@@ -731,20 +710,6 @@ export default function HomeScreen() {
                   activeOpacity={0.6}
                 >
                   <Settings color={colors.textSecondary} size={16} strokeWidth={2} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => router.push('/profile')}
-                  style={[styles.headerProfileButton, { backgroundColor: colors.surfaceElevated }]}
-                  activeOpacity={0.6}
-                >
-                  {userProfile?.profilePhoto ? (
-                    <Image 
-                      source={{ uri: userProfile.profilePhoto }} 
-                      style={styles.headerProfileImage}
-                    />
-                  ) : (
-                    <User color={colors.textSecondary} size={16} strokeWidth={2} />
-                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -1437,9 +1402,8 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignSelf: 'center',
   },
   greeting: {
-    fontSize: 28,
+    fontSize: 34,
     fontWeight: '700' as const,
-    marginBottom: 2,
     letterSpacing: -0.5,
     ...Platform.select({
       ios: {
