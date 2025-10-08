@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity, Info } from 'lucide-react-native';
+import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity, Info, Utensils } from 'lucide-react-native';
 import { FloatingAIChat } from '@/components/FloatingAIChat';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -36,7 +36,7 @@ const { width: screenWidth } = Dimensions.get('window');
 
 
 export default function HomeScreen() {
-  const { meals, todayCalories, weeklyAverage, dailyGoal, isLoading, resetData, addManualCalories, setDailyGoal, userProfile, healthMetrics } = useCalorieTracker();
+  const { meals, todayCalories, weeklyAverage, dailyGoal, isLoading, resetData, addMeal, addManualCalories, setDailyGoal, userProfile, healthMetrics } = useCalorieTracker();
   const { colors, isDark, getTypographyStyle } = useTheme();
   const { t } = useLanguage();
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -52,6 +52,14 @@ export default function HomeScreen() {
   const [showManualModal, setShowManualModal] = useState(false);
   const [manualCalories, setManualCalories] = useState('');
   const [manualDescription, setManualDescription] = useState('');
+  const [showManualMealModal, setShowManualMealModal] = useState(false);
+  const [manualMealName, setManualMealName] = useState('');
+  const [manualMealCalories, setManualMealCalories] = useState('');
+  const [manualMealProtein, setManualMealProtein] = useState('');
+  const [manualMealCarbs, setManualMealCarbs] = useState('');
+  const [manualMealFat, setManualMealFat] = useState('');
+  const [manualMealPortion, setManualMealPortion] = useState('');
+  const [manualMealType, setManualMealType] = useState<'Café da Manhã' | 'Almoço' | 'Jantar' | 'Lanche'>('Lanche');
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
   const [activeTab, setActiveTab] = useState<'today' | 'history'>('today');
@@ -186,6 +194,12 @@ export default function HomeScreen() {
       'Adicionar Refeição',
       'Como você deseja adicionar sua refeição?',
       [
+        {
+          text: 'Manual',
+          onPress: () => {
+            setShowManualMealModal(true);
+          },
+        },
         {
           text: 'Câmera',
           onPress: async () => {
@@ -353,6 +367,62 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('Error adding manual calories:', error);
       Alert.alert('Erro', 'Não foi possível adicionar as calorias. Tente novamente.');
+    }
+  };
+
+  const handleManualMealSubmit = async () => {
+    try {
+      const name = manualMealName.trim();
+      const calories = parseFloat(manualMealCalories);
+      const protein = parseFloat(manualMealProtein) || 0;
+      const carbs = parseFloat(manualMealCarbs) || 0;
+      const fat = parseFloat(manualMealFat) || 0;
+      const portion = manualMealPortion.trim() || '1 porção';
+      
+      if (!name) {
+        Alert.alert('Erro', 'Por favor, insira o nome da refeição.');
+        return;
+      }
+      
+      if (isNaN(calories) || calories <= 0) {
+        Alert.alert('Erro', 'Por favor, insira um número válido de calorias.');
+        return;
+      }
+      
+      const mealData: Omit<Meal, 'id' | 'timestamp'> = {
+        name,
+        mealType: manualMealType,
+        foods: [{
+          name,
+          calories,
+          protein,
+          carbs,
+          fat,
+          portion,
+        }],
+        totalCalories: calories,
+      };
+      
+      await addMeal(mealData);
+      
+      // Reset form
+      setManualMealName('');
+      setManualMealCalories('');
+      setManualMealProtein('');
+      setManualMealCarbs('');
+      setManualMealFat('');
+      setManualMealPortion('');
+      setManualMealType('Lanche');
+      setShowManualMealModal(false);
+      
+      if (Platform.OS !== 'web') {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      
+      Alert.alert('Sucesso', 'Refeição adicionada com sucesso!');
+    } catch (error) {
+      console.error('Error adding manual meal:', error);
+      Alert.alert('Erro', 'Não foi possível adicionar a refeição. Tente novamente.');
     }
   };
 
@@ -1114,6 +1184,161 @@ export default function HomeScreen() {
           backgroundColor="#2196F3"
           textColor="#FFFFFF"
         />
+
+        {/* Manual Meal Entry Modal */}
+        <Modal
+          visible={showManualMealModal}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setShowManualMealModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <LinearGradient
+                colors={['rgba(0, 0, 0, 0.8)', 'rgba(26, 26, 46, 0.9)', 'rgba(22, 33, 62, 0.8)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.modalGradient}
+              >
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Adicionar Refeição Manual</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowManualMealModal(false)}
+                    style={styles.closeButton}
+                  >
+                    <X color={colors.text} size={24} />
+                  </TouchableOpacity>
+                </View>
+                
+                <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+                  <View style={styles.inputContainer}>
+                    <Utensils color="rgba(255, 255, 255, 0.8)" size={20} />
+                    <TextInput
+                      style={styles.calorieInput}
+                      placeholder="Nome da refeição"
+                      placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                      value={manualMealName}
+                      onChangeText={setManualMealName}
+                      maxLength={50}
+                    />
+                  </View>
+                  
+                  <View style={styles.mealTypeSelector}>
+                    <Text style={styles.mealTypeSelectorLabel}>Tipo de Refeição</Text>
+                    <View style={styles.mealTypeButtons}>
+                      {(['Café da Manhã', 'Almoço', 'Jantar', 'Lanche'] as const).map((type) => (
+                        <TouchableOpacity
+                          key={type}
+                          onPress={() => setManualMealType(type)}
+                          style={[
+                            styles.mealTypeButton,
+                            manualMealType === type && styles.mealTypeButtonActive
+                          ]}
+                        >
+                          <Text style={[
+                            styles.mealTypeButtonText,
+                            manualMealType === type && styles.mealTypeButtonTextActive
+                          ]}>
+                            {type}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                  
+                  <View style={styles.inputContainer}>
+                    <Hash color="rgba(255, 255, 255, 0.8)" size={20} />
+                    <TextInput
+                      style={styles.calorieInput}
+                      placeholder="Calorias (ex: 250)"
+                      placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                      value={manualMealCalories}
+                      onChangeText={setManualMealCalories}
+                      keyboardType="numeric"
+                      maxLength={5}
+                    />
+                  </View>
+                  
+                  <Text style={styles.sectionLabel}>Macronutrientes (opcional)</Text>
+                  
+                  <View style={styles.macroInputsRow}>
+                    <View style={[styles.inputContainer, styles.macroInput]}>
+                      <TextInput
+                        style={styles.calorieInput}
+                        placeholder="Proteína (g)"
+                        placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                        value={manualMealProtein}
+                        onChangeText={setManualMealProtein}
+                        keyboardType="numeric"
+                        maxLength={4}
+                      />
+                    </View>
+                    
+                    <View style={[styles.inputContainer, styles.macroInput]}>
+                      <TextInput
+                        style={styles.calorieInput}
+                        placeholder="Carboidratos (g)"
+                        placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                        value={manualMealCarbs}
+                        onChangeText={setManualMealCarbs}
+                        keyboardType="numeric"
+                        maxLength={4}
+                      />
+                    </View>
+                  </View>
+                  
+                  <View style={styles.macroInputsRow}>
+                    <View style={[styles.inputContainer, styles.macroInput]}>
+                      <TextInput
+                        style={styles.calorieInput}
+                        placeholder="Gordura (g)"
+                        placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                        value={manualMealFat}
+                        onChangeText={setManualMealFat}
+                        keyboardType="numeric"
+                        maxLength={4}
+                      />
+                    </View>
+                    
+                    <View style={[styles.inputContainer, styles.macroInput]}>
+                      <TextInput
+                        style={styles.calorieInput}
+                        placeholder="Porção"
+                        placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                        value={manualMealPortion}
+                        onChangeText={setManualMealPortion}
+                        maxLength={20}
+                      />
+                    </View>
+                  </View>
+                  
+                  <View style={styles.modalButtons}>
+                    <TouchableOpacity
+                      style={styles.cancelButton}
+                      onPress={() => setShowManualMealModal(false)}
+                    >
+                      <Text style={styles.cancelButtonText}>Cancelar</Text>
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={styles.submitButton}
+                      onPress={handleManualMealSubmit}
+                    >
+                      <LinearGradient
+                        colors={['rgba(0, 122, 255, 0.9)', 'rgba(88, 86, 214, 0.9)']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.submitButtonGradient}
+                      >
+                        <Text style={styles.submitButtonText}>Adicionar</Text>
+                      </LinearGradient>
+                    </TouchableOpacity>
+                  </View>
+                </ScrollView>
+              </LinearGradient>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </View>
   );
@@ -2404,5 +2629,60 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     lineHeight: 20,
     opacity: 0.8,
     letterSpacing: 0.1,
+  },
+  
+  // Manual meal entry styles
+  mealTypeSelector: {
+    marginBottom: 16,
+  },
+  mealTypeSelectorLabel: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 10,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+  },
+  mealTypeButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  mealTypeButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  mealTypeButtonActive: {
+    backgroundColor: 'rgba(0, 122, 255, 0.3)',
+    borderColor: 'rgba(0, 122, 255, 0.5)',
+  },
+  mealTypeButtonText: {
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.7)',
+  },
+  mealTypeButtonTextActive: {
+    color: 'rgba(255, 255, 255, 1)',
+  },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '600' as const,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginBottom: 10,
+    marginTop: 8,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.5,
+  },
+  macroInputsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  macroInput: {
+    flex: 1,
   },
 });
