@@ -49,6 +49,8 @@ export function DailyRecipe() {
     setError(null);
 
     try {
+      console.log('Starting recipe generation...');
+      
       // Analyze user's eating patterns
       const recentFoods = meals
         .slice(0, 20)
@@ -103,7 +105,15 @@ FORMATO DE RESPOSTA (JSON):
 
 Responda APENAS com o JSON válido, sem texto adicional.`;
 
-      const response = await generateText({ messages: [{ role: 'user', content: prompt }] });
+      console.log('Calling generateText API...');
+      const response = await Promise.race([
+        generateText({ messages: [{ role: 'user', content: prompt }] }),
+        new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('Tempo limite excedido')), 30000)
+        )
+      ]);
+      
+      console.log('Received response, parsing...');
       
       // Extract JSON from response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
@@ -112,11 +122,27 @@ Responda APENAS com o JSON válido, sem texto adicional.`;
       }
 
       const recipeData = JSON.parse(jsonMatch[0]) as Recipe;
+      console.log('Recipe generated successfully:', recipeData.name);
       setRecipe(recipeData);
 
     } catch (err) {
       console.error('Error generating recipe:', err);
-      setError('Não foi possível gerar a receita. Tente novamente.');
+      
+      let errorMessage = 'Não foi possível gerar a receita. ';
+      
+      if (err instanceof Error) {
+        if (err.message.includes('Network request failed')) {
+          errorMessage += 'Verifique sua conexão com a internet e tente novamente.';
+        } else if (err.message.includes('Tempo limite excedido')) {
+          errorMessage += 'A solicitação demorou muito. Tente novamente.';
+        } else {
+          errorMessage += err.message;
+        }
+      } else {
+        errorMessage += 'Erro desconhecido. Tente novamente.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
