@@ -31,7 +31,7 @@ import { MacroChart } from '@/components/MacroChart';
 import { MacroWidget } from '@/components/MacroWidget';
 import { TopFoodsTable } from '@/components/TopFoodsTable';
 import { FoodPieChart } from '@/components/FoodPieChart';
-import { DailyRecipe } from '@/components/DailyRecipe';
+
 import { Meal } from '@/types/food';
 import * as Haptics from 'expo-haptics';
 import { Toast } from '@/components/Toast';
@@ -761,8 +761,7 @@ export default function HomeScreen() {
                 onCameraPress={handleCameraPress}
               />
               
-              {/* Daily Recipe */}
-              <DailyRecipe />
+
               
               {/* Enhanced Achievement Badge */}
               {todayCalories >= dailyGoal && (
