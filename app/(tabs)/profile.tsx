@@ -10,6 +10,7 @@ import {
   StatusBar,
   Platform,
   Modal,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -241,6 +242,14 @@ export default function ProfileScreen() {
       padding: 24,
       alignItems: 'center',
       marginBottom: 20,
+    },
+    profilePhoto: {
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      marginBottom: 16,
+      borderWidth: 3,
+      borderColor: colors.primary,
     },
     profileName: {
       fontSize: 24,
@@ -1121,6 +1130,12 @@ export default function ProfileScreen() {
             userProfile && (
               <>
                 <BlurCard variant="premium" style={styles.profileCard}>
+                  {userProfile.profilePhoto && (
+                    <Image 
+                      source={{ uri: userProfile.profilePhoto }} 
+                      style={styles.profilePhoto}
+                    />
+                  )}
                   <Text style={styles.profileName}>{userProfile.name}</Text>
                   <Text style={styles.profileDetails}>
                     {userProfile.age} anos • {userProfile.weight} kg • {userProfile.height} cm

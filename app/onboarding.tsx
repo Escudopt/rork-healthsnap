@@ -215,74 +215,77 @@ export default function OnboardingScreen() {
             onChangeText={(text) => setFormData({ ...formData, name: text })}
             placeholder="Seu nome"
             placeholderTextColor={colors.textTertiary}
-            autoFocus
+            returnKeyType="next"
           />
         </View>
       </View>
 
-      <View style={styles.inputGroup}>
-        <Text style={[styles.inputLabel, { color: colors.text }]}>Idade</Text>
-        <View style={[styles.glassInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <TextInput
-            style={[styles.textInput, { color: colors.text }]}
-            value={formData.age.toString()}
-            onChangeText={(text) => setFormData({ ...formData, age: parseInt(text) || 0 })}
-            placeholder="25"
-            placeholderTextColor={colors.textTertiary}
-            keyboardType="numeric"
-          />
+      <View style={styles.row}>
+        <View style={[styles.inputGroup, styles.halfWidth]}>
+          <Text style={[styles.inputLabel, { color: colors.text }]}>Idade</Text>
+          <View style={[styles.glassInputContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <TextInput
+              style={[styles.textInput, { color: colors.text }]}
+              value={formData.age.toString()}
+              onChangeText={(text) => setFormData({ ...formData, age: parseInt(text) || 0 })}
+              placeholder="25"
+              placeholderTextColor={colors.textTertiary}
+              keyboardType="numeric"
+              returnKeyType="done"
+            />
+          </View>
         </View>
-      </View>
 
-      <View style={styles.inputGroup}>
-        <Text style={[styles.inputLabel, { color: colors.text }]}>Sexo</Text>
-        <View style={styles.genderContainer}>
-          <TouchableOpacity
-            style={[
-              styles.genderButton,
-              { backgroundColor: colors.surface, borderColor: colors.border },
-              formData.gender === 'male' && styles.genderButtonActive
-            ]}
-            onPress={() => setFormData({ ...formData, gender: 'male' })}
-            activeOpacity={0.7}
-          >
-            {formData.gender === 'male' && (
-              <LinearGradient
-                colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFillObject}
-              />
-            )}
-            <Text style={[
-              styles.genderButtonText,
-              { color: colors.textSecondary },
-              formData.gender === 'male' && styles.genderButtonTextActive
-            ]}>Masculino</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.genderButton,
-              { backgroundColor: colors.surface, borderColor: colors.border },
-              formData.gender === 'female' && styles.genderButtonActive
-            ]}
-            onPress={() => setFormData({ ...formData, gender: 'female' })}
-            activeOpacity={0.7}
-          >
-            {formData.gender === 'female' && (
-              <LinearGradient
-                colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFillObject}
-              />
-            )}
-            <Text style={[
-              styles.genderButtonText,
-              { color: colors.textSecondary },
-              formData.gender === 'female' && styles.genderButtonTextActive
-            ]}>Feminino</Text>
-          </TouchableOpacity>
+        <View style={[styles.inputGroup, styles.halfWidth]}>
+          <Text style={[styles.inputLabel, { color: colors.text }]}>Sexo</Text>
+          <View style={styles.genderContainer}>
+            <TouchableOpacity
+              style={[
+                styles.genderButton,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+                formData.gender === 'male' && styles.genderButtonActive
+              ]}
+              onPress={() => setFormData({ ...formData, gender: 'male' })}
+              activeOpacity={0.7}
+            >
+              {formData.gender === 'male' && (
+                <LinearGradient
+                  colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={StyleSheet.absoluteFillObject}
+                />
+              )}
+              <Text style={[
+                styles.genderButtonText,
+                { color: colors.textSecondary },
+                formData.gender === 'male' && styles.genderButtonTextActive
+              ]}>M</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.genderButton,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+                formData.gender === 'female' && styles.genderButtonActive
+              ]}
+              onPress={() => setFormData({ ...formData, gender: 'female' })}
+              activeOpacity={0.7}
+            >
+              {formData.gender === 'female' && (
+                <LinearGradient
+                  colors={isDark ? ['#3B82F6', '#60A5FA'] : ['#007AFF', '#5AC8FA']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={StyleSheet.absoluteFillObject}
+                />
+              )}
+              <Text style={[
+                styles.genderButtonText,
+                { color: colors.textSecondary },
+                formData.gender === 'female' && styles.genderButtonTextActive
+              ]}>F</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </View>
@@ -657,7 +660,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 120,
     flexGrow: 1,
   },
   card: {
@@ -681,7 +684,7 @@ const styles = StyleSheet.create({
   },
   stepContainer: {
     alignItems: 'center',
-    paddingBottom: 20,
+    paddingBottom: 40,
   },
   iconContainer: {
     width: 70,
@@ -721,7 +724,15 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     width: '100%',
-    marginBottom: 10,
+    marginBottom: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 10,
+    width: '100%',
+  },
+  halfWidth: {
+    flex: 1,
   },
   inputLabel: {
     fontSize: 14,
@@ -750,13 +761,14 @@ const styles = StyleSheet.create({
   },
   genderContainer: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 6,
   },
   genderButton: {
     flex: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     borderRadius: 14,
-    padding: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(0, 122, 255, 0.15)',

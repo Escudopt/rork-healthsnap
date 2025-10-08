@@ -13,6 +13,7 @@ import {
   FlatList,
   StatusBar,
   Dimensions,
+  Image,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -739,10 +740,17 @@ export default function HomeScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => router.push('/profile')}
-                  style={[styles.headerIconButton, { backgroundColor: colors.surfaceElevated }]}
+                  style={[styles.headerProfileButton, { backgroundColor: colors.surfaceElevated }]}
                   activeOpacity={0.6}
                 >
-                  <User color={colors.textSecondary} size={16} strokeWidth={2} />
+                  {userProfile?.profilePhoto ? (
+                    <Image 
+                      source={{ uri: userProfile.profilePhoto }} 
+                      style={styles.headerProfileImage}
+                    />
+                  ) : (
+                    <User color={colors.textSecondary} size={16} strokeWidth={2} />
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -1472,6 +1480,27 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     elevation: isDark ? 1 : 1,
     borderWidth: isDark ? 0 : 0.5,
     borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
+  },
+  headerProfileButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.85)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: isDark ? 0.12 : 0.03,
+    shadowRadius: isDark ? 2 : 4,
+    elevation: isDark ? 1 : 1,
+    borderWidth: isDark ? 0 : 0.5,
+    borderColor: isDark ? 'transparent' : 'rgba(0, 0, 0, 0.04)',
+    overflow: 'hidden',
+  },
+  headerProfileImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   addButton: {
     width: 44,
