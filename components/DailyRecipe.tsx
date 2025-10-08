@@ -49,7 +49,11 @@ export function DailyRecipe() {
     setError(null);
 
     try {
-      console.log('Starting recipe generation...');
+      console.log('=== Starting recipe generation ===');
+      console.log('Environment check:', {
+        hasToolkitUrl: !!process.env.EXPO_PUBLIC_TOOLKIT_URL,
+        toolkitUrl: process.env.EXPO_PUBLIC_TOOLKIT_URL,
+      });
       
       // Analyze user's eating patterns
       const recentFoods = meals
@@ -65,6 +69,14 @@ export function DailyRecipe() {
       const proteinGrams = userProfile?.weight ? Math.round(userProfile.weight * 0.4) : 30;
       const carbsGrams = Math.round(targetCalories * 0.4 / 4);
       const fatGrams = Math.round(targetCalories * 0.3 / 9);
+
+      console.log('Recipe parameters:', {
+        targetCalories,
+        proteinGrams,
+        carbsGrams,
+        fatGrams,
+        recentFoodsCount: recentFoods.length,
+      });
 
       const prompt = `Você é um chef profissional especializado em nutrição. Crie uma receita saudável e deliciosa em português do Brasil.
 
@@ -106,28 +118,37 @@ FORMATO DE RESPOSTA (JSON):
 Responda APENAS com o JSON válido, sem texto adicional.`;
 
       console.log('Calling generateText API...');
+      console.log('Prompt length:', prompt.length);
       
       const response = await Promise.race([
         generateText({ messages: [{ role: 'user', content: prompt }] }),
         new Promise<never>((_, reject) => 
-          setTimeout(() => reject(new Error('Tempo limite excedido')), 30000)
+          setTimeout(() => reject(new Error('Tempo limite excedido')), 45000)
         )
       ]);
       
-      console.log('Received response, parsing...');
+      console.log('Received response!');
+      console.log('Response type:', typeof response);
+      console.log('Response length:', response?.length || 0);
+      console.log('Response preview:', response?.substring(0, 200));
       
       // Extract JSON from response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
+        console.error('No JSON found in response');
         throw new Error('Formato de resposta inválido');
       }
 
+      console.log('JSON extracted, parsing...');
       const recipeData = JSON.parse(jsonMatch[0]) as Recipe;
       console.log('Recipe generated successfully:', recipeData.name);
       setRecipe(recipeData);
 
     } catch (err) {
-      console.error('Error generating recipe:', err);
+      console.error('=== Error generating recipe ===');
+      console.error('Error type:', err?.constructor?.name);
+      console.error('Error message:', err instanceof Error ? err.message : String(err));
+      console.error('Error stack:', err instanceof Error ? err.stack : 'No stack');
       
       let errorMessage = 'Não foi possível gerar a receita. ';
       
@@ -138,6 +159,8 @@ Responda APENAS com o JSON válido, sem texto adicional.`;
           errorMessage = 'A solicitação demorou muito. Tente novamente.';
         } else if (err.message.includes('Formato de resposta inválido')) {
           errorMessage = 'Erro ao processar a receita. Tente novamente.';
+        } else if (err.message.includes('fetch')) {
+          errorMessage = 'Erro de rede. Verifique sua conexão e tente novamente.';
         } else {
           errorMessage = `Erro: ${err.message}`;
         }
@@ -148,6 +171,7 @@ Responda APENAS com o JSON válido, sem texto adicional.`;
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+      console.log('=== Recipe generation finished ===');
     }
   };
 
