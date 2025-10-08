@@ -1371,9 +1371,9 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     flex: 1,
   },
   userMetricsSection: {
-    marginTop: 20,
+    marginTop: 14,
     marginBottom: 16,
-    gap: 12,
+    gap: 10,
   },
   userMetricsGrid: {
     flexDirection: 'row',
@@ -1530,7 +1530,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     marginBottom: 24,
   },
   mainContentContainer: {
-    gap: 20,
+    gap: 14,
     paddingHorizontal: 0,
     marginHorizontal: 0,
   },
@@ -2623,7 +2623,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   
   // Food Widgets Section Styles
   foodWidgetsSection: {
-    marginTop: 20,
+    marginTop: 14,
   },
   
   // Macro Chart Styles

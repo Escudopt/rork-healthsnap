@@ -462,7 +462,7 @@ export default function OnboardingScreen() {
                       >
                         <Save color="white" size={20} />
                         <Text style={styles.completeButtonText}>
-                          {loading ? 'Salvando...' : 'Salvar e Continuar'}
+                          {loading ? 'Salvando...' : 'Salvar'}
                         </Text>
                       </LinearGradient>
                     </TouchableOpacity>
@@ -512,7 +512,7 @@ export default function OnboardingScreen() {
                       >
                         <Save color="white" size={20} />
                         <Text style={styles.completeButtonText}>
-                          {loading ? 'Salvando...' : 'Salvar e Continuar'}
+                          {loading ? 'Salvando...' : 'Salvar'}
                         </Text>
                       </LinearGradient>
                     </TouchableOpacity>
