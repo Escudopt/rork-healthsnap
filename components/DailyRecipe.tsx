@@ -209,7 +209,7 @@ Responda APENAS com o JSON válido, sem texto adicional.`;
           </View>
           <View style={styles.textContainer}>
             <Text style={[styles.title, { color: colors.text }]}>
-              Receita de Hoje! 👨‍🍳
+              Sugestão Inteligente (IA)
             </Text>
             <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
               Toque para ver uma receita personalizada
@@ -232,7 +232,7 @@ Responda APENAS com o JSON válido, sem texto adicional.`;
                   <ChefHat color="#FF6B6B" size={20} strokeWidth={2} />
                 </View>
                 <Text style={[styles.modalTitle, { color: colors.text }]}>
-                  Receita de Hoje
+                  Sugestão Inteligente (IA)
                 </Text>
               </View>
               <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
