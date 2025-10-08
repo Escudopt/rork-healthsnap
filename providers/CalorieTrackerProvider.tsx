@@ -195,67 +195,35 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
       else if (bmi < 30) bmiCategory = 'Sobrepeso';
       else bmiCategory = 'Obesidade';
       
-      // Use AI to generate personalized recommendations
-      const aiPrompt = `
-Analise os seguintes dados de saúde e forneça 3-4 recomendações personalizadas em português:
-
-Perfil:
-- Nome: ${profile.name}
-- Idade: ${profile.age} anos
-- Peso: ${profile.weight} kg
-- Altura: ${profile.height} cm
-- Sexo: ${profile.gender === 'male' ? 'Masculino' : 'Feminino'}
-- Nível de atividade: ${profile.activityLevel}
-- Objetivo: ${profile.goal === 'lose' ? 'Perder peso' : profile.goal === 'gain' ? 'Ganhar peso' : 'Manter peso'}
-
-Métricas calculadas:
-- IMC: ${bmi.toFixed(1)}
-- TMB: ${Math.round(bmr)} kcal/dia
-- TDEE: ${Math.round(tdee)} kcal/dia
-- Categoria IMC: ${bmiCategory}
-- Peso ideal: ${idealWeight.min}-${idealWeight.max} kg
-
-Forneça recomendações práticas e específicas sobre:
-1. Nutrição
-2. Exercício
-3. Estilo de vida
-4. Metas realistas
-
-Seja conciso e prático. Máximo 4 recomendações de 1-2 frases cada.`;
-      
-      const response = await fetch('https://toolkit.rork.com/text/llm/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'user',
-              content: aiPrompt
-            }
-          ]
-        })
-      });
-      
+      // Generate personalized recommendations based on profile
       let recommendations: string[] = [];
-      if (response.ok) {
-        const data = await response.json();
-        // Split the AI response into individual recommendations
-        recommendations = data.completion
-          .split(/\d+\.\s*/)
-          .filter((rec: string) => rec.trim().length > 0)
-          .map((rec: string) => rec.trim())
-          .slice(0, 4);
+      
+      // Goal-specific recommendations
+      if (profile.goal === 'lose') {
+        recommendations.push(`Mantenha um déficit calórico de 500 kcal/dia para perder peso de forma saudável (cerca de 0.5kg por semana).`);
+        recommendations.push('Priorize proteínas magras e vegetais para manter a saciedade com menos calorias.');
+      } else if (profile.goal === 'gain') {
+        recommendations.push(`Consuma ${recommendedCalories} kcal/dia com superávit de 300 kcal para ganhar massa muscular.`);
+        recommendations.push('Combine treino de força com alimentação rica em proteínas (${Math.round(profile.weight * 1.6)}g/dia).');
       } else {
-        // Fallback recommendations
-        recommendations = [
-          'Mantenha uma alimentação equilibrada com proteínas, carboidratos e gorduras saudáveis.',
-          'Pratique exercícios regularmente, combinando cardio e musculação.',
-          'Beba pelo menos 2 litros de água por dia.',
-          'Durma 7-9 horas por noite para uma recuperação adequada.'
-        ];
+        recommendations.push(`Mantenha ${recommendedCalories} kcal/dia para manter seu peso atual de ${profile.weight}kg.`);
+        recommendations.push('Foque em alimentos nutritivos e mantenha uma rotina de exercícios regular.');
       }
+      
+      // Activity level recommendations
+      if (profile.activityLevel === 'sedentary') {
+        recommendations.push('Comece com caminhadas de 30 minutos, 3x por semana, e aumente gradualmente.');
+      } else if (profile.activityLevel === 'very_active') {
+        recommendations.push('Garanta recuperação adequada com 8-9 horas de sono e dias de descanso ativo.');
+      } else {
+        recommendations.push('Pratique exercícios regularmente, combinando cardio e musculação 3-5x por semana.');
+      }
+      
+      // General health recommendations
+      recommendations.push('Beba pelo menos 2-3 litros de água por dia e limite açúcar e sódio.');
+      
+      // Limit to 4 recommendations
+      recommendations = recommendations.slice(0, 4);
       
       const metrics: HealthMetrics = {
         bmi: Math.round(bmi * 10) / 10,
