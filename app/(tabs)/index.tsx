@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Star, Flame, Trophy, CheckCircle, Heart, Activity, Info, Utensils } from 'lucide-react-native';
+import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Flame, Trophy, CheckCircle, Heart, Activity, Info, Utensils } from 'lucide-react-native';
 import { FloatingAIChat } from '@/components/FloatingAIChat';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -699,35 +699,29 @@ export default function HomeScreen() {
             <View style={styles.headerTop}>
               <View style={styles.headerLeft}>
                 <View style={styles.greetingContainer}>
-                  <Text style={[styles.greeting, { color: colors.text }]}>
-                    {userProfile ? `Olá, ${userProfile.name}` : 'Resumo'}
-                  </Text>
-                  <Animated.View style={[
-                    styles.sparkleIcon,
-                    {
-                      opacity: sparkleAnim.interpolate({
-                        inputRange: [0, 0.5, 1],
-                        outputRange: [0.4, 1, 0.4],
-                      }),
-                      transform: [{
-                        rotate: sparkleAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: ['0deg', '180deg'],
-                        })
-                      }]
-                    }
-                  ]}>
-                    <Sparkles color={colors.primary} size={20} strokeWidth={2} />
-                  </Animated.View>
+                  {userProfile?.profilePhoto ? (
+                    <Image 
+                      source={{ uri: userProfile.profilePhoto }} 
+                      style={styles.greetingProfileImage}
+                    />
+                  ) : (
+                    <View style={[styles.greetingProfilePlaceholder, { backgroundColor: colors.surfaceElevated }]}>
+                      <User color={colors.textSecondary} size={20} strokeWidth={2} />
+                    </View>
+                  )}
+                  <View style={styles.greetingTextContainer}>
+                    <Text style={[styles.greeting, { color: colors.text }]}>
+                      {userProfile ? `Olá, ${userProfile.name}` : 'Resumo'}
+                    </Text>
+                    <Text style={[styles.date, { color: colors.textSecondary }]}>
+                      {userProfile ? `${userProfile.age} anos • ` : ''}{new Date().toLocaleDateString('pt-BR', { 
+                        weekday: 'long', 
+                        day: 'numeric', 
+                        month: 'long' 
+                      })} — continue assim 💪
+                    </Text>
+                  </View>
                 </View>
-                <Text style={[styles.date, { color: colors.textSecondary }]}>
-                  {userProfile ? `${userProfile.age} anos • ` : ''}{new Date().toLocaleDateString('pt-BR', { 
-                    weekday: 'long', 
-                    day: 'numeric', 
-                    month: 'long' 
-                  })} — continue assim 💪
-                </Text>
-
               </View>
               <View style={styles.headerButtons}>
                 <FloatingAIChat isHeaderButton={true} />
@@ -806,7 +800,7 @@ export default function HomeScreen() {
                   >
                     <Trophy color="white" size={16} strokeWidth={2.5} />
                     <Text style={styles.achievementText}>Meta Diária Alcançada!</Text>
-                    <Star color="white" size={12} strokeWidth={2} />
+                    <Trophy color="white" size={12} strokeWidth={2} />
                   </LinearGradient>
                 </Animated.View>
               )}
@@ -2164,11 +2158,26 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   greetingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 4,
+    gap: 12,
   },
-  sparkleIcon: {
-    opacity: 0.9,
+  greetingProfileImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+  },
+  greetingProfilePlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+  },
+  greetingTextContainer: {
+    flex: 1,
   },
   motivationBadge: {
     marginTop: 8,
