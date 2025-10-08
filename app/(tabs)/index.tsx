@@ -17,7 +17,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Flame, Trophy, CheckCircle, Heart, Activity, Info, Utensils } from 'lucide-react-native';
+import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Flame, Trophy, CheckCircle, Heart, Activity, Info, Utensils, MessageCircle } from 'lucide-react-native';
 import { FloatingAIChat } from '@/components/FloatingAIChat';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -71,6 +71,7 @@ export default function HomeScreen() {
   const [showQuickGoals, setShowQuickGoals] = useState(false);
   const [showGoalToast, setShowGoalToast] = useState(false);
   const [hasShownGoalToast, setHasShownGoalToast] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
 
   useEffect(() => {
     // Staggered entrance animations
@@ -793,9 +794,29 @@ export default function HomeScreen() {
                 </Animated.View>
               )}
               
-
-              
-
+              {/* NutriBot Chat Card */}
+              <TouchableOpacity
+                style={[styles.nutriBotCard, { backgroundColor: colors.surfaceElevated }]}
+                onPress={() => setShowAIChat(true)}
+                activeOpacity={0.7}
+              >
+                <LinearGradient
+                  colors={[colors.primary + '15', colors.primary + '08']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.nutriBotGradient}
+                >
+                  <View style={styles.nutriBotContent}>
+                    <View style={[styles.nutriBotIcon, { backgroundColor: colors.primary + '20' }]}>
+                      <MessageCircle color={colors.primary} size={20} strokeWidth={2} />
+                    </View>
+                    <View style={styles.nutriBotText}>
+                      <Text style={[styles.nutriBotTitle, { color: colors.text }]}>Chat com o NutriBot</Text>
+                      <Text style={[styles.nutriBotSubtitle, { color: colors.textSecondary }]}>Pergunta-me o que comer ao jantar 🍽️</Text>
+                    </View>
+                  </View>
+                </LinearGradient>
+              </TouchableOpacity>
               
               {/* Food Widgets Section */}
               <View style={styles.foodWidgetsSection}>
@@ -1182,6 +1203,18 @@ export default function HomeScreen() {
           backgroundColor="#2196F3"
           textColor="#FFFFFF"
         />
+        
+        {/* AI Chat Modal */}
+        {showAIChat && (
+          <Modal
+            visible={showAIChat}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setShowAIChat(false)}
+          >
+            <FloatingAIChat autoOpen={true} />
+          </Modal>
+        )}
 
         {/* Manual Meal Entry Modal */}
         <Modal
@@ -2738,5 +2771,49 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   macroInput: {
     flex: 1,
+  },
+  
+  // NutriBot Card Styles
+  nutriBotCard: {
+    marginTop: 10,
+    marginBottom: 8,
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(0, 122, 255, 0.08)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.3 : 0.08,
+    shadowRadius: isDark ? 8 : 12,
+    elevation: isDark ? 4 : 2,
+    borderWidth: 0.5,
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+  },
+  nutriBotGradient: {
+    padding: 16,
+  },
+  nutriBotContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  nutriBotIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  nutriBotText: {
+    flex: 1,
+  },
+  nutriBotTitle: {
+    fontSize: 16,
+    fontWeight: '600' as const,
+    marginBottom: 2,
+    letterSpacing: -0.2,
+  },
+  nutriBotSubtitle: {
+    fontSize: 14,
+    fontWeight: '400' as const,
+    lineHeight: 18,
   },
 });
