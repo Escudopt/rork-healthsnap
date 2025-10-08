@@ -717,20 +717,16 @@ export default function ProfileScreen() {
       setLoading(true);
       
       if (deleteType === 'profile') {
-        // Clear only profile data
         await AsyncStorage.removeItem('user_profile');
-        // The provider will handle state updates when the profile is removed
-        setIsEditing(true);
-        Alert.alert('Sucesso', 'Dados do perfil foram apagados!');
+        await AsyncStorage.removeItem('onboarding_complete');
+        router.replace('/onboarding');
       } else if (deleteType === 'history') {
-        // Clear only meal history
         await clearHistory();
         Alert.alert('Sucesso', 'Histórico de refeições foi apagado!');
       } else {
-        // Reset everything
         await resetData();
-        setIsEditing(true);
-        Alert.alert('Sucesso', 'Todos os dados foram resetados!');
+        await AsyncStorage.removeItem('onboarding_complete');
+        router.replace('/onboarding');
       }
     } catch (error) {
       console.error('Error deleting data:', error);
