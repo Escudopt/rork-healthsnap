@@ -53,7 +53,12 @@ export function DailyRecipe() {
       console.log('Environment check:', {
         hasToolkitUrl: !!process.env.EXPO_PUBLIC_TOOLKIT_URL,
         toolkitUrl: process.env.EXPO_PUBLIC_TOOLKIT_URL,
+        allEnvVars: Object.keys(process.env).filter(k => k.includes('TOOLKIT')),
       });
+      
+      if (!process.env.EXPO_PUBLIC_TOOLKIT_URL) {
+        throw new Error('TOOLKIT_URL_NOT_CONFIGURED');
+      }
       
       // Analyze user's eating patterns
       const recentFoods = meals
@@ -153,7 +158,9 @@ Responda APENAS com o JSON válido, sem texto adicional.`;
       let errorMessage = 'Não foi possível gerar a receita. ';
       
       if (err instanceof Error) {
-        if (err.message.includes('Network request failed')) {
+        if (err.message === 'TOOLKIT_URL_NOT_CONFIGURED') {
+          errorMessage = 'Configuração do servidor não encontrada. A funcionalidade de IA não está disponível no momento.';
+        } else if (err.message.includes('Network request failed')) {
           errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
         } else if (err.message.includes('Tempo limite excedido')) {
           errorMessage = 'A solicitação demorou muito. Tente novamente.';
