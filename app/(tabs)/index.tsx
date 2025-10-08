@@ -29,6 +29,7 @@ import { CalorieProgressBar } from '@/components/CalorieProgressBar';
 import { MealCard } from '@/components/MealCard';
 import { MacroChart } from '@/components/MacroChart';
 import { MacroWidget } from '@/components/MacroWidget';
+import { TopFoodsTable } from '@/components/TopFoodsTable';
 import { Meal } from '@/types/food';
 import * as Haptics from 'expo-haptics';
 import { Toast } from '@/components/Toast';
@@ -851,6 +852,9 @@ export default function HomeScreen() {
                   {renderTabContent()}
                 </View>
               </View>
+              
+              {/* Top Foods Table */}
+              {meals.length > 0 && <TopFoodsTable />}
               
               {/* Macro Distribution Chart */}
               {todayFoods.length > 0 && (
