@@ -14,6 +14,7 @@ import {
   StatusBar,
   Dimensions,
   Image,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -1191,7 +1192,10 @@ export default function HomeScreen() {
           animationType="slide"
           onRequestClose={() => setShowManualMealModal(false)}
         >
-          <View style={styles.modalOverlay}>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalOverlay}
+          >
             <View style={styles.modalContainer}>
               <LinearGradient
                 colors={['rgba(0, 0, 0, 0.8)', 'rgba(26, 26, 46, 0.9)', 'rgba(22, 33, 62, 0.8)']}
@@ -1209,7 +1213,11 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                 </View>
                 
-                <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+                <ScrollView 
+                  style={styles.modalContent} 
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
                   <View style={styles.inputContainer}>
                     <Utensils color="rgba(255, 255, 255, 0.8)" size={20} />
                     <TextInput
@@ -1336,7 +1344,7 @@ export default function HomeScreen() {
                 </ScrollView>
               </LinearGradient>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </Modal>
       </SafeAreaView>
     </View>
@@ -1976,6 +1984,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   modalContent: {
     padding: 20,
     paddingTop: 10,
+    maxHeight: Platform.OS === 'web' ? undefined : '70%',
   },
   inputContainer: {
     flexDirection: 'row',
