@@ -710,12 +710,18 @@ export default function HomeScreen() {
                     </View>
                   )}
                   <View style={styles.greetingTextContainer}>
-                    <Text style={[styles.greeting, { color: colors.text }]}>
-                      Resumo
-                    </Text>
-                    {userProfile?.name && (
-                      <Text style={[styles.userName, { color: colors.textSecondary }]}>
-                        {userProfile.name}
+                    {userProfile?.name ? (
+                      <>
+                        <Text style={[styles.greeting, { color: colors.text }]}>
+                          {userProfile.name}
+                        </Text>
+                        <Text style={[styles.userName, { color: colors.textSecondary }]}>
+                          {userProfile.age} anos
+                        </Text>
+                      </>
+                    ) : (
+                      <Text style={[styles.greeting, { color: colors.text }]}>
+                        Resumo
                       </Text>
                     )}
                   </View>
