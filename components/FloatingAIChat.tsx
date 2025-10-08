@@ -29,12 +29,11 @@ interface Message {
 interface FloatingAIChatProps {
   style?: any;
   isHeaderButton?: boolean;
-  autoOpen?: boolean;
 }
 
-export function FloatingAIChat({ style, isHeaderButton = false, autoOpen = false }: FloatingAIChatProps) {
+export function FloatingAIChat({ style, isHeaderButton = false }: FloatingAIChatProps) {
   const { colors } = useTheme();
-  const [isVisible, setIsVisible] = useState(autoOpen);
+  const [isVisible, setIsVisible] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -50,12 +49,6 @@ export function FloatingAIChat({ style, isHeaderButton = false, autoOpen = false
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const sparkleAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (autoOpen) {
-      setIsVisible(true);
-    }
-  }, [autoOpen]);
 
   useEffect(() => {
     // Pulse animation for the floating button
