@@ -107,11 +107,6 @@ Responda APENAS com o JSON válido, sem texto adicional.`;
 
       console.log('Calling generateText API...');
       
-      // Check if EXPO_PUBLIC_TOOLKIT_URL is configured
-      if (!process.env.EXPO_PUBLIC_TOOLKIT_URL) {
-        throw new Error('Configuração do servidor não encontrada. Por favor, configure o EXPO_PUBLIC_TOOLKIT_URL.');
-      }
-      
       const response = await Promise.race([
         generateText({ messages: [{ role: 'user', content: prompt }] }),
         new Promise<never>((_, reject) => 
@@ -141,8 +136,6 @@ Responda APENAS com o JSON válido, sem texto adicional.`;
           errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
         } else if (err.message.includes('Tempo limite excedido')) {
           errorMessage = 'A solicitação demorou muito. Tente novamente.';
-        } else if (err.message.includes('Configuração do servidor')) {
-          errorMessage = 'Serviço temporariamente indisponível. Tente novamente mais tarde.';
         } else if (err.message.includes('Formato de resposta inválido')) {
           errorMessage = 'Erro ao processar a receita. Tente novamente.';
         } else {
