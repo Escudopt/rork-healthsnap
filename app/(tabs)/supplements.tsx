@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Info, Target, Plus, X, Edit2, Check, ChevronDown, Search } from 'lucide-react-native';
+import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Target, Plus, X, Edit2, Check, ChevronDown, Search } from 'lucide-react-native';
 import { BlurCard } from '@/components/BlurCard';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
@@ -653,11 +653,7 @@ export default function SupplementsScreen() {
   const [newVitaminNotes, setNewVitaminNotes] = useState<string>('');
   const [showDosagePicker, setShowDosagePicker] = useState<boolean>(false);
   const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
-  const [deficiencyAnalysis, setDeficiencyAnalysis] = useState<{
-    covered: string[];
-    missing: string[];
-    suggestions: string[];
-  } | null>(null);
+
   
   // Get intelligent personalized recommendations
   const personalizedRecommendations = userProfile 
@@ -670,86 +666,6 @@ export default function SupplementsScreen() {
         healthMetrics
       )
     : [];
-
-  // Analyze vitamin coverage vs deficiencies
-  const analyzeVitaminCoverage = useCallback(() => {
-    if (!userProfile || personalizedRecommendations.length === 0 || myVitamins.length === 0) {
-      setDeficiencyAnalysis(null);
-      return;
-    }
-
-    const covered: string[] = [];
-    const missing: string[] = [];
-    const suggestions: string[] = [];
-
-    // Extract nutrients from user's vitamins
-    const userNutrients = myVitamins.map(v => v.name.toLowerCase());
-
-    // Check each recommendation
-    personalizedRecommendations.forEach(rec => {
-      const recName = rec.name.toLowerCase();
-      
-      // Check if user is taking something that covers this deficiency
-      const isCovered = userNutrients.some(nutrient => {
-        // Check for direct matches or related nutrients
-        if (nutrient.includes('multivitamínico') || nutrient.includes('multivitaminico')) {
-          return true; // Multivitamin covers many deficiencies
-        }
-        
-        // Check for specific nutrient matches
-        if (recName.includes('proteína') || recName.includes('protein')) {
-          return nutrient.includes('whey') || nutrient.includes('proteína') || nutrient.includes('protein');
-        }
-        if (recName.includes('ferro')) {
-          return nutrient.includes('ferro') || nutrient.includes('iron');
-        }
-        if (recName.includes('cálcio') || recName.includes('calcio')) {
-          return nutrient.includes('cálcio') || nutrient.includes('calcio') || nutrient.includes('calcium');
-        }
-        if (recName.includes('magnésio') || recName.includes('magnesio')) {
-          return nutrient.includes('magnésio') || nutrient.includes('magnesio') || nutrient.includes('magnesium');
-        }
-        if (recName.includes('vitamina d')) {
-          return nutrient.includes('vitamina d') || nutrient.includes('vitamin d') || nutrient.includes('d3');
-        }
-        if (recName.includes('ómega') || recName.includes('omega')) {
-          return nutrient.includes('ómega') || nutrient.includes('omega') || nutrient.includes('epa') || nutrient.includes('dha');
-        }
-        if (recName.includes('fibra')) {
-          return nutrient.includes('fibra') || nutrient.includes('fiber');
-        }
-        if (recName.includes('potássio') || recName.includes('potassio')) {
-          return nutrient.includes('potássio') || nutrient.includes('potassio') || nutrient.includes('potassium');
-        }
-        if (recName.includes('cromo') || recName.includes('chromium')) {
-          return nutrient.includes('cromo') || nutrient.includes('chromium');
-        }
-        
-        return false;
-      });
-
-      if (isCovered) {
-        covered.push(rec.name);
-      } else {
-        missing.push(rec.name);
-        
-        // Generate specific suggestion
-        if (rec.priority === 'high') {
-          suggestions.push(`⚠️ PRIORIDADE: ${rec.name} - ${rec.description}`);
-        } else {
-          suggestions.push(`💡 Considere adicionar: ${rec.name}`);
-        }
-      }
-    });
-
-    setDeficiencyAnalysis({ covered, missing, suggestions });
-    console.log('📊 Vitamin coverage analysis:', { covered: covered.length, missing: missing.length });
-  }, [userProfile, personalizedRecommendations, myVitamins]);
-
-  // Run analysis when vitamins or recommendations change
-  useEffect(() => {
-    analyzeVitaminCoverage();
-  }, [analyzeVitaminCoverage]);
 
   useEffect(() => {
     Animated.parallel([
