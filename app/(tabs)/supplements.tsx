@@ -1180,41 +1180,49 @@ export default function SupplementsScreen() {
       color: 'white',
     },
     myVitaminCard: {
-      padding: 12,
-      marginBottom: 8,
-      borderRadius: 12,
+      padding: 16,
+      marginBottom: 10,
+      borderRadius: 16,
       backgroundColor: isDark ? 'rgba(76, 175, 80, 0.12)' : 'rgba(76, 175, 80, 0.06)',
       borderWidth: 1,
       borderColor: isDark ? 'rgba(76, 175, 80, 0.25)' : 'rgba(76, 175, 80, 0.15)',
     },
     myVitaminHeader: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'space-between',
     },
     myVitaminInfo: {
       flex: 1,
+      gap: 8,
+    },
+    myVitaminName: {
+      fontSize: 18,
+      fontWeight: '800' as const,
+      color: colors.text,
+      letterSpacing: 0.2,
+      marginBottom: 4,
+    },
+    myVitaminDetails: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 12,
-    },
-    myVitaminName: {
-      fontSize: 15,
-      fontWeight: '700' as const,
-      color: colors.text,
-      flex: 1,
+      flexWrap: 'wrap',
     },
     myVitaminDosage: {
-      fontSize: 13,
+      fontSize: 14,
       color: colors.textSecondary,
       fontWeight: '600' as const,
-      minWidth: 90,
     },
     myVitaminTime: {
-      fontSize: 13,
+      fontSize: 14,
       color: colors.textSecondary,
       fontWeight: '500' as const,
-      minWidth: 100,
+    },
+    myVitaminSeparator: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: '400' as const,
     },
     myVitaminNotes: {
       fontSize: 12,
@@ -1702,9 +1710,12 @@ export default function SupplementsScreen() {
                   <BlurCard key={vitamin.id} style={styles.myVitaminCard}>
                     <View style={styles.myVitaminHeader}>
                       <View style={styles.myVitaminInfo}>
-                        <Text style={styles.myVitaminName} numberOfLines={1}>{vitamin.name}</Text>
-                        <Text style={styles.myVitaminDosage} numberOfLines={1}>{vitamin.dosage}</Text>
-                        <Text style={styles.myVitaminTime} numberOfLines={1}>{vitamin.time}</Text>
+                        <Text style={styles.myVitaminName} numberOfLines={2}>{vitamin.name}</Text>
+                        <View style={styles.myVitaminDetails}>
+                          <Text style={styles.myVitaminDosage} numberOfLines={1}>{vitamin.dosage}</Text>
+                          <Text style={styles.myVitaminSeparator}>•</Text>
+                          <Text style={styles.myVitaminTime} numberOfLines={1}>{vitamin.time}</Text>
+                        </View>
                       </View>
                       <View style={styles.myVitaminActions}>
                         <TouchableOpacity 
