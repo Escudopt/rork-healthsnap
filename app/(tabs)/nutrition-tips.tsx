@@ -167,6 +167,9 @@ ${mealAnalysis.length > 0 ? mealAnalysis.map((meal: any, i: number) => `${i+1}. 
 Crie dicas específicas para idade, objetivo e padrão alimentar. Use emojis. Máximo 2 frases por dica. Uma dica por linha.`;
       
       console.log('📡 Sending request to AI API...');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
         headers: {
@@ -179,8 +182,11 @@ Crie dicas específicas para idade, objetivo e padrão alimentar. Use emojis. M�
               content: aiPrompt
             }
           ]
-        })
+        }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       console.log('📡 Response status:', response.status);
       
@@ -201,9 +207,13 @@ Crie dicas específicas para idade, objetivo e padrão alimentar. Use emojis. M�
         console.error('❌ API Error:', response.status, errorText);
         setPersonalizedTips(['❌ Erro ao gerar dicas. Tente novamente.']);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error generating tips:', error);
-      setPersonalizedTips(['❌ Erro de conexão. Verifique sua internet e tente novamente.']);
+      if (error.name === 'AbortError') {
+        setPersonalizedTips(['⏱️ Tempo de resposta excedido. Verifique sua conexão e tente novamente.']);
+      } else {
+        setPersonalizedTips(['❌ Erro de conexão. Verifique sua internet e tente novamente.']);
+      }
     } finally {
       setIsLoadingTips(false);
     }

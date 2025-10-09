@@ -125,6 +125,9 @@ IMPORTANTE:
 - Inclua aquecimento e alongamento
 - Retorne APENAS o JSON, sem texto adicional`;
 
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
         headers: {
@@ -137,8 +140,11 @@ IMPORTANTE:
               content: prompt
             }
           ]
-        })
+        }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
@@ -164,9 +170,13 @@ IMPORTANTE:
         throw new Error('Formato de resposta inválido');
       }
 
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error generating workout recommendations:', err);
-      setError('Não foi possível gerar recomendações. Tente novamente.');
+      if (err.name === 'AbortError') {
+        setError('Tempo de resposta excedido. Verifique sua conexão e tente novamente.');
+      } else {
+        setError('Não foi possível gerar recomendações. Tente novamente.');
+      }
       
       setRecommendations([
         {
