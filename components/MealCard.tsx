@@ -9,7 +9,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { Trash2, ChevronRight } from 'lucide-react-native';
+import { Trash2, ChevronRight, Utensils } from 'lucide-react-native';
 import { Meal } from '@/types/food';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -83,11 +83,15 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
       { transform: [{ scale: scaleAnim }] }
     ]}>
       <View style={styles.card}>
-        {meal.imageBase64 && (
+        {meal.imageBase64 ? (
           <Image
             source={{ uri: `data:image/jpeg;base64,${meal.imageBase64}` }}
             style={styles.mainImage}
           />
+        ) : (
+          <View style={[styles.placeholderImage, { backgroundColor: colors.surfaceSecondary }]}>
+            <Utensils color={colors.textTertiary} size={48} strokeWidth={1.5} />
+          </View>
         )}
         <View style={styles.content}>
           <View style={styles.info}>
@@ -144,6 +148,12 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     width: '100%',
     height: 180,
     resizeMode: 'cover' as const,
+  },
+  placeholderImage: {
+    width: '100%',
+    height: 180,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
   },
   content: {
     padding: 16,
