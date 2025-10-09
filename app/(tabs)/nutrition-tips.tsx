@@ -168,7 +168,7 @@ Crie dicas específicas para idade, objetivo e padrão alimentar. Use emojis. M�
       
       console.log('📡 Sending request to AI API...');
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
       
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
@@ -210,7 +210,9 @@ Crie dicas específicas para idade, objetivo e padrão alimentar. Use emojis. M�
     } catch (error: any) {
       console.error('❌ Error generating tips:', error);
       if (error.name === 'AbortError') {
-        setPersonalizedTips(['⏱️ Tempo de resposta excedido. Verifique sua conexão e tente novamente.']);
+        setPersonalizedTips(['⏱️ Tempo de resposta excedido. Por favor, tente novamente.']);
+      } else if (error.message?.includes('504') || error.message?.includes('503')) {
+        setPersonalizedTips(['🔄 Serviço temporariamente indisponível. Tente novamente em alguns instantes.']);
       } else {
         setPersonalizedTips(['❌ Erro de conexão. Verifique sua internet e tente novamente.']);
       }
@@ -222,9 +224,12 @@ Crie dicas específicas para idade, objetivo e padrão alimentar. Use emojis. M�
   useEffect(() => {
     if (userProfile && healthMetrics && personalizedTips.length === 0 && !isLoadingTips) {
       console.log('🎯 Auto-generating tips on mount...');
-      generatePersonalizedTips();
+      const timer = setTimeout(() => {
+        generatePersonalizedTips();
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [userProfile, healthMetrics]);
+  }, []);
 
   const filteredTips = selectedCategory === 'all' 
     ? nutritionTips 

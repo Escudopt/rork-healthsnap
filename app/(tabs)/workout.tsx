@@ -126,7 +126,7 @@ IMPORTANTE:
 - Retorne APENAS o JSON, sem texto adicional`;
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      const timeoutId = setTimeout(() => controller.abort(), 60000);
       
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
@@ -173,9 +173,11 @@ IMPORTANTE:
     } catch (err: any) {
       console.error('Error generating workout recommendations:', err);
       if (err.name === 'AbortError') {
-        setError('Tempo de resposta excedido. Verifique sua conexão e tente novamente.');
+        setError('Tempo de resposta excedido. Por favor, tente novamente.');
+      } else if (err.message?.includes('504') || err.message?.includes('503')) {
+        setError('Serviço temporariamente indisponível. Tente novamente em alguns instantes.');
       } else {
-        setError('Não foi possível gerar recomendações. Tente novamente.');
+        setError('Não foi possível gerar recomendações. Verifique sua conexão.');
       }
       
       setRecommendations([
@@ -296,9 +298,12 @@ IMPORTANTE:
 
   useEffect(() => {
     if (userMetrics && recommendations.length === 0) {
-      generateWorkoutRecommendations();
+      const timer = setTimeout(() => {
+        generateWorkoutRecommendations();
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [userMetrics]);
+  }, []);
 
   const getIntensityColor = (intensity: string) => {
     switch (intensity) {
