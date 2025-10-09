@@ -929,24 +929,16 @@ export default function SupplementsScreen() {
         ? myVitamins.map(v => `${v.name} (${v.dosage})`).join(', ')
         : 'Nenhum suplemento registrado';
       
-      const prompt = `Analise a suplementação e alimentação do usuário.
-
-Suplementos atuais: ${vitaminList}
-
-Média diária (7 dias):
-Proteína: ${Math.round(nutritionalAnalysis.protein)}g
-Carboidratos: ${Math.round(nutritionalAnalysis.carbs)}g
-Gordura: ${Math.round(nutritionalAnalysis.fat)}g
-Fibra: ${Math.round(nutritionalAnalysis.fiber)}g
-Cálcio: ${Math.round(nutritionalAnalysis.calcium)}mg
-Ferro: ${Math.round(nutritionalAnalysis.iron)}mg
-Vitamina C: ${Math.round(nutritionalAnalysis.vitaminC)}mg
-Vitamina D: ${Math.round(nutritionalAnalysis.vitaminD)}UI
-
-Forneça análise com:
-1. coverage: necessidades bem cobertas (2-3 itens)
-2. missing: deficiências detectadas (2-3 itens)
-3. suggestions: sugestões práticas (2-3 itens)`;
+      const proteinValue = Math.round(nutritionalAnalysis.protein);
+      const carbsValue = Math.round(nutritionalAnalysis.carbs);
+      const fatValue = Math.round(nutritionalAnalysis.fat);
+      const fiberValue = Math.round(nutritionalAnalysis.fiber);
+      const calciumValue = Math.round(nutritionalAnalysis.calcium);
+      const ironValue = Math.round(nutritionalAnalysis.iron);
+      const vitaminCValue = Math.round(nutritionalAnalysis.vitaminC);
+      const vitaminDValue = Math.round(nutritionalAnalysis.vitaminD);
+      
+      const prompt = `Analise a suplementacao e alimentacao do usuario. Suplementos atuais: ${vitaminList}. Media diaria ultimos 7 dias - Proteina: ${proteinValue}g, Carboidratos: ${carbsValue}g, Gordura: ${fatValue}g, Fibra: ${fiberValue}g, Calcio: ${calciumValue}mg, Ferro: ${ironValue}mg, Vitamina C: ${vitaminCValue}mg, Vitamina D: ${vitaminDValue}UI. Forneca analise com 3 campos: coverage (necessidades bem cobertas, 2-3 itens), missing (deficiencias detectadas, 2-3 itens), suggestions (sugestoes praticas, 2-3 itens).`;
       
       console.log('🤖 Sending analysis request...');
       
