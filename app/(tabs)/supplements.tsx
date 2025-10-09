@@ -1722,60 +1722,7 @@ export default function SupplementsScreen() {
           </Animated.View>
 
           <Animated.View style={[styles.supplementsSection, { opacity: fadeAnim }]}>
-            {/* Deficiency Analysis Section */}
-            {deficiencyAnalysis && (deficiencyAnalysis.covered.length > 0 || deficiencyAnalysis.missing.length > 0) && (
-              <View style={styles.analysisSection}>
-                <View style={styles.analysisHeader}>
-                  <View style={[styles.summaryCardIcon, { backgroundColor: deficiencyAnalysis.missing.length === 0 ? '#4CAF50' : '#FF9800' }]}>
-                    <Target color="white" size={20} strokeWidth={2.5} />
-                  </View>
-                  <Text style={styles.analysisTitle}>
-                    {deficiencyAnalysis.missing.length === 0 ? '✅ Deficiências Cobertas' : '⚠️ Análise de Deficiências'}
-                  </Text>
-                </View>
-                
-                {deficiencyAnalysis.covered.length > 0 && (
-                  <View style={styles.coverageCard}>
-                    <Text style={styles.coverageTitle}>✅ Deficiências Cobertas ({deficiencyAnalysis.covered.length})</Text>
-                    <Text style={styles.coverageDescription}>
-                      As suas vitaminas atuais estão a ajudar com:
-                    </Text>
-                    <View style={styles.coverageList}>
-                      {deficiencyAnalysis.covered.map((item, index) => (
-                        <View key={`covered-${index}`} style={styles.coverageItem}>
-                          <View style={[styles.coverageBullet, { backgroundColor: '#4CAF50' }]} />
-                          <Text style={styles.coverageItemText}>{item}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                )}
-                
-                {deficiencyAnalysis.missing.length > 0 && (
-                  <View style={styles.missingCard}>
-                    <Text style={styles.missingTitle}>⚠️ Deficiências Não Cobertas ({deficiencyAnalysis.missing.length})</Text>
-                    <Text style={styles.missingDescription}>
-                      Considere adicionar vitaminas para estas deficiências:
-                    </Text>
-                    <View style={styles.suggestionsList}>
-                      {deficiencyAnalysis.suggestions.map((suggestion, index) => (
-                        <View key={`suggestion-${index}`} style={styles.suggestionItem}>
-                          <Text style={styles.suggestionText}>{suggestion}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                )}
-                
-                {deficiencyAnalysis.missing.length === 0 && deficiencyAnalysis.covered.length > 0 && (
-                  <View style={styles.successCard}>
-                    <Text style={styles.successText}>
-                      🎉 Parabéns! As suas vitaminas estão a cobrir todas as deficiências nutricionais detectadas. Continue assim!
-                    </Text>
-                  </View>
-                )}
-              </View>
-            )}
+
 
             {/* My Vitamins Section */}
             <View style={styles.myVitaminsSection}>
@@ -1988,7 +1935,7 @@ export default function SupplementsScreen() {
             </View>
             
             {/* Personalized Recommendations */}
-            {userProfile ? (
+            {userProfile && personalizedRecommendations.length > 0 && (
               <View style={styles.personalizedSection}>
                 <View style={styles.personalizedHeader}>
                   <View style={[styles.summaryCardIcon, { backgroundColor: '#4CAF50' }]}>
@@ -1997,45 +1944,10 @@ export default function SupplementsScreen() {
                   <Text style={styles.personalizedTitle}>Recomendações Personalizadas</Text>
                 </View>
                 <Text style={styles.personalizedSubtitle}>
-                  Baseado no seu perfil ({userProfile.age} anos, {userProfile.gender === 'male' ? 'masculino' : 'feminino'}) 
-                  e análise nutricional das suas {meals.filter(m => {
-                    const oneWeekAgo = new Date();
-                    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-                    try {
-                      return m?.timestamp && new Date(m.timestamp) >= oneWeekAgo;
-                    } catch { return false; }
-                  }).length} refeições dos últimos 7 dias
+                  Baseado no seu perfil e análise nutricional
                 </Text>
                 
-                {personalizedRecommendations.length === 0 && (
-                  <BlurCard style={[styles.noProfileCard, { backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)' }]}>
-                    <View style={[styles.noProfileIcon, { backgroundColor: '#4CAF50' }]}>
-                      <Target color="white" size={24} />
-                    </View>
-                    <Text style={styles.noProfileTitle}>Parabéns! Nutrição Equilibrada</Text>
-                    <Text style={styles.noProfileText}>
-                      Sua alimentação atual parece estar bem equilibrada. Continue assim! 
-                      Veja as recomendações gerais abaixo baseadas na sua idade.
-                    </Text>
-                  </BlurCard>
-                )}
-                
-                {personalizedRecommendations.length > 0 && (
-                  <View style={styles.analysisCard}>
-                    <View style={styles.analysisHeader}>
-                      <View style={[styles.summaryCardIcon, { backgroundColor: '#FF9800' }]}>
-                        <AlertTriangle color="white" size={20} strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.analysisTitle}>Deficiências Detectadas</Text>
-                    </View>
-                    <Text style={styles.analysisText}>
-                      Com base na análise das suas refeições, identificamos algumas possíveis deficiências nutricionais. 
-                      Os suplementos abaixo podem ajudar a suprir essas necessidades.
-                    </Text>
-                  </View>
-                )}
-                
-                {personalizedRecommendations.map((supplement, index) => (
+                {personalizedRecommendations.slice(0, 3).map((supplement, index) => (
                   <Animated.View
                     key={supplement.id}
                     style={[
@@ -2065,13 +1977,11 @@ export default function SupplementsScreen() {
                         <View style={[
                           styles.priorityBadge,
                           {
-                            backgroundColor: supplement.priority === 'high' ? '#4CAF50' : 
-                                           supplement.priority === 'medium' ? '#4CAF50' : '#9E9E9E'
+                            backgroundColor: supplement.priority === 'high' ? '#FF6B35' : '#4CAF50'
                           }
                         ]}>
                           <Text style={styles.priorityText}>
-                            {supplement.priority === 'high' ? 'PRIORIDADE' : 
-                             supplement.priority === 'medium' ? 'RECOMENDADO' : 'OPCIONAL'}
+                            {supplement.priority === 'high' ? 'PRIORIDADE' : 'RECOMENDADO'}
                           </Text>
                         </View>
                       )}
@@ -2108,145 +2018,58 @@ export default function SupplementsScreen() {
                         </View>
                         <Text style={styles.dosageText}>{supplement.dosage}</Text>
                       </View>
-
-                      {supplement.ageWarnings && supplement.ageWarnings.length > 0 && (
-                        <View style={styles.warningSection}>
-                          <View style={styles.warningHeader}>
-                            <AlertTriangle color="#FF6B35" size={18} />
-                            <Text style={styles.warningTitle}>Avisos Importantes</Text>
-                          </View>
-                          <View style={styles.warningContent}>
-                            {supplement.ageWarnings.map((warning, warningIndex) => (
-                              <View key={`${supplement.id}-warning-${warningIndex}`} style={styles.warningItem}>
-                                <View style={styles.warningBullet} />
-                                <Text style={styles.warningText}>{warning.warning}</Text>
-                              </View>
-                            ))}
-                          </View>
-                        </View>
-                      )}
                     </BlurCard>
                   </Animated.View>
                 ))}
               </View>
-            ) : (
-              <BlurCard style={styles.noProfileCard}>
-                <View style={styles.noProfileIcon}>
-                  <AlertTriangle color="white" size={24} />
-                </View>
-                <Text style={styles.noProfileTitle}>Configure seu Perfil</Text>
-                <Text style={styles.noProfileText}>
-                  Para receber recomendações personalizadas de vitaminas baseadas na sua idade e estilo de vida, 
-                  configure seu perfil na aba &ldquo;Perfil&rdquo;.
-                </Text>
-              </BlurCard>
             )}
             
             {/* General Supplements */}
-            <Text style={styles.generalSupplementsTitle}>Guia Geral de Suplementos</Text>
-            {supplements.map((supplement, index) => (
-              <Animated.View
-                key={supplement.id}
-                style={[
-                  {
-                    transform: [{
-                      translateY: fadeAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [30 + (index * 15), 0],
-                      })
-                    }]
-                  }
-                ]}
-              >
-                <BlurCard style={styles.supplementCard}>
-                  <LinearGradient
-                    colors={[
-                      `${supplement.color}15`,
-                      `${supplement.color}08`,
-                      'transparent'
-                    ]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.supplementGradient}
-                  />
-                  
-                  <View style={styles.supplementHeader}>
-                    <View style={[
-                      styles.supplementIcon,
-                      { backgroundColor: supplement.color }
-                    ]}>
-                      {supplement.icon}
-                    </View>
-                    <View style={styles.supplementInfo}>
-                      <Text style={styles.supplementName}>{supplement.name}</Text>
-                      <Text style={styles.supplementDescription}>{supplement.description}</Text>
-                    </View>
+            <Text style={styles.generalSupplementsTitle}>Guia de Suplementos</Text>
+            {supplements.slice(0, 5).map((supplement, index) => (
+              <BlurCard key={supplement.id} style={styles.supplementCard}>
+                <LinearGradient
+                  colors={[
+                    `${supplement.color}15`,
+                    `${supplement.color}08`,
+                    'transparent'
+                  ]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.supplementGradient}
+                />
+                
+                <View style={styles.supplementHeader}>
+                  <View style={[
+                    styles.supplementIcon,
+                    { backgroundColor: supplement.color }
+                  ]}>
+                    {supplement.icon}
                   </View>
-                  
-                  <View style={styles.benefitsSection}>
-                    <Text style={styles.benefitsTitle}>Principais Benefícios</Text>
-                    <View style={styles.benefitsGrid}>
-                      {supplement.benefits.map((benefit, benefitIndex) => (
-                        <View key={`${supplement.id}-benefit-${benefitIndex}`} style={styles.benefitChip}>
-                          <View style={[styles.benefitDot, { backgroundColor: supplement.color }]} />
-                          <Text style={styles.benefitText}>{benefit}</Text>
-                        </View>
-                      ))}
-                    </View>
+                  <View style={styles.supplementInfo}>
+                    <Text style={styles.supplementName}>{supplement.name}</Text>
+                    <Text style={styles.supplementDescription}>{supplement.description}</Text>
                   </View>
-                  
-                  <View style={styles.dosageSection}>
-                    <View style={styles.dosageHeader}>
-                      <Pill color={colors.textSecondary} size={16} />
-                      <Text style={styles.dosageTitle}>Dosagem Recomendada</Text>
-                    </View>
-                    <Text style={styles.dosageText}>{supplement.dosage}</Text>
+                </View>
+                
+                <View style={styles.dosageSection}>
+                  <View style={styles.dosageHeader}>
+                    <Pill color={colors.textSecondary} size={16} />
+                    <Text style={styles.dosageTitle}>Dosagem</Text>
                   </View>
-
-                  {supplement.ageWarnings && supplement.ageWarnings.length > 0 && (
-                    <View style={styles.warningSection}>
-                      <View style={styles.warningHeader}>
-                        <AlertTriangle color="#FF6B35" size={18} />
-                        <Text style={styles.warningTitle}>Avisos Importantes</Text>
-                      </View>
-                      <View style={styles.warningContent}>
-                        {supplement.ageWarnings.map((warning, warningIndex) => (
-                          <View key={`${supplement.id}-warning-${warningIndex}`} style={styles.warningItem}>
-                            <View style={styles.warningBullet} />
-                            <Text style={styles.warningText}>{warning.warning}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-                  )}
-                </BlurCard>
-              </Animated.View>
+                  <Text style={styles.dosageText}>{supplement.dosage}</Text>
+                </View>
+              </BlurCard>
             ))}
 
             <BlurCard style={styles.disclaimerCard}>
               <View style={styles.disclaimerHeader}>
                 <AlertTriangle color="#ff6b35" size={24} />
-                <Text style={styles.disclaimerTitle}>Aviso Médico Importante</Text>
+                <Text style={styles.disclaimerTitle}>Aviso Importante</Text>
               </View>
               <Text style={styles.disclaimerText}>
-                Estas informações são apenas educativas. Sempre consulte um médico ou nutricionista 
-                antes de iniciar qualquer suplementação. Alguns suplementos podem ser perigosos 
-                para certas idades, condições de saúde ou interagir com medicamentos.
+                Consulte sempre um médico antes de iniciar qualquer suplementação.
               </Text>
-            </BlurCard>
-
-            <BlurCard style={styles.safetyCard}>
-              <View style={styles.safetyHeader}>
-                <Info color={isDark ? "#00d4ff" : "#007AFF"} size={24} />
-                <Text style={styles.safetyTitle}>Dicas de Segurança</Text>
-              </View>
-              <View style={styles.safetyTips}>
-                <Text style={styles.safetyTip}>• Comece sempre com doses menores</Text>
-                <Text style={styles.safetyTip}>• Observe reações do seu corpo</Text>
-                <Text style={styles.safetyTip}>• Mantenha longe de crianças</Text>
-                <Text style={styles.safetyTip}>• Verifique data de validade</Text>
-                <Text style={styles.safetyTip}>• Armazene em local seco e fresco</Text>
-              </View>
             </BlurCard>
           </Animated.View>
         </ScrollView>
