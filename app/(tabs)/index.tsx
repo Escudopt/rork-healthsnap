@@ -1227,34 +1227,33 @@ export default function HomeScreen() {
           animationType="slide"
           onRequestClose={() => setShowManualMealModal(false)}
         >
-          <View style={styles.modalOverlay}>
-            <KeyboardAvoidingView 
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={styles.modalKeyboardAvoid}
-            >
-              <View style={styles.modalContainer}>
-                <LinearGradient
-                  colors={['rgba(0, 0, 0, 0.8)', 'rgba(26, 26, 46, 0.9)', 'rgba(22, 33, 62, 0.8)']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.modalGradient}
-                >
-                  <View style={styles.modalHeader}>
-                    <Text style={styles.modalTitle}>Adicionar Refeição Manual</Text>
-                    <TouchableOpacity
-                      onPress={() => setShowManualMealModal(false)}
-                      style={styles.closeButton}
-                    >
-                      <X color={colors.text} size={24} />
-                    </TouchableOpacity>
-                  </View>
-                  
-                  <ScrollView 
-                    style={styles.modalContent} 
-                    contentContainerStyle={styles.modalScrollContent}
-                    showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps="handled"
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalOverlay}
+          >
+            <View style={styles.modalContainer}>
+              <LinearGradient
+                colors={['rgba(0, 0, 0, 0.8)', 'rgba(26, 26, 46, 0.9)', 'rgba(22, 33, 62, 0.8)']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.modalGradient}
+              >
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Adicionar Refeição Manual</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowManualMealModal(false)}
+                    style={styles.closeButton}
                   >
+                    <X color={colors.text} size={24} />
+                  </TouchableOpacity>
+                </View>
+                
+                <ScrollView 
+                  style={styles.modalContent} 
+                  contentContainerStyle={styles.modalScrollContent}
+                  showsVerticalScrollIndicator={false}
+                  keyboardShouldPersistTaps="handled"
+                >
                     <View style={styles.inputContainer}>
                       <Utensils color="rgba(255, 255, 255, 0.8)" size={20} />
                       <TextInput
@@ -1379,10 +1378,9 @@ export default function HomeScreen() {
                       </TouchableOpacity>
                     </View>
                   </ScrollView>
-                </LinearGradient>
-              </View>
-            </KeyboardAvoidingView>
-          </View>
+              </LinearGradient>
+            </View>
+          </KeyboardAvoidingView>
         </Modal>
       </SafeAreaView>
     </View>
@@ -1988,11 +1986,6 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-  },
-  modalKeyboardAvoid: {
-    width: '100%',
-    maxWidth: 400,
-    maxHeight: '85%',
   },
   modalContainer: {
     width: '100%',
