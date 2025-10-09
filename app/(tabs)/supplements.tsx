@@ -1180,54 +1180,57 @@ export default function SupplementsScreen() {
       color: 'white',
     },
     myVitaminCard: {
-      padding: 20,
-      marginBottom: 12,
-      borderRadius: 20,
-      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)',
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)',
+      padding: 12,
+      marginBottom: 8,
+      borderRadius: 12,
+      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.12)' : 'rgba(76, 175, 80, 0.06)',
+      borderWidth: 1,
+      borderColor: isDark ? 'rgba(76, 175, 80, 0.25)' : 'rgba(76, 175, 80, 0.15)',
     },
     myVitaminHeader: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 12,
     },
     myVitaminInfo: {
       flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
     },
     myVitaminName: {
-      fontSize: 18,
+      fontSize: 15,
       fontWeight: '700' as const,
       color: colors.text,
-      marginBottom: 4,
+      flex: 1,
     },
     myVitaminDosage: {
-      fontSize: 15,
+      fontSize: 13,
       color: colors.textSecondary,
       fontWeight: '600' as const,
-      marginBottom: 4,
+      minWidth: 90,
     },
     myVitaminTime: {
-      fontSize: 14,
+      fontSize: 13,
       color: colors.textSecondary,
       fontWeight: '500' as const,
+      minWidth: 100,
     },
     myVitaminNotes: {
-      fontSize: 14,
+      fontSize: 12,
       color: colors.textSecondary,
       fontStyle: 'italic' as const,
-      marginTop: 8,
-      lineHeight: 20,
+      marginTop: 6,
+      lineHeight: 16,
     },
     myVitaminActions: {
       flexDirection: 'row',
-      gap: 8,
+      gap: 6,
     },
     actionButton: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -1699,28 +1702,28 @@ export default function SupplementsScreen() {
                   <BlurCard key={vitamin.id} style={styles.myVitaminCard}>
                     <View style={styles.myVitaminHeader}>
                       <View style={styles.myVitaminInfo}>
-                        <Text style={styles.myVitaminName}>{vitamin.name}</Text>
-                        <Text style={styles.myVitaminDosage}>💊 {vitamin.dosage}</Text>
-                        <Text style={styles.myVitaminTime}>🕐 {vitamin.time}</Text>
-                        {vitamin.notes && (
-                          <Text style={styles.myVitaminNotes}>{vitamin.notes}</Text>
-                        )}
+                        <Text style={styles.myVitaminName} numberOfLines={1}>{vitamin.name}</Text>
+                        <Text style={styles.myVitaminDosage} numberOfLines={1}>{vitamin.dosage}</Text>
+                        <Text style={styles.myVitaminTime} numberOfLines={1}>{vitamin.time}</Text>
                       </View>
                       <View style={styles.myVitaminActions}>
                         <TouchableOpacity 
                           style={[styles.actionButton, styles.editButton]}
                           onPress={() => startEditVitamin(vitamin)}
                         >
-                          <Edit2 color="#2196F3" size={18} strokeWidth={2} />
+                          <Edit2 color="#2196F3" size={16} strokeWidth={2} />
                         </TouchableOpacity>
                         <TouchableOpacity 
                           style={[styles.actionButton, styles.deleteButton]}
                           onPress={() => deleteVitamin(vitamin.id)}
                         >
-                          <X color="#F44336" size={18} strokeWidth={2} />
+                          <X color="#F44336" size={16} strokeWidth={2} />
                         </TouchableOpacity>
                       </View>
                     </View>
+                    {vitamin.notes && (
+                      <Text style={styles.myVitaminNotes} numberOfLines={2}>{vitamin.notes}</Text>
+                    )}
                   </BlurCard>
                 )
               ))}
