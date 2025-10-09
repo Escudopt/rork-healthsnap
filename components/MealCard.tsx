@@ -83,51 +83,53 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
       { transform: [{ scale: scaleAnim }] }
     ]}>
       <View style={styles.card}>
-        {meal.imageBase64 ? (
-          <Image
-            source={{ 
-              uri: meal.imageBase64.startsWith('data:') 
-                ? meal.imageBase64 
-                : `data:image/jpeg;base64,${meal.imageBase64}` 
-            }}
-            style={styles.mainImage}
-            resizeMode="cover"
-            onError={(error) => {
-              console.log('Image load error:', error.nativeEvent.error);
-            }}
-          />
-        ) : (
-          <View style={[styles.placeholderImage, { backgroundColor: colors.surfaceSecondary }]}>
-            <Utensils color={colors.textTertiary} size={48} strokeWidth={1.5} />
-          </View>
-        )}
-        <View style={styles.content}>
-          <View style={styles.info}>
-            <View style={styles.mealTypeContainer}>
-              <Text style={styles.mealType}>{meal.mealType}</Text>
+        <View style={styles.cardContent}>
+          {meal.imageBase64 ? (
+            <Image
+              source={{ 
+                uri: meal.imageBase64.startsWith('data:') 
+                  ? meal.imageBase64 
+                  : `data:image/jpeg;base64,${meal.imageBase64}` 
+              }}
+              style={styles.compactImage}
+              resizeMode="cover"
+              onError={(error) => {
+                console.log('Image load error:', error.nativeEvent.error);
+              }}
+            />
+          ) : (
+            <View style={[styles.compactPlaceholder, { backgroundColor: colors.surfaceSecondary }]}>
+              <Utensils color={colors.textTertiary} size={20} strokeWidth={1.5} />
             </View>
-            <Text style={[styles.foods, { color: colors.text }]} numberOfLines={2}>
-              {meal.foods.map(f => f.name).join(', ')}
-            </Text>
-          </View>
-          
-          <View style={styles.footer}>
-            <View style={styles.caloriesContainer}>
-              <Text style={[styles.calories, { color: colors.text }]}>{meal.totalCalories} kcal</Text>
+          )}
+          <View style={styles.content}>
+            <View style={styles.info}>
+              <View style={styles.mealTypeContainer}>
+                <Text style={styles.mealType}>{meal.mealType}</Text>
+              </View>
+              <Text style={[styles.foods, { color: colors.text }]} numberOfLines={2}>
+                {meal.foods.map(f => f.name).join(', ')}
+              </Text>
             </View>
-            <View style={styles.actionButtons}>
-              {showDetailButton && (
-                <TouchableOpacity onPress={handleViewDetails} style={styles.detailButton}>
-                  <View style={styles.detailButtonInner}>
-                    <ChevronRight color={colors.primary} size={18} strokeWidth={2} />
+            
+            <View style={styles.footer}>
+              <View style={styles.caloriesContainer}>
+                <Text style={[styles.calories, { color: colors.text }]}>{meal.totalCalories} kcal</Text>
+              </View>
+              <View style={styles.actionButtons}>
+                {showDetailButton && (
+                  <TouchableOpacity onPress={handleViewDetails} style={styles.detailButton}>
+                    <View style={styles.detailButtonInner}>
+                      <ChevronRight color={colors.primary} size={18} strokeWidth={2} />
+                    </View>
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
+                  <View style={styles.deleteButtonInner}>
+                    <Trash2 color={colors.error} size={18} strokeWidth={2} />
                   </View>
                 </TouchableOpacity>
-              )}
-              <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-                <View style={styles.deleteButtonInner}>
-                  <Trash2 color={colors.error} size={18} strokeWidth={2} />
-                </View>
-              </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -152,19 +154,26 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 122, 255, 0.1)',
     overflow: 'hidden' as const,
   },
-  mainImage: {
-    width: '100%',
-    height: 180,
+  cardContent: {
+    flexDirection: 'row' as const,
+    padding: 16,
+    gap: 12,
+  },
+  compactImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     resizeMode: 'cover' as const,
   },
-  placeholderImage: {
-    width: '100%',
-    height: 180,
+  compactPlaceholder: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },
   content: {
-    padding: 16,
+    flex: 1,
     gap: 8,
   },
   info: {
