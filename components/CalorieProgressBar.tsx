@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 import { Camera, Edit3, Pill } from 'lucide-react-native';
 import Svg, { Circle } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
@@ -177,32 +178,59 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                     
                     onVitaminsPress();
                   }} 
-                  style={[styles.vitaminsButton, {
+                  style={[styles.liquidGlassButton, {
                     shadowColor: '#4CAF50',
                   }]}
                   activeOpacity={0.8}
                   disabled={isAnalyzing}
                 >
                   <Animated.View style={[
-                    styles.vitaminsGlowEffect,
+                    styles.liquidGlassGlow,
                     {
                       opacity: vitaminsGlowAnim.interpolate({
                         inputRange: [0, 1],
-                        outputRange: [0.3, 0.8],
+                        outputRange: [0.2, 0.5],
                       }),
+                      backgroundColor: '#4CAF50',
                     }
                   ]} />
-                  <LinearGradient
-                    colors={['#66BB6A', '#4CAF50', '#43A047']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.vitaminsButtonGradient}
-                  >
-                    <View style={styles.vitaminsIconContainer}>
-                      <Pill color="#FFFFFF" size={24} strokeWidth={2.5} />
-                      <View style={styles.vitaminsShineDot} />
+                  {Platform.OS === 'web' ? (
+                    <View style={styles.liquidGlassContainer}>
+                      <LinearGradient
+                        colors={[
+                          'rgba(102, 187, 106, 0.25)',
+                          'rgba(76, 175, 80, 0.35)',
+                          'rgba(67, 160, 71, 0.25)'
+                        ]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.liquidGlassGradient}
+                      >
+                        <View style={styles.liquidGlassInner}>
+                          <Pill color="#4CAF50" size={24} strokeWidth={2.5} />
+                          <View style={[styles.liquidGlassShine, { backgroundColor: '#4CAF50' }]} />
+                        </View>
+                      </LinearGradient>
                     </View>
-                  </LinearGradient>
+                  ) : (
+                    <BlurView intensity={20} tint={isDark ? 'dark' : 'light'} style={styles.liquidGlassContainer}>
+                      <LinearGradient
+                        colors={[
+                          'rgba(102, 187, 106, 0.25)',
+                          'rgba(76, 175, 80, 0.35)',
+                          'rgba(67, 160, 71, 0.25)'
+                        ]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={styles.liquidGlassGradient}
+                      >
+                        <View style={styles.liquidGlassInner}>
+                          <Pill color="#4CAF50" size={24} strokeWidth={2.5} />
+                          <View style={[styles.liquidGlassShine, { backgroundColor: '#4CAF50' }]} />
+                        </View>
+                      </LinearGradient>
+                    </BlurView>
+                  )}
                 </TouchableOpacity>
               </Animated.View>
               
@@ -230,20 +258,47 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                     
                     onManualPress();
                   }} 
-                  style={[styles.manualButton, {
+                  style={[styles.liquidGlassButton, {
                     shadowColor: colors.primary,
+                    width: 48,
+                    height: 48,
                   }]}
                   activeOpacity={0.7}
                   disabled={isAnalyzing}
                 >
-                  <LinearGradient
-                    colors={[colors.surfaceElevated, colors.surfaceSecondary]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.manualButtonGradient}
-                  >
-                    <Edit3 color={colors.primary} size={20} strokeWidth={2} />
-                  </LinearGradient>
+                  {Platform.OS === 'web' ? (
+                    <View style={[styles.liquidGlassContainer, { width: 48, height: 48, borderRadius: 24 }]}>
+                      <LinearGradient
+                        colors={[
+                          isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.6)',
+                          isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.4)'
+                        ]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={[styles.liquidGlassGradient, { width: 48, height: 48, borderRadius: 24 }]}
+                      >
+                        <View style={styles.liquidGlassInner}>
+                          <Edit3 color={colors.primary} size={20} strokeWidth={2} />
+                        </View>
+                      </LinearGradient>
+                    </View>
+                  ) : (
+                    <BlurView intensity={20} tint={isDark ? 'dark' : 'light'} style={[styles.liquidGlassContainer, { width: 48, height: 48, borderRadius: 24 }]}>
+                      <LinearGradient
+                        colors={[
+                          isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.6)',
+                          isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.4)'
+                        ]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 1 }}
+                        style={[styles.liquidGlassGradient, { width: 48, height: 48, borderRadius: 24 }]}
+                      >
+                        <View style={styles.liquidGlassInner}>
+                          <Edit3 color={colors.primary} size={20} strokeWidth={2} />
+                        </View>
+                      </LinearGradient>
+                    </BlurView>
+                  )}
                 </TouchableOpacity>
               </Animated.View>
               
@@ -252,12 +307,10 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                 onPress={async () => {
                   if (isAnalyzing || !onCameraPress) return;
                   
-                  // Haptic feedback
                   if (Platform.OS !== 'web') {
                     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   }
                   
-                  // Scale down animation
                   Animated.sequence([
                     Animated.timing(cameraButtonScale, {
                       toValue: 0.85,
@@ -271,40 +324,93 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                     }),
                   ]).start();
                   
-                  // Show loading state
                   setIsAnalyzing(true);
                   
-                  // Call the camera press handler
                   try {
                     await onCameraPress();
                   } finally {
-                    // Hide loading after a delay to show the analyzing message
                     setTimeout(() => {
                       setIsAnalyzing(false);
                     }, 2500);
                   }
                 }} 
-                style={[styles.cameraButton, {
+                style={[styles.liquidGlassButton, {
                   shadowColor: colors.primary,
+                  width: 60,
+                  height: 60,
                 }]}
                 activeOpacity={0.7}
                 disabled={isAnalyzing}
               >
-                <LinearGradient
-                  colors={isAnalyzing 
-                    ? [colors.primaryDark, colors.primaryDark] 
-                    : [colors.primary, colors.primaryDark]
+                <Animated.View style={[
+                  styles.liquidGlassGlow,
+                  {
+                    opacity: pulseAnim.interpolate({
+                      inputRange: [1, 1.05],
+                      outputRange: [0.3, 0.6],
+                    }),
+                    backgroundColor: colors.primary,
                   }
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.cameraButtonGradient}
-                >
-                  {isAnalyzing ? (
-                    <ActivityIndicator color="#FFFFFF" size="small" />
-                  ) : (
-                    <Camera color="#FFFFFF" size={28} strokeWidth={2} />
-                  )}
-                </LinearGradient>
+                ]} />
+                {Platform.OS === 'web' ? (
+                  <View style={[styles.liquidGlassContainer, { width: 60, height: 60, borderRadius: 30 }]}>
+                    <LinearGradient
+                      colors={isAnalyzing 
+                        ? [
+                            `${colors.primaryDark}40`,
+                            `${colors.primaryDark}50`
+                          ]
+                        : [
+                            `${colors.primary}40`,
+                            `${colors.primaryDark}50`
+                          ]
+                      }
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[styles.liquidGlassGradient, { width: 60, height: 60, borderRadius: 30 }]}
+                    >
+                      <View style={styles.liquidGlassInner}>
+                        {isAnalyzing ? (
+                          <ActivityIndicator color={colors.primary} size="small" />
+                        ) : (
+                          <>
+                            <Camera color={colors.primary} size={28} strokeWidth={2} />
+                            <View style={[styles.liquidGlassShine, { backgroundColor: colors.primary }]} />
+                          </>
+                        )}
+                      </View>
+                    </LinearGradient>
+                  </View>
+                ) : (
+                  <BlurView intensity={20} tint={isDark ? 'dark' : 'light'} style={[styles.liquidGlassContainer, { width: 60, height: 60, borderRadius: 30 }]}>
+                    <LinearGradient
+                      colors={isAnalyzing 
+                        ? [
+                            `${colors.primaryDark}40`,
+                            `${colors.primaryDark}50`
+                          ]
+                        : [
+                            `${colors.primary}40`,
+                            `${colors.primaryDark}50`
+                          ]
+                      }
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={[styles.liquidGlassGradient, { width: 60, height: 60, borderRadius: 30 }]}
+                    >
+                      <View style={styles.liquidGlassInner}>
+                        {isAnalyzing ? (
+                          <ActivityIndicator color={colors.primary} size="small" />
+                        ) : (
+                          <>
+                            <Camera color={colors.primary} size={28} strokeWidth={2} />
+                            <View style={[styles.liquidGlassShine, { backgroundColor: colors.primary }]} />
+                          </>
+                        )}
+                      </View>
+                    </LinearGradient>
+                  </BlurView>
+                )}
               </TouchableOpacity>
               </Animated.View>
             </View>
@@ -376,79 +482,60 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
     gap: 10,
   },
-  vitaminsButton: {
+  liquidGlassButton: {
     borderRadius: 28,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 12,
     position: 'relative' as const,
+    overflow: 'hidden' as const,
   },
-  vitaminsGlowEffect: {
+  liquidGlassGlow: {
     position: 'absolute' as const,
-    top: -4,
-    left: -4,
-    right: -4,
-    bottom: -4,
-    borderRadius: 32,
-    backgroundColor: '#4CAF50',
+    top: -6,
+    left: -6,
+    right: -6,
+    bottom: -6,
+    borderRadius: 34,
   },
-  vitaminsButtonGradient: {
+  liquidGlassContainer: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    overflow: 'hidden' as const,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: Platform.select({
+      web: 'rgba(255, 255, 255, 0.1)',
+      default: 'transparent',
+    }),
+  },
+  liquidGlassGradient: {
     width: 56,
     height: 56,
     borderRadius: 28,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  vitaminsIconContainer: {
     position: 'relative' as const,
+  },
+  liquidGlassInner: {
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
+    position: 'relative' as const,
   },
-  vitaminsShineDot: {
+  liquidGlassShine: {
     position: 'absolute' as const,
-    top: -8,
-    right: -8,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    top: -10,
+    right: -10,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    opacity: 0.6,
     shadowColor: '#FFFFFF',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
-    shadowRadius: 4,
-  },
-  manualButton: {
-    borderRadius: 24,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  manualButtonGradient: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  cameraButton: {
-    borderRadius: 32,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 18,
-    elevation: 10,
-  },
-  cameraButtonGradient: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
+    shadowRadius: 6,
   },
   goalText: {
     fontSize: 13,
