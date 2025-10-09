@@ -9,7 +9,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { Trash2, Utensils, ChevronRight } from 'lucide-react-native';
+import { Trash2, ChevronRight } from 'lucide-react-native';
 import { Meal } from '@/types/food';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -83,27 +83,20 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
       { transform: [{ scale: scaleAnim }] }
     ]}>
       <View style={styles.card}>
+        {meal.imageBase64 && (
+          <Image
+            source={{ uri: `data:image/jpeg;base64,${meal.imageBase64}` }}
+            style={styles.mainImage}
+          />
+        )}
         <View style={styles.content}>
-          <View style={styles.imageRow}>
-            {meal.imageBase64 ? (
-              <Image
-                source={{ uri: `data:image/jpeg;base64,${meal.imageBase64}` }}
-                style={styles.thumbnail}
-              />
-            ) : (
-              <View style={styles.placeholderThumbnail}>
-                <Utensils color={colors.textTertiary} size={24} strokeWidth={1.5} />
-              </View>
-            )}
-            
-            <View style={styles.info}>
-              <View style={styles.mealTypeContainer}>
-                <Text style={styles.mealType}>{meal.mealType}</Text>
-              </View>
-              <Text style={[styles.foods, { color: colors.text }]} numberOfLines={2}>
-                {meal.foods.map(f => f.name).join(', ')}
-              </Text>
+          <View style={styles.info}>
+            <View style={styles.mealTypeContainer}>
+              <Text style={styles.mealType}>{meal.mealType}</Text>
             </View>
+            <Text style={[styles.foods, { color: colors.text }]} numberOfLines={2}>
+              {meal.foods.map(f => f.name).join(', ')}
+            </Text>
           </View>
           
           <View style={styles.footer}>
@@ -148,27 +141,16 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     borderColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 122, 255, 0.1)',
     overflow: 'hidden' as const,
   },
+  mainImage: {
+    width: '100%',
+    height: 180,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    marginBottom: 12,
+  },
   content: {
+    paddingHorizontal: 0,
     gap: 8,
-  },
-  imageRow: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    gap: 10,
-    marginBottom: 8,
-  },
-  thumbnail: {
-    width: 60,
-    height: 60,
-    borderRadius: 14,
-  },
-  placeholderThumbnail: {
-    width: 60,
-    height: 60,
-    borderRadius: 14,
-    backgroundColor: isDark ? colors.surfaceSecondary : 'rgba(0, 122, 255, 0.08)',
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
   },
   info: {
     flex: 1,
