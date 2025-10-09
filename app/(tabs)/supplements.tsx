@@ -692,6 +692,13 @@ export default function SupplementsScreen() {
 
   
   // Get intelligent personalized recommendations
+  const [aiAnalysis, setAiAnalysis] = useState<{
+    coverage: string[];
+    missing: string[];
+    suggestions: string[];
+    isAnalyzing: boolean;
+  } | null>(null);
+  
   const personalizedRecommendations = userProfile 
     ? getIntelligentSupplementRecommendations(
         userProfile.age, 
@@ -720,6 +727,12 @@ export default function SupplementsScreen() {
     
     loadMyVitamins();
   }, []);
+  
+  useEffect(() => {
+    if (myVitamins.length > 0 && meals.length > 0) {
+      analyzeVitaminCoverage();
+    }
+  }, [myVitamins, meals]);
   
   const loadMyVitamins = async () => {
     try {
@@ -858,6 +871,102 @@ export default function SupplementsScreen() {
     setNewVitaminNotes('');
     setShowVitaminPicker(false);
     setVitaminSearchQuery('');
+  };
+  
+  const analyzeVitaminCoverage = async () => {
+    try {
+      setAiAnalysis(prev => ({ ...prev, coverage: [], missing: [], suggestions: [], isAnalyzing: true } as any));
+      
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      
+      const recentMeals = meals.filter(meal => {
+        if (!meal?.timestamp) return false;
+        try {
+          return new Date(meal.timestamp) >= oneWeekAgo;
+        } catch {
+          return false;
+        }
+      });
+      
+      const nutritionalAnalysis = recentMeals.reduce((acc, meal) => {
+        meal.foods?.forEach((food: any) => {
+          acc.protein += food.protein || 0;
+          acc.carbs += food.carbs || 0;
+          acc.fat += food.fat || 0;
+          acc.fiber += food.fiber || 0;
+          acc.calcium += food.calcium || 0;
+          acc.iron += food.iron || 0;
+          acc.vitaminC += food.vitaminC || 0;
+          acc.vitaminD += food.vitaminD || 0;
+        });
+        return acc;
+      }, {
+        protein: 0, carbs: 0, fat: 0, fiber: 0,
+        calcium: 0, iron: 0, vitaminC: 0, vitaminD: 0
+      });
+      
+      const daysAnalyzed = Math.max(1, Math.ceil((Date.now() - oneWeekAgo.getTime()) / (1000 * 60 * 60 * 24)));
+      Object.keys(nutritionalAnalysis).forEach(key => {
+        nutritionalAnalysis[key as keyof typeof nutritionalAnalysis] /= daysAnalyzed;
+      });
+      
+      const vitaminList = myVitamins.map(v => `${v.name} (${v.dosage})`).join(', ');
+      
+      const prompt = `Você é um nutricionista especializado. Analise a suplementação atual e a alimentação do usuário.
+
+Vitaminas/Suplementos que o usuário está tomando:
+${vitaminList}
+
+Análise nutricional média diária (últimos 7 dias):
+- Proteína: ${Math.round(nutritionalAnalysis.protein)}g
+- Carboidratos: ${Math.round(nutritionalAnalysis.carbs)}g
+- Gordura: ${Math.round(nutritionalAnalysis.fat)}g
+- Fibra: ${Math.round(nutritionalAnalysis.fiber)}g
+- Cálcio: ${Math.round(nutritionalAnalysis.calcium)}mg
+- Ferro: ${Math.round(nutritionalAnalysis.iron)}mg
+- Vitamina C: ${Math.round(nutritionalAnalysis.vitaminC)}mg
+- Vitamina D: ${Math.round(nutritionalAnalysis.vitaminD)}UI
+
+Por favor, forneça uma análise em formato JSON com:
+1. "coverage": array de strings com as necessidades nutricionais que JÁ estão bem cobertas (pela alimentação OU suplementos)
+2. "missing": array de strings com as deficiências nutricionais detectadas que NÃO estão sendo supridas
+3. "suggestions": array de strings com sugestões específicas de suplementos ou ajustes na alimentação
+
+Seja específico e prático. Limite a 3-4 itens em cada categoria.
+
+Resposta em JSON puro (sem markdown):`;
+      
+      const { generateObject } = await import('@rork/toolkit-sdk');
+      const { z } = await import('zod');
+      
+      const analysis = await generateObject({
+        messages: [{ role: 'user', content: prompt }],
+        schema: z.object({
+          coverage: z.array(z.string()).describe('Necessidades nutricionais bem cobertas'),
+          missing: z.array(z.string()).describe('Deficiências nutricionais detectadas'),
+          suggestions: z.array(z.string()).describe('Sugestões de suplementos ou ajustes')
+        })
+      });
+      
+      console.log('🤖 AI Analysis:', analysis);
+      
+      setAiAnalysis({
+        coverage: analysis.coverage || [],
+        missing: analysis.missing || [],
+        suggestions: analysis.suggestions || [],
+        isAnalyzing: false
+      });
+      
+    } catch (error) {
+      console.error('❌ Error analyzing vitamin coverage:', error);
+      setAiAnalysis({
+        coverage: [],
+        missing: [],
+        suggestions: ['Erro ao analisar. Tente novamente mais tarde.'],
+        isAnalyzing: false
+      });
+    }
   };
   
   const filteredVitamins = COMMON_VITAMINS.filter(vitamin => 
@@ -1675,6 +1784,85 @@ export default function SupplementsScreen() {
 
           <Animated.View style={[styles.supplementsSection, { opacity: fadeAnim }]}>
 
+
+            {/* AI Analysis Section */}
+            {aiAnalysis && myVitamins.length > 0 && (
+              <View style={styles.analysisSection}>
+                <BlurCard style={styles.analysisCard}>
+                  <View style={styles.analysisHeader}>
+                    <View style={[styles.summaryCardIcon, { backgroundColor: '#FF9800' }]}>
+                      <Brain color="white" size={20} strokeWidth={2.5} />
+                    </View>
+                    <Text style={styles.analysisTitle}>Análise Inteligente</Text>
+                  </View>
+                  <Text style={styles.analysisText}>
+                    {aiAnalysis.isAnalyzing 
+                      ? 'Analisando sua suplementação e alimentação...'
+                      : 'Baseado nas suas vitaminas e alimentação dos últimos 7 dias'}
+                  </Text>
+                </BlurCard>
+                
+                {!aiAnalysis.isAnalyzing && aiAnalysis.coverage.length > 0 && (
+                  <BlurCard style={styles.coverageCard}>
+                    <Text style={styles.coverageTitle}>✅ Bem Coberto</Text>
+                    <Text style={styles.coverageDescription}>
+                      Estas necessidades nutricionais estão sendo bem supridas:
+                    </Text>
+                    <View style={styles.coverageList}>
+                      {aiAnalysis.coverage.map((item, index) => (
+                        <View key={index} style={styles.coverageItem}>
+                          <View style={[styles.coverageBullet, { backgroundColor: '#4CAF50' }]} />
+                          <Text style={styles.coverageItemText}>{item}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </BlurCard>
+                )}
+                
+                {!aiAnalysis.isAnalyzing && aiAnalysis.missing.length > 0 && (
+                  <BlurCard style={styles.missingCard}>
+                    <Text style={styles.missingTitle}>⚠️ Deficiências Detectadas</Text>
+                    <Text style={styles.missingDescription}>
+                      Estas necessidades nutricionais precisam de atenção:
+                    </Text>
+                    <View style={styles.suggestionsList}>
+                      {aiAnalysis.missing.map((item, index) => (
+                        <View key={index} style={styles.suggestionItem}>
+                          <Text style={styles.suggestionText}>{item}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </BlurCard>
+                )}
+                
+                {!aiAnalysis.isAnalyzing && aiAnalysis.suggestions.length > 0 && (
+                  <BlurCard style={styles.missingCard}>
+                    <Text style={styles.missingTitle}>💡 Sugestões Personalizadas</Text>
+                    <Text style={styles.missingDescription}>
+                      Recomendações para otimizar sua suplementação:
+                    </Text>
+                    <View style={styles.suggestionsList}>
+                      {aiAnalysis.suggestions.map((item, index) => (
+                        <View key={index} style={styles.suggestionItem}>
+                          <Text style={styles.suggestionText}>{item}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </BlurCard>
+                )}
+                
+                {!aiAnalysis.isAnalyzing && 
+                 aiAnalysis.coverage.length === 0 && 
+                 aiAnalysis.missing.length === 0 && 
+                 aiAnalysis.suggestions.length === 0 && (
+                  <BlurCard style={styles.successCard}>
+                    <Text style={styles.successText}>
+                      ✨ Sua suplementação está equilibrada! Continue assim.
+                    </Text>
+                  </BlurCard>
+                )}
+              </View>
+            )}
 
             {/* My Vitamins Section */}
             <View style={styles.myVitaminsSection}>
