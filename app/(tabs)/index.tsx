@@ -768,9 +768,19 @@ export default function HomeScreen() {
                         <Text style={[styles.greeting, { color: colors.text }]}>
                           {userProfile.name}
                         </Text>
-                        <Text style={[styles.userName, { color: colors.textSecondary }]}>
-                          {userProfile.age} anos
-                        </Text>
+                        <View style={styles.userStatsRow}>
+                          <Text style={[styles.userName, { color: colors.textSecondary }]}>
+                            {userProfile.age} anos
+                          </Text>
+                          <View style={[styles.statDivider, { backgroundColor: colors.textSecondary }]} />
+                          <Text style={[styles.userName, { color: colors.textSecondary }]}>
+                            {userProfile.height}cm
+                          </Text>
+                          <View style={[styles.statDivider, { backgroundColor: colors.textSecondary }]} />
+                          <Text style={[styles.userName, { color: colors.textSecondary }]}>
+                            {userProfile.weight}kg
+                          </Text>
+                        </View>
                       </>
                     ) : (
                       <Text style={[styles.greeting, { color: colors.text }]}>
@@ -2257,10 +2267,21 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   greetingTextContainer: {
     flex: 1,
   },
-  userName: {
-    fontSize: 15,
-    fontWeight: '500' as const,
+  userStatsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 2,
+    gap: 6,
+  },
+  statDivider: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    opacity: 0.4,
+  },
+  userName: {
+    fontSize: 13,
+    fontWeight: '500' as const,
     letterSpacing: -0.2,
     ...Platform.select({
       ios: {
