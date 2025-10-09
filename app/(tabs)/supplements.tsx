@@ -46,6 +46,52 @@ interface MyVitamin {
 
 const MY_VITAMINS_STORAGE_KEY = 'my_vitamins_v1';
 
+const COMMON_DOSAGES = [
+  '1 comprimido/dia',
+  '2 comprimidos/dia',
+  '1 cápsula/dia',
+  '2 cápsulas/dia',
+  '1 comprimido 2x/dia',
+  '500 mg/dia',
+  '1000 mg/dia',
+  '1500 mg/dia',
+  '2000 mg/dia',
+  '100 mcg/dia',
+  '200 mcg/dia',
+  '500 mcg/dia',
+  '1000 UI/dia',
+  '2000 UI/dia',
+  '4000 UI/dia',
+  '5 ml/dia',
+  '10 ml/dia',
+  '1 colher de sopa/dia',
+  '1 sachê/dia',
+  '1 gota/dia',
+  '5 gotas/dia',
+  '10 gotas/dia',
+];
+
+const COMMON_TIMES = [
+  'Após o pequeno-almoço',
+  'Antes do pequeno-almoço',
+  'Após o almoço',
+  'Antes do almoço',
+  'Após o jantar',
+  'Antes do jantar',
+  'Antes de dormir',
+  'Ao acordar',
+  'Com as refeições',
+  'Entre as refeições',
+  'Manhã',
+  'Tarde',
+  'Noite',
+  '2x ao dia (manhã e noite)',
+  '3x ao dia (manhã, tarde e noite)',
+  'Em jejum',
+  'Com água',
+  'Com alimentos',
+];
+
 const COMMON_VITAMINS = [
   { name: 'Vitamina A', defaultDosage: '900 mcg/dia' },
   { name: 'Vitamina B1 (Tiamina)', defaultDosage: '1.2 mg/dia' },
@@ -605,6 +651,8 @@ export default function SupplementsScreen() {
   const [newVitaminDosage, setNewVitaminDosage] = useState<string>('');
   const [newVitaminTime, setNewVitaminTime] = useState<string>('');
   const [newVitaminNotes, setNewVitaminNotes] = useState<string>('');
+  const [showDosagePicker, setShowDosagePicker] = useState<boolean>(false);
+  const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
   
   // Get intelligent personalized recommendations
   const personalizedRecommendations = userProfile 
@@ -1505,22 +1553,32 @@ export default function SupplementsScreen() {
                   </TouchableOpacity>
                   
                   <Text style={styles.inputLabel}>Dosagem *</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Ex: 2000 UI ao dia"
-                    placeholderTextColor={colors.textSecondary}
-                    value={newVitaminDosage}
-                    onChangeText={setNewVitaminDosage}
-                  />
+                  <TouchableOpacity 
+                    style={styles.vitaminPickerButton}
+                    onPress={() => setShowDosagePicker(true)}
+                  >
+                    <Text style={[
+                      styles.vitaminPickerButtonText,
+                      !newVitaminDosage && styles.vitaminPickerPlaceholder
+                    ]}>
+                      {newVitaminDosage || 'Selecione a dosagem'}
+                    </Text>
+                    <ChevronDown color={colors.textSecondary} size={20} />
+                  </TouchableOpacity>
                   
                   <Text style={styles.inputLabel}>Horário</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Ex: Após o pequeno-almoço"
-                    placeholderTextColor={colors.textSecondary}
-                    value={newVitaminTime}
-                    onChangeText={setNewVitaminTime}
-                  />
+                  <TouchableOpacity 
+                    style={styles.vitaminPickerButton}
+                    onPress={() => setShowTimePicker(true)}
+                  >
+                    <Text style={[
+                      styles.vitaminPickerButtonText,
+                      !newVitaminTime && styles.vitaminPickerPlaceholder
+                    ]}>
+                      {newVitaminTime || 'Selecione o horário'}
+                    </Text>
+                    <ChevronDown color={colors.textSecondary} size={20} />
+                  </TouchableOpacity>
                   
                   <Text style={styles.inputLabel}>Notas</Text>
                   <TextInput
@@ -1583,22 +1641,32 @@ export default function SupplementsScreen() {
                     </TouchableOpacity>
                     
                     <Text style={styles.inputLabel}>Dosagem *</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Ex: 2000 UI ao dia"
-                      placeholderTextColor={colors.textSecondary}
-                      value={newVitaminDosage}
-                      onChangeText={setNewVitaminDosage}
-                    />
+                    <TouchableOpacity 
+                      style={styles.vitaminPickerButton}
+                      onPress={() => setShowDosagePicker(true)}
+                    >
+                      <Text style={[
+                        styles.vitaminPickerButtonText,
+                        !newVitaminDosage && styles.vitaminPickerPlaceholder
+                      ]}>
+                        {newVitaminDosage || 'Selecione a dosagem'}
+                      </Text>
+                      <ChevronDown color={colors.textSecondary} size={20} />
+                    </TouchableOpacity>
                     
                     <Text style={styles.inputLabel}>Horário</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Ex: Após o pequeno-almoço"
-                      placeholderTextColor={colors.textSecondary}
-                      value={newVitaminTime}
-                      onChangeText={setNewVitaminTime}
-                    />
+                    <TouchableOpacity 
+                      style={styles.vitaminPickerButton}
+                      onPress={() => setShowTimePicker(true)}
+                    >
+                      <Text style={[
+                        styles.vitaminPickerButtonText,
+                        !newVitaminTime && styles.vitaminPickerPlaceholder
+                      ]}>
+                        {newVitaminTime || 'Selecione o horário'}
+                      </Text>
+                      <ChevronDown color={colors.textSecondary} size={20} />
+                    </TouchableOpacity>
                     
                     <Text style={styles.inputLabel}>Notas</Text>
                     <TextInput
@@ -1970,6 +2038,80 @@ export default function SupplementsScreen() {
                 setShowVitaminPicker(false);
                 setVitaminSearchQuery('');
               }}
+            >
+              <Text style={styles.modalCloseButtonText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      
+      <Modal
+        visible={showDosagePicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowDosagePicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selecionar Dosagem</Text>
+            </View>
+            
+            <ScrollView style={styles.vitaminList}>
+              {COMMON_DOSAGES.map((dosage, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.vitaminItem}
+                  onPress={() => {
+                    setNewVitaminDosage(dosage);
+                    setShowDosagePicker(false);
+                  }}
+                >
+                  <Text style={styles.vitaminItemName}>{dosage}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowDosagePicker(false)}
+            >
+              <Text style={styles.modalCloseButtonText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      
+      <Modal
+        visible={showTimePicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowTimePicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selecionar Horário</Text>
+            </View>
+            
+            <ScrollView style={styles.vitaminList}>
+              {COMMON_TIMES.map((time, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.vitaminItem}
+                  onPress={() => {
+                    setNewVitaminTime(time);
+                    setShowTimePicker(false);
+                  }}
+                >
+                  <Text style={styles.vitaminItemName}>{time}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => setShowTimePicker(false)}
             >
               <Text style={styles.modalCloseButtonText}>Fechar</Text>
             </TouchableOpacity>

@@ -18,7 +18,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Flame, Trophy, CheckCircle, Heart, Activity, Info, Utensils } from 'lucide-react-native';
+import { Plus, TrendingUp, Calendar, Hash, X, User, History, Clock, Camera, RotateCcw, Settings, Sparkles, Zap, Award, Target, Flame, Trophy, CheckCircle, Heart, Activity, Info, Utensils, Pill, ChevronRight } from 'lucide-react-native';
 import { FloatingAIChat } from '@/components/FloatingAIChat';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
@@ -798,6 +798,24 @@ export default function HomeScreen() {
 
               
 
+              
+              {/* My Vitamins Quick Access */}
+              <TouchableOpacity
+                style={[styles.myVitaminsQuickAccess, { backgroundColor: colors.surfaceElevated }]}
+                onPress={() => router.push('/(tabs)/supplements')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.myVitaminsQuickAccessContent}>
+                  <View style={[styles.myVitaminsQuickAccessIcon, { backgroundColor: '#4CAF50' + '15' }]}>
+                    <Pill color="#4CAF50" size={20} strokeWidth={2.5} />
+                  </View>
+                  <View style={styles.myVitaminsQuickAccessText}>
+                    <Text style={[styles.myVitaminsQuickAccessTitle, { color: colors.text }]}>As Minhas Vitaminas</Text>
+                    <Text style={[styles.myVitaminsQuickAccessSubtitle, { color: colors.textSecondary }]}>Gerir suplementos diários</Text>
+                  </View>
+                  <ChevronRight color={colors.textSecondary} size={20} strokeWidth={2} />
+                </View>
+              </TouchableOpacity>
               
               {/* Food Widgets Section */}
               <View style={styles.foodWidgetsSection}>
@@ -2765,5 +2783,46 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   macroInput: {
     flex: 1,
+  },
+  
+  // My Vitamins Quick Access
+  myVitaminsQuickAccess: {
+    padding: 14,
+    borderRadius: 16,
+    marginTop: 10,
+    marginBottom: 6,
+    shadowColor: isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.08)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: isDark ? 0.3 : 0.08,
+    shadowRadius: isDark ? 8 : 12,
+    elevation: isDark ? 4 : 2,
+    borderWidth: 0.5,
+    borderColor: isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.15)',
+    overflow: 'hidden',
+    backgroundColor: isDark ? 'rgba(22, 24, 33, 0.6)' : 'rgba(255, 255, 255, 0.7)',
+  },
+  myVitaminsQuickAccessContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  myVitaminsQuickAccessIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  myVitaminsQuickAccessText: {
+    flex: 1,
+  },
+  myVitaminsQuickAccessTitle: {
+    fontSize: 15,
+    fontWeight: '600' as const,
+    marginBottom: 2,
+  },
+  myVitaminsQuickAccessSubtitle: {
+    fontSize: 12,
+    fontWeight: '400' as const,
   },
 });
