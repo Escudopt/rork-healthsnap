@@ -941,7 +941,8 @@ export default function SupplementsScreen() {
       console.log('🤖 Sending analysis request...');
       
       const { generateObject } = await import('@rork/toolkit-sdk');
-      const { z } = await import('zod');
+      const zod = await import('zod');
+      const z = zod.z;
       
       const prompt = `Analyze user supplementation and diet.
 
@@ -964,13 +965,15 @@ Provide analysis in Portuguese with:
 
 Keep responses concise and in Portuguese.`;
       
+      const schema = z.object({
+        coverage: z.array(z.string()).describe('Well covered nutritional needs'),
+        missing: z.array(z.string()).describe('Detected deficiencies'),
+        suggestions: z.array(z.string()).describe('Practical suggestions')
+      });
+      
       const analysis = await generateObject({
         messages: [{ role: 'user', content: prompt }],
-        schema: z.object({
-          coverage: z.array(z.string()).describe('Well covered nutritional needs'),
-          missing: z.array(z.string()).describe('Detected deficiencies'),
-          suggestions: z.array(z.string()).describe('Practical suggestions')
-        })
+        schema: schema
       });
       
       console.log('✅ AI Analysis received:', analysis);
