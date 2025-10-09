@@ -737,16 +737,21 @@ export default function HomeScreen() {
             <View style={styles.headerTop}>
               <View style={styles.headerLeft}>
                 <View style={styles.greetingContainer}>
-                  {userProfile?.profilePhoto ? (
-                    <Image 
-                      source={{ uri: userProfile.profilePhoto }} 
-                      style={styles.greetingProfileImage}
-                    />
-                  ) : (
-                    <View style={[styles.greetingProfilePlaceholder, { backgroundColor: colors.surfaceElevated }]}>
-                      <User color={colors.textSecondary} size={24} strokeWidth={2} />
-                    </View>
-                  )}
+                  <TouchableOpacity
+                    onPress={() => router.push('/(tabs)/profile')}
+                    activeOpacity={0.7}
+                  >
+                    {userProfile?.profilePhoto ? (
+                      <Image 
+                        source={{ uri: userProfile.profilePhoto }} 
+                        style={styles.greetingProfileImage}
+                      />
+                    ) : (
+                      <View style={[styles.greetingProfilePlaceholder, { backgroundColor: colors.surfaceElevated }]}>
+                        <User color={colors.textSecondary} size={24} strokeWidth={2} />
+                      </View>
+                    )}
+                  </TouchableOpacity>
                   <View style={styles.greetingTextContainer}>
                     {userProfile?.name ? (
                       <>
