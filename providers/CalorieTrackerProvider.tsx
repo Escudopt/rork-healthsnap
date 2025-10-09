@@ -480,6 +480,7 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
         mealType: mealData.mealType,
         foods: mealData.foods,
         totalCalories,
+        imageBase64: mealData.imageBase64,
         id: `meal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: new Date().toISOString(),
       };
