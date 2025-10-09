@@ -85,8 +85,16 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
       <View style={styles.card}>
         {meal.imageBase64 ? (
           <Image
-            source={{ uri: `data:image/jpeg;base64,${meal.imageBase64}` }}
+            source={{ 
+              uri: meal.imageBase64.startsWith('data:') 
+                ? meal.imageBase64 
+                : `data:image/jpeg;base64,${meal.imageBase64}` 
+            }}
             style={styles.mainImage}
+            resizeMode="cover"
+            onError={(error) => {
+              console.log('Image load error:', error.nativeEvent.error);
+            }}
           />
         ) : (
           <View style={[styles.placeholderImage, { backgroundColor: colors.surfaceSecondary }]}>
