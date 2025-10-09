@@ -697,7 +697,7 @@ export default function SupplementsScreen() {
     missing: string[];
     suggestions: string[];
     isAnalyzing: boolean;
-  } | null>(null);
+  }>({ coverage: [], missing: [], suggestions: [], isAnalyzing: false });
   
   const personalizedRecommendations = userProfile 
     ? getIntelligentSupplementRecommendations(
@@ -729,10 +729,13 @@ export default function SupplementsScreen() {
   }, []);
   
   useEffect(() => {
-    if (myVitamins.length > 0 && meals.length > 0) {
-      analyzeVitaminCoverage();
+    if (myVitamins.length > 0 && meals.length > 0 && !aiAnalysis.isAnalyzing) {
+      const timeoutId = setTimeout(() => {
+        analyzeVitaminCoverage();
+      }, 1000);
+      return () => clearTimeout(timeoutId);
     }
-  }, [myVitamins, meals]);
+  }, [myVitamins.length, meals.length]);
   
   const loadMyVitamins = async () => {
     try {
@@ -875,7 +878,7 @@ export default function SupplementsScreen() {
   
   const analyzeVitaminCoverage = async () => {
     try {
-      setAiAnalysis(prev => ({ ...prev, coverage: [], missing: [], suggestions: [], isAnalyzing: true } as any));
+      setAiAnalysis({ coverage: [], missing: [], suggestions: [], isAnalyzing: true });
       
       const oneWeekAgo = new Date();
       oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
@@ -947,6 +950,9 @@ Resposta em JSON puro (sem markdown):`;
           missing: z.array(z.string()).describe('Deficiências nutricionais detectadas'),
           suggestions: z.array(z.string()).describe('Sugestões de suplementos ou ajustes')
         })
+      }).catch((error) => {
+        console.error('❌ generateObject error:', error);
+        return { coverage: [], missing: [], suggestions: [] };
       });
       
       console.log('🤖 AI Analysis:', analysis);
@@ -1786,7 +1792,7 @@ Resposta em JSON puro (sem markdown):`;
 
 
             {/* AI Analysis Section */}
-            {aiAnalysis && myVitamins.length > 0 && (
+            {myVitamins.length > 0 && (
               <View style={styles.analysisSection}>
                 <BlurCard style={styles.analysisCard}>
                   <View style={styles.analysisHeader}>
