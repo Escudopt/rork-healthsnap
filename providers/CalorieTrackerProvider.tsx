@@ -453,8 +453,13 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
   }, [loadMeals, loadDailyGoal, loadUserProfile, loadWorkoutSessions]);
 
   const addMeal = useCallback(async (mealData: Omit<Meal, 'id' | 'timestamp'>) => {
+    console.log('🍽️ ========== ADD MEAL STARTED ==========');
+    console.log('Received meal data:', JSON.stringify(mealData, null, 2));
+    console.log('Current meals count:', meals.length);
+    
     try {
       if (!mealData.foods || !Array.isArray(mealData.foods) || mealData.foods.length === 0) {
+        console.error('❌ Invalid meal data: no foods');
         throw new Error('Dados da refeição inválidos');
       }
       
@@ -463,25 +468,36 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
         return sum + calories;
       }, 0);
       
+      console.log('Calculated total calories:', totalCalories);
+      
       if (totalCalories <= 0) {
+        console.error('❌ Invalid calories:', totalCalories);
         throw new Error('Calorias inválidas - deve ser maior que 0');
       }
 
       const newMeal: Meal = {
-        ...mealData,
+        name: mealData.name || 'Refeição',
+        mealType: mealData.mealType,
+        foods: mealData.foods,
         totalCalories,
         id: `meal_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         timestamp: new Date().toISOString(),
       };
       
+      console.log('✅ Created new meal object:', JSON.stringify(newMeal, null, 2));
       console.log(`➕ Adding meal: ${totalCalories} kcal`);
       
       const updatedMeals = [newMeal, ...meals];
+      console.log('Updated meals array length:', updatedMeals.length);
+      
       setMeals(updatedMeals);
+      console.log('✅ State updated with new meals');
       
       // Force immediate save to ensure persistence
+      console.log('💾 Saving to storage...');
       await saveMeals(updatedMeals);
       await forceSaveMeals(updatedMeals);
+      console.log('✅ Saved to storage');
       
       // Verify the save worked
       const verification = await AsyncStorage.getItem(STORAGE_KEY);
@@ -494,8 +510,13 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
         }
       }
       
+      console.log('🍽️ ========== ADD MEAL COMPLETED SUCCESSFULLY ==========');
+      
     } catch (error) {
-      console.error('❌ Error adding meal:', error);
+      console.error('❌ ========== ERROR IN ADD MEAL ==========');
+      console.error('Error details:', error);
+      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
       throw error;
     }
   }, [meals, saveMeals]);

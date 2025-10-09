@@ -426,31 +426,35 @@ export default function HomeScreen() {
       };
       
       console.log('📤 About to call addMeal with:', JSON.stringify(mealData, null, 2));
+      console.log('Current meals before add:', meals.length);
       
       await addMeal(mealData);
       
       console.log('✅ addMeal completed successfully');
+      
+      // Wait a bit for state to update
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       console.log('Current meals count after add:', meals.length);
       
       if (Platform.OS !== 'web') {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       
-      console.log('Showing success alert...');
-      Alert.alert('Sucesso', 'Refeição adicionada com sucesso!');
-      
       console.log('Closing modal and resetting form...');
       setShowManualMealModal(false);
       
-      setTimeout(() => {
-        setManualMealName('');
-        setManualMealCalories('');
-        setManualMealProtein('');
-        setManualMealCarbs('');
-        setManualMealFat('');
-        setManualMealPortion('');
-        setManualMealType('Lanche');
-      }, 300);
+      // Reset form
+      setManualMealName('');
+      setManualMealCalories('');
+      setManualMealProtein('');
+      setManualMealCarbs('');
+      setManualMealFat('');
+      setManualMealPortion('');
+      setManualMealType('Lanche');
+      
+      console.log('Showing success alert...');
+      Alert.alert('Sucesso', 'Refeição adicionada com sucesso!');
       
       console.log('🍽️ ========== MANUAL MEAL SUBMIT COMPLETED ==========');
     } catch (error) {
