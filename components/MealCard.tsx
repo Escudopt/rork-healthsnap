@@ -131,7 +131,6 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   card: {
     backgroundColor: isDark ? 'rgba(22, 24, 33, 0.7)' : 'rgba(255, 255, 255, 0.8)',
     borderRadius: 20,
-    padding: 16,
     shadowColor: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 122, 255, 0.15)',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: isDark ? 0.4 : 0.12,
@@ -144,12 +143,10 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   mainImage: {
     width: '100%',
     height: 180,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    marginBottom: 12,
+    resizeMode: 'cover' as const,
   },
   content: {
-    paddingHorizontal: 0,
+    padding: 16,
     gap: 8,
   },
   info: {
