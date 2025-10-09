@@ -1971,9 +1971,15 @@ export default function SupplementsScreen() {
                           )}
                         </View>
                         <View style={styles.myVitaminDetails}>
-                          <Text style={styles.myVitaminDosage} numberOfLines={1}>{vitamin.dosage}</Text>
-                          <Text style={styles.myVitaminSeparator}>•</Text>
-                          <Text style={styles.myVitaminTime} numberOfLines={1}>{vitamin.time}</Text>
+                          <Text style={styles.myVitaminDosage} numberOfLines={1}>
+                            {vitamin.takenToday ? `Tomado hoje: ${vitamin.dosage}` : vitamin.dosage}
+                          </Text>
+                          {!vitamin.takenToday && (
+                            <>
+                              <Text style={styles.myVitaminSeparator}>•</Text>
+                              <Text style={styles.myVitaminTime} numberOfLines={1}>{vitamin.time}</Text>
+                            </>
+                          )}
                         </View>
                       </View>
                       <View style={styles.myVitaminActions}>
