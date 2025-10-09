@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Camera, Edit3 } from 'lucide-react-native';
+import { Camera, Edit3, Pill } from 'lucide-react-native';
 import Svg, { Circle } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -12,17 +12,19 @@ interface CalorieProgressBarProps {
   onGoalPress?: () => void;
   onCameraPress?: () => void;
   onManualPress?: () => void;
+  onVitaminsPress?: () => void;
 }
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, onCameraPress, onManualPress }: CalorieProgressBarProps) {
+export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, onCameraPress, onManualPress, onVitaminsPress }: CalorieProgressBarProps) {
   const { colors, isDark } = useTheme();
   const progressAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const cameraButtonScale = useRef(new Animated.Value(1)).current;
   const manualButtonScale = useRef(new Animated.Value(1)).current;
+  const vitaminsButtonScale = useRef(new Animated.Value(1)).current;
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
@@ -114,6 +116,47 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
           
           <View style={styles.rightContent}>
             <View style={styles.buttonsRow}>
+              <Animated.View style={{ transform: [{ scale: vitaminsButtonScale }] }}>
+                <TouchableOpacity 
+                  onPress={async () => {
+                    if (isAnalyzing || !onVitaminsPress) return;
+                    
+                    if (Platform.OS !== 'web') {
+                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    }
+                    
+                    Animated.sequence([
+                      Animated.timing(vitaminsButtonScale, {
+                        toValue: 0.85,
+                        duration: 200,
+                        useNativeDriver: true,
+                      }),
+                      Animated.timing(vitaminsButtonScale, {
+                        toValue: 1,
+                        duration: 200,
+                        useNativeDriver: true,
+                      }),
+                    ]).start();
+                    
+                    onVitaminsPress();
+                  }} 
+                  style={[styles.vitaminsButton, {
+                    shadowColor: '#4CAF50',
+                  }]}
+                  activeOpacity={0.7}
+                  disabled={isAnalyzing}
+                >
+                  <LinearGradient
+                    colors={['#4CAF50', '#45A049']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.vitaminsButtonGradient}
+                  >
+                    <Pill color="#FFFFFF" size={20} strokeWidth={2} />
+                  </LinearGradient>
+                </TouchableOpacity>
+              </Animated.View>
+              
               <Animated.View style={{ transform: [{ scale: manualButtonScale }] }}>
                 <TouchableOpacity 
                   onPress={async () => {
@@ -283,6 +326,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 10,
+  },
+  vitaminsButton: {
+    borderRadius: 24,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 6,
+  },
+  vitaminsButtonGradient: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   manualButton: {
     borderRadius: 24,

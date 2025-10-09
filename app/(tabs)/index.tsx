@@ -761,6 +761,7 @@ export default function HomeScreen() {
                 onGoalPress={handleGoalPress}
                 onCameraPress={handleCameraPress}
                 onManualPress={() => setShowManualMealModal(true)}
+                onVitaminsPress={() => router.push('/(tabs)/supplements')}
               />
               
 
@@ -798,24 +799,6 @@ export default function HomeScreen() {
 
               
 
-              
-              {/* My Vitamins Quick Access */}
-              <TouchableOpacity
-                style={[styles.myVitaminsQuickAccess, { backgroundColor: colors.surfaceElevated }]}
-                onPress={() => router.push('/(tabs)/supplements')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.myVitaminsQuickAccessContent}>
-                  <View style={[styles.myVitaminsQuickAccessIcon, { backgroundColor: '#4CAF50' + '15' }]}>
-                    <Pill color="#4CAF50" size={20} strokeWidth={2.5} />
-                  </View>
-                  <View style={styles.myVitaminsQuickAccessText}>
-                    <Text style={[styles.myVitaminsQuickAccessTitle, { color: colors.text }]}>As Minhas Vitaminas</Text>
-                    <Text style={[styles.myVitaminsQuickAccessSubtitle, { color: colors.textSecondary }]}>Gerir suplementos diários</Text>
-                  </View>
-                  <ChevronRight color={colors.textSecondary} size={20} strokeWidth={2} />
-                </View>
-              </TouchableOpacity>
               
               {/* Food Widgets Section */}
               <View style={styles.foodWidgetsSection}>
