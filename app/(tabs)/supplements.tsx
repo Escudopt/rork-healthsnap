@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,13 +7,17 @@ import {
   Animated,
   StatusBar,
   Platform,
+  TouchableOpacity,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Info, Target } from 'lucide-react-native';
+import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Info, Target, Plus, X, Edit2, Check } from 'lucide-react-native';
 import { BlurCard } from '@/components/BlurCard';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Supplement {
   id: string;
@@ -30,6 +34,16 @@ interface Supplement {
     warning: string;
   }[];
 }
+
+interface MyVitamin {
+  id: string;
+  name: string;
+  dosage: string;
+  time: string;
+  notes?: string;
+}
+
+const MY_VITAMINS_STORAGE_KEY = 'my_vitamins_v1';
 
 // Intelligent supplement recommendation system based on age, diet, and nutritional analysis
 const getIntelligentSupplementRecommendations = (
@@ -542,6 +556,14 @@ export default function SupplementsScreen() {
   const { colors, isDark } = useTheme();
   const { userProfile, meals, healthMetrics } = useCalorieTracker();
   
+  const [myVitamins, setMyVitamins] = useState<MyVitamin[]>([]);
+  const [isAddingVitamin, setIsAddingVitamin] = useState<boolean>(false);
+  const [editingVitaminId, setEditingVitaminId] = useState<string | null>(null);
+  const [newVitaminName, setNewVitaminName] = useState<string>('');
+  const [newVitaminDosage, setNewVitaminDosage] = useState<string>('');
+  const [newVitaminTime, setNewVitaminTime] = useState<string>('');
+  const [newVitaminNotes, setNewVitaminNotes] = useState<string>('');
+  
   // Get intelligent personalized recommendations
   const personalizedRecommendations = userProfile 
     ? getIntelligentSupplementRecommendations(
@@ -568,7 +590,125 @@ export default function SupplementsScreen() {
         useNativeDriver: true,
       }),
     ]).start();
+    
+    loadMyVitamins();
   }, [fadeAnim, scaleAnim]);
+  
+  const loadMyVitamins = async () => {
+    try {
+      const stored = await AsyncStorage.getItem(MY_VITAMINS_STORAGE_KEY);
+      if (stored) {
+        const vitamins = JSON.parse(stored) as MyVitamin[];
+        setMyVitamins(vitamins);
+        console.log('💊 Loaded my vitamins:', vitamins.length);
+      }
+    } catch (error) {
+      console.error('❌ Error loading my vitamins:', error);
+    }
+  };
+  
+  const saveMyVitamins = async (vitamins: MyVitamin[]) => {
+    try {
+      await AsyncStorage.setItem(MY_VITAMINS_STORAGE_KEY, JSON.stringify(vitamins));
+      console.log('💾 Saved my vitamins:', vitamins.length);
+    } catch (error) {
+      console.error('❌ Error saving my vitamins:', error);
+    }
+  };
+  
+  const addVitamin = async () => {
+    if (!newVitaminName.trim()) {
+      Alert.alert('Erro', 'Por favor, insira o nome da vitamina');
+      return;
+    }
+    
+    if (!newVitaminDosage.trim()) {
+      Alert.alert('Erro', 'Por favor, insira a dosagem');
+      return;
+    }
+    
+    const newVitamin: MyVitamin = {
+      id: `vitamin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: newVitaminName.trim(),
+      dosage: newVitaminDosage.trim(),
+      time: newVitaminTime.trim() || 'Não especificado',
+      notes: newVitaminNotes.trim(),
+    };
+    
+    const updatedVitamins = [...myVitamins, newVitamin];
+    setMyVitamins(updatedVitamins);
+    await saveMyVitamins(updatedVitamins);
+    
+    setNewVitaminName('');
+    setNewVitaminDosage('');
+    setNewVitaminTime('');
+    setNewVitaminNotes('');
+    setIsAddingVitamin(false);
+  };
+  
+  const updateVitamin = async (id: string) => {
+    if (!newVitaminName.trim() || !newVitaminDosage.trim()) {
+      Alert.alert('Erro', 'Por favor, preencha os campos obrigatórios');
+      return;
+    }
+    
+    const updatedVitamins = myVitamins.map(v => 
+      v.id === id 
+        ? {
+            ...v,
+            name: newVitaminName.trim(),
+            dosage: newVitaminDosage.trim(),
+            time: newVitaminTime.trim() || 'Não especificado',
+            notes: newVitaminNotes.trim(),
+          }
+        : v
+    );
+    
+    setMyVitamins(updatedVitamins);
+    await saveMyVitamins(updatedVitamins);
+    
+    setEditingVitaminId(null);
+    setNewVitaminName('');
+    setNewVitaminDosage('');
+    setNewVitaminTime('');
+    setNewVitaminNotes('');
+  };
+  
+  const deleteVitamin = async (id: string) => {
+    Alert.alert(
+      'Eliminar Vitamina',
+      'Tem a certeza que deseja eliminar esta vitamina?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Eliminar',
+          style: 'destructive',
+          onPress: async () => {
+            const updatedVitamins = myVitamins.filter(v => v.id !== id);
+            setMyVitamins(updatedVitamins);
+            await saveMyVitamins(updatedVitamins);
+          },
+        },
+      ]
+    );
+  };
+  
+  const startEditVitamin = (vitamin: MyVitamin) => {
+    setEditingVitaminId(vitamin.id);
+    setNewVitaminName(vitamin.name);
+    setNewVitaminDosage(vitamin.dosage);
+    setNewVitaminTime(vitamin.time === 'Não especificado' ? '' : vitamin.time);
+    setNewVitaminNotes(vitamin.notes || '');
+  };
+  
+  const cancelEdit = () => {
+    setEditingVitaminId(null);
+    setIsAddingVitamin(false);
+    setNewVitaminName('');
+    setNewVitaminDosage('');
+    setNewVitaminTime('');
+    setNewVitaminNotes('');
+  };
 
   const styles = useThemedStyles((colors, isDark) => StyleSheet.create({
     container: {
@@ -904,6 +1044,188 @@ export default function SupplementsScreen() {
       textAlign: 'center',
       lineHeight: 22,
     },
+    myVitaminsSection: {
+      marginBottom: 32,
+    },
+    myVitaminsHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 16,
+      paddingHorizontal: 4,
+    },
+    myVitaminsTitle: {
+      fontSize: 22,
+      fontWeight: '800' as const,
+      color: colors.text,
+      letterSpacing: 0.3,
+    },
+    addButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: '#4CAF50',
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      borderRadius: 20,
+      gap: 6,
+    },
+    addButtonText: {
+      fontSize: 14,
+      fontWeight: '700' as const,
+      color: 'white',
+    },
+    myVitaminCard: {
+      padding: 20,
+      marginBottom: 12,
+      borderRadius: 20,
+      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)',
+      borderWidth: 1.5,
+      borderColor: isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)',
+    },
+    myVitaminHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+    },
+    myVitaminInfo: {
+      flex: 1,
+    },
+    myVitaminName: {
+      fontSize: 18,
+      fontWeight: '700' as const,
+      color: colors.text,
+      marginBottom: 4,
+    },
+    myVitaminDosage: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      fontWeight: '600' as const,
+      marginBottom: 4,
+    },
+    myVitaminTime: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontWeight: '500' as const,
+    },
+    myVitaminNotes: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      fontStyle: 'italic' as const,
+      marginTop: 8,
+      lineHeight: 20,
+    },
+    myVitaminActions: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    actionButton: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    editButton: {
+      backgroundColor: isDark ? 'rgba(33, 150, 243, 0.2)' : 'rgba(33, 150, 243, 0.15)',
+    },
+    deleteButton: {
+      backgroundColor: isDark ? 'rgba(244, 67, 54, 0.2)' : 'rgba(244, 67, 54, 0.15)',
+    },
+    addVitaminForm: {
+      padding: 20,
+      marginBottom: 16,
+      borderRadius: 20,
+      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)',
+      borderWidth: 1.5,
+      borderColor: isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)',
+    },
+    formTitle: {
+      fontSize: 18,
+      fontWeight: '700' as const,
+      color: colors.text,
+      marginBottom: 16,
+    },
+    inputLabel: {
+      fontSize: 14,
+      fontWeight: '600' as const,
+      color: colors.text,
+      marginBottom: 8,
+    },
+    input: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      fontSize: 15,
+      color: colors.text,
+      marginBottom: 16,
+    },
+    inputMultiline: {
+      height: 80,
+      textAlignVertical: 'top' as const,
+    },
+    formActions: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 8,
+    },
+    formButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 14,
+      borderRadius: 12,
+      gap: 8,
+    },
+    saveButton: {
+      backgroundColor: '#4CAF50',
+    },
+    cancelButton: {
+      backgroundColor: isDark ? 'rgba(158, 158, 158, 0.2)' : 'rgba(158, 158, 158, 0.15)',
+    },
+    formButtonText: {
+      fontSize: 15,
+      fontWeight: '700' as const,
+      color: 'white',
+    },
+    cancelButtonText: {
+      color: colors.text,
+    },
+    emptyVitaminsCard: {
+      padding: 24,
+      marginBottom: 16,
+      borderRadius: 20,
+      alignItems: 'center',
+      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)',
+      borderWidth: 1.5,
+      borderColor: isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)',
+    },
+    emptyVitaminsIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: '#4CAF50',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    emptyVitaminsTitle: {
+      fontSize: 18,
+      fontWeight: '700' as const,
+      color: colors.text,
+      marginBottom: 8,
+      textAlign: 'center',
+    },
+    emptyVitaminsText: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+    },
     generalSupplementsTitle: {
       fontSize: 20,
       fontWeight: '700',
@@ -994,6 +1316,183 @@ export default function SupplementsScreen() {
           </Animated.View>
 
           <Animated.View style={[styles.supplementsSection, { opacity: fadeAnim }]}>
+            {/* My Vitamins Section */}
+            <View style={styles.myVitaminsSection}>
+              <View style={styles.myVitaminsHeader}>
+                <Text style={styles.myVitaminsTitle}>As Minhas Vitaminas</Text>
+                {!isAddingVitamin && (
+                  <TouchableOpacity 
+                    style={styles.addButton}
+                    onPress={() => setIsAddingVitamin(true)}
+                  >
+                    <Plus color="white" size={18} strokeWidth={2.5} />
+                    <Text style={styles.addButtonText}>Adicionar</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              
+              {isAddingVitamin && (
+                <BlurCard style={styles.addVitaminForm}>
+                  <Text style={styles.formTitle}>Adicionar Nova Vitamina</Text>
+                  
+                  <Text style={styles.inputLabel}>Nome da Vitamina *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ex: Vitamina D3"
+                    placeholderTextColor={colors.textSecondary}
+                    value={newVitaminName}
+                    onChangeText={setNewVitaminName}
+                  />
+                  
+                  <Text style={styles.inputLabel}>Dosagem *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ex: 2000 UI ao dia"
+                    placeholderTextColor={colors.textSecondary}
+                    value={newVitaminDosage}
+                    onChangeText={setNewVitaminDosage}
+                  />
+                  
+                  <Text style={styles.inputLabel}>Horário</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Ex: Após o pequeno-almoço"
+                    placeholderTextColor={colors.textSecondary}
+                    value={newVitaminTime}
+                    onChangeText={setNewVitaminTime}
+                  />
+                  
+                  <Text style={styles.inputLabel}>Notas</Text>
+                  <TextInput
+                    style={[styles.input, styles.inputMultiline]}
+                    placeholder="Notas adicionais (opcional)"
+                    placeholderTextColor={colors.textSecondary}
+                    value={newVitaminNotes}
+                    onChangeText={setNewVitaminNotes}
+                    multiline
+                  />
+                  
+                  <View style={styles.formActions}>
+                    <TouchableOpacity 
+                      style={[styles.formButton, styles.cancelButton]}
+                      onPress={cancelEdit}
+                    >
+                      <X color={colors.text} size={18} strokeWidth={2.5} />
+                      <Text style={[styles.formButtonText, styles.cancelButtonText]}>Cancelar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[styles.formButton, styles.saveButton]}
+                      onPress={addVitamin}
+                    >
+                      <Check color="white" size={18} strokeWidth={2.5} />
+                      <Text style={styles.formButtonText}>Guardar</Text>
+                    </TouchableOpacity>
+                  </View>
+                </BlurCard>
+              )}
+              
+              {myVitamins.length === 0 && !isAddingVitamin && (
+                <BlurCard style={styles.emptyVitaminsCard}>
+                  <View style={styles.emptyVitaminsIcon}>
+                    <Pill color="white" size={24} />
+                  </View>
+                  <Text style={styles.emptyVitaminsTitle}>Nenhuma Vitamina Adicionada</Text>
+                  <Text style={styles.emptyVitaminsText}>
+                    Adicione as vitaminas e suplementos que toma diariamente para manter um registo organizado.
+                  </Text>
+                </BlurCard>
+              )}
+              
+              {myVitamins.map((vitamin) => (
+                editingVitaminId === vitamin.id ? (
+                  <BlurCard key={vitamin.id} style={styles.addVitaminForm}>
+                    <Text style={styles.formTitle}>Editar Vitamina</Text>
+                    
+                    <Text style={styles.inputLabel}>Nome da Vitamina *</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Ex: Vitamina D3"
+                      placeholderTextColor={colors.textSecondary}
+                      value={newVitaminName}
+                      onChangeText={setNewVitaminName}
+                    />
+                    
+                    <Text style={styles.inputLabel}>Dosagem *</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Ex: 2000 UI ao dia"
+                      placeholderTextColor={colors.textSecondary}
+                      value={newVitaminDosage}
+                      onChangeText={setNewVitaminDosage}
+                    />
+                    
+                    <Text style={styles.inputLabel}>Horário</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Ex: Após o pequeno-almoço"
+                      placeholderTextColor={colors.textSecondary}
+                      value={newVitaminTime}
+                      onChangeText={setNewVitaminTime}
+                    />
+                    
+                    <Text style={styles.inputLabel}>Notas</Text>
+                    <TextInput
+                      style={[styles.input, styles.inputMultiline]}
+                      placeholder="Notas adicionais (opcional)"
+                      placeholderTextColor={colors.textSecondary}
+                      value={newVitaminNotes}
+                      onChangeText={setNewVitaminNotes}
+                      multiline
+                    />
+                    
+                    <View style={styles.formActions}>
+                      <TouchableOpacity 
+                        style={[styles.formButton, styles.cancelButton]}
+                        onPress={cancelEdit}
+                      >
+                        <X color={colors.text} size={18} strokeWidth={2.5} />
+                        <Text style={[styles.formButtonText, styles.cancelButtonText]}>Cancelar</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.formButton, styles.saveButton]}
+                        onPress={() => updateVitamin(vitamin.id)}
+                      >
+                        <Check color="white" size={18} strokeWidth={2.5} />
+                        <Text style={styles.formButtonText}>Guardar</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </BlurCard>
+                ) : (
+                  <BlurCard key={vitamin.id} style={styles.myVitaminCard}>
+                    <View style={styles.myVitaminHeader}>
+                      <View style={styles.myVitaminInfo}>
+                        <Text style={styles.myVitaminName}>{vitamin.name}</Text>
+                        <Text style={styles.myVitaminDosage}>💊 {vitamin.dosage}</Text>
+                        <Text style={styles.myVitaminTime}>🕐 {vitamin.time}</Text>
+                        {vitamin.notes && (
+                          <Text style={styles.myVitaminNotes}>{vitamin.notes}</Text>
+                        )}
+                      </View>
+                      <View style={styles.myVitaminActions}>
+                        <TouchableOpacity 
+                          style={[styles.actionButton, styles.editButton]}
+                          onPress={() => startEditVitamin(vitamin)}
+                        >
+                          <Edit2 color="#2196F3" size={18} strokeWidth={2} />
+                        </TouchableOpacity>
+                        <TouchableOpacity 
+                          style={[styles.actionButton, styles.deleteButton]}
+                          onPress={() => deleteVitamin(vitamin.id)}
+                        >
+                          <X color="#F44336" size={18} strokeWidth={2} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </BlurCard>
+                )
+              ))}
+            </View>
+            
             {/* Personalized Recommendations */}
             {userProfile ? (
               <View style={styles.personalizedSection}>
