@@ -938,7 +938,7 @@ export default function SupplementsScreen() {
       const vitaminCValue = Math.round(nutritionalAnalysis.vitaminC);
       const vitaminDValue = Math.round(nutritionalAnalysis.vitaminD);
       
-      const prompt = `Analise a suplementacao e alimentacao do usuario. Suplementos atuais: ${vitaminList}. Media diaria ultimos 7 dias - Proteina: ${proteinValue}g, Carboidratos: ${carbsValue}g, Gordura: ${fatValue}g, Fibra: ${fiberValue}g, Calcio: ${calciumValue}mg, Ferro: ${ironValue}mg, Vitamina C: ${vitaminCValue}mg, Vitamina D: ${vitaminDValue}UI. Forneca analise com 3 campos: coverage (necessidades bem cobertas, 2-3 itens), missing (deficiencias detectadas, 2-3 itens), suggestions (sugestoes praticas, 2-3 itens).`;
+      const prompt = `Analyze user supplementation and diet. Current supplements: ${vitaminList}. Daily average last 7 days - Protein: ${proteinValue}g, Carbs: ${carbsValue}g, Fat: ${fatValue}g, Fiber: ${fiberValue}g, Calcium: ${calciumValue}mg, Iron: ${ironValue}mg, Vitamin C: ${vitaminCValue}mg, Vitamin D: ${vitaminDValue}IU. Provide analysis with 3 fields in Portuguese: coverage (well covered needs, 2-3 items), missing (detected deficiencies, 2-3 items), suggestions (practical suggestions, 2-3 items). Keep responses concise and in Portuguese.`;
       
       console.log('🤖 Sending analysis request...');
       
@@ -948,9 +948,9 @@ export default function SupplementsScreen() {
       const analysis = await generateObject({
         messages: [{ role: 'user', content: prompt }],
         schema: z.object({
-          coverage: z.array(z.string()).describe('Necessidades bem cobertas'),
-          missing: z.array(z.string()).describe('Deficiências detectadas'),
-          suggestions: z.array(z.string()).describe('Sugestões práticas')
+          coverage: z.array(z.string()).describe('Well covered nutritional needs'),
+          missing: z.array(z.string()).describe('Detected deficiencies'),
+          suggestions: z.array(z.string()).describe('Practical suggestions')
         })
       });
       
