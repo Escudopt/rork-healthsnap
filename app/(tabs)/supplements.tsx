@@ -10,10 +10,11 @@ import {
   TouchableOpacity,
   TextInput,
   Alert,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Info, Target, Plus, X, Edit2, Check } from 'lucide-react-native';
+import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Info, Target, Plus, X, Edit2, Check, ChevronDown, Search } from 'lucide-react-native';
 import { BlurCard } from '@/components/BlurCard';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
@@ -44,6 +45,45 @@ interface MyVitamin {
 }
 
 const MY_VITAMINS_STORAGE_KEY = 'my_vitamins_v1';
+
+const COMMON_VITAMINS = [
+  { name: 'Vitamina A', defaultDosage: '900 mcg/dia' },
+  { name: 'Vitamina B1 (Tiamina)', defaultDosage: '1.2 mg/dia' },
+  { name: 'Vitamina B2 (Riboflavina)', defaultDosage: '1.3 mg/dia' },
+  { name: 'Vitamina B3 (Niacina)', defaultDosage: '16 mg/dia' },
+  { name: 'Vitamina B5 (Ácido Pantoténico)', defaultDosage: '5 mg/dia' },
+  { name: 'Vitamina B6 (Piridoxina)', defaultDosage: '1.7 mg/dia' },
+  { name: 'Vitamina B7 (Biotina)', defaultDosage: '30 mcg/dia' },
+  { name: 'Vitamina B9 (Ácido Fólico)', defaultDosage: '400 mcg/dia' },
+  { name: 'Vitamina B12 (Cobalamina)', defaultDosage: '2.4 mcg/dia' },
+  { name: 'Vitamina C (Ácido Ascórbico)', defaultDosage: '500-1000 mg/dia' },
+  { name: 'Vitamina D3 (Colecalciferol)', defaultDosage: '2000-4000 UI/dia' },
+  { name: 'Vitamina E (Tocoferol)', defaultDosage: '15 mg/dia' },
+  { name: 'Vitamina K', defaultDosage: '120 mcg/dia' },
+  { name: 'Complexo B', defaultDosage: '1 cápsula/dia' },
+  { name: 'Multivitamínico', defaultDosage: '1 comprimido/dia' },
+  { name: 'Ómega-3 (EPA/DHA)', defaultDosage: '1000-2000 mg/dia' },
+  { name: 'Cálcio', defaultDosage: '1000 mg/dia' },
+  { name: 'Magnésio', defaultDosage: '300-400 mg/dia' },
+  { name: 'Zinco', defaultDosage: '11 mg/dia' },
+  { name: 'Ferro', defaultDosage: '18 mg/dia' },
+  { name: 'Selénio', defaultDosage: '55 mcg/dia' },
+  { name: 'Iodo', defaultDosage: '150 mcg/dia' },
+  { name: 'Crómio', defaultDosage: '200-400 mcg/dia' },
+  { name: 'Potássio', defaultDosage: '3500-4700 mg/dia' },
+  { name: 'Coenzima Q10', defaultDosage: '100-200 mg/dia' },
+  { name: 'Colágeno', defaultDosage: '10 g/dia' },
+  { name: 'Probióticos', defaultDosage: '1-2 cápsulas/dia' },
+  { name: 'Melatonina', defaultDosage: '1-3 mg/dia' },
+  { name: 'Whey Protein', defaultDosage: '25-30 g/dia' },
+  { name: 'Creatina', defaultDosage: '3-5 g/dia' },
+  { name: 'L-Carnitina', defaultDosage: '1000 mg/dia' },
+  { name: 'Ginkgo Biloba', defaultDosage: '120-240 mg/dia' },
+  { name: 'Curcuma (Açafrão)', defaultDosage: '500-1000 mg/dia' },
+  { name: 'Ashwagandha', defaultDosage: '300-500 mg/dia' },
+  { name: 'Glucosamina', defaultDosage: '1500 mg/dia' },
+  { name: 'Condroitina', defaultDosage: '1200 mg/dia' },
+].sort((a, b) => a.name.localeCompare(b.name));
 
 // Intelligent supplement recommendation system based on age, diet, and nutritional analysis
 const getIntelligentSupplementRecommendations = (
@@ -560,6 +600,8 @@ export default function SupplementsScreen() {
   const [isAddingVitamin, setIsAddingVitamin] = useState<boolean>(false);
   const [editingVitaminId, setEditingVitaminId] = useState<string | null>(null);
   const [newVitaminName, setNewVitaminName] = useState<string>('');
+  const [showVitaminPicker, setShowVitaminPicker] = useState<boolean>(false);
+  const [vitaminSearchQuery, setVitaminSearchQuery] = useState<string>('');
   const [newVitaminDosage, setNewVitaminDosage] = useState<string>('');
   const [newVitaminTime, setNewVitaminTime] = useState<string>('');
   const [newVitaminNotes, setNewVitaminNotes] = useState<string>('');
@@ -616,9 +658,18 @@ export default function SupplementsScreen() {
     }
   };
   
+  const selectVitamin = (vitamin: { name: string; defaultDosage: string }) => {
+    setNewVitaminName(vitamin.name);
+    if (!newVitaminDosage.trim()) {
+      setNewVitaminDosage(vitamin.defaultDosage);
+    }
+    setShowVitaminPicker(false);
+    setVitaminSearchQuery('');
+  };
+  
   const addVitamin = async () => {
     if (!newVitaminName.trim()) {
-      Alert.alert('Erro', 'Por favor, insira o nome da vitamina');
+      Alert.alert('Erro', 'Por favor, selecione a vitamina');
       return;
     }
     
@@ -708,7 +759,13 @@ export default function SupplementsScreen() {
     setNewVitaminDosage('');
     setNewVitaminTime('');
     setNewVitaminNotes('');
+    setShowVitaminPicker(false);
+    setVitaminSearchQuery('');
   };
+  
+  const filteredVitamins = COMMON_VITAMINS.filter(vitamin => 
+    vitamin.name.toLowerCase().includes(vitaminSearchQuery.toLowerCase())
+  );
 
   const styles = useThemedStyles((colors, isDark) => StyleSheet.create({
     container: {
@@ -1195,6 +1252,104 @@ export default function SupplementsScreen() {
     cancelButtonText: {
       color: colors.text,
     },
+    vitaminPickerButton: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      marginBottom: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    vitaminPickerButtonText: {
+      fontSize: 15,
+      color: colors.text,
+      flex: 1,
+    },
+    vitaminPickerPlaceholder: {
+      color: colors.textSecondary,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    modalContent: {
+      backgroundColor: colors.surface,
+      borderRadius: 20,
+      width: '100%',
+      maxHeight: '80%',
+      overflow: 'hidden',
+    },
+    modalHeader: {
+      padding: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: '700' as const,
+      color: colors.text,
+      marginBottom: 12,
+    },
+    searchInput: {
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      fontSize: 15,
+      color: colors.text,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    searchInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+      borderRadius: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+    },
+    searchInputField: {
+      flex: 1,
+      fontSize: 15,
+      color: colors.text,
+      marginLeft: 8,
+    },
+    vitaminList: {
+      maxHeight: 400,
+    },
+    vitaminItem: {
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+    },
+    vitaminItemName: {
+      fontSize: 16,
+      fontWeight: '600' as const,
+      color: colors.text,
+      marginBottom: 4,
+    },
+    vitaminItemDosage: {
+      fontSize: 14,
+      color: colors.textSecondary,
+    },
+    modalCloseButton: {
+      padding: 16,
+      alignItems: 'center',
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    modalCloseButtonText: {
+      fontSize: 16,
+      fontWeight: '600' as const,
+      color: '#4CAF50',
+    },
     emptyVitaminsCard: {
       padding: 24,
       marginBottom: 16,
@@ -1336,13 +1491,18 @@ export default function SupplementsScreen() {
                   <Text style={styles.formTitle}>Adicionar Nova Vitamina</Text>
                   
                   <Text style={styles.inputLabel}>Nome da Vitamina *</Text>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Ex: Vitamina D3"
-                    placeholderTextColor={colors.textSecondary}
-                    value={newVitaminName}
-                    onChangeText={setNewVitaminName}
-                  />
+                  <TouchableOpacity 
+                    style={styles.vitaminPickerButton}
+                    onPress={() => setShowVitaminPicker(true)}
+                  >
+                    <Text style={[
+                      styles.vitaminPickerButtonText,
+                      !newVitaminName && styles.vitaminPickerPlaceholder
+                    ]}>
+                      {newVitaminName || 'Selecione uma vitamina'}
+                    </Text>
+                    <ChevronDown color={colors.textSecondary} size={20} />
+                  </TouchableOpacity>
                   
                   <Text style={styles.inputLabel}>Dosagem *</Text>
                   <TextInput
@@ -1409,13 +1569,18 @@ export default function SupplementsScreen() {
                     <Text style={styles.formTitle}>Editar Vitamina</Text>
                     
                     <Text style={styles.inputLabel}>Nome da Vitamina *</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Ex: Vitamina D3"
-                      placeholderTextColor={colors.textSecondary}
-                      value={newVitaminName}
-                      onChangeText={setNewVitaminName}
-                    />
+                    <TouchableOpacity 
+                      style={styles.vitaminPickerButton}
+                      onPress={() => setShowVitaminPicker(true)}
+                    >
+                      <Text style={[
+                        styles.vitaminPickerButtonText,
+                        !newVitaminName && styles.vitaminPickerPlaceholder
+                      ]}>
+                        {newVitaminName || 'Selecione uma vitamina'}
+                      </Text>
+                      <ChevronDown color={colors.textSecondary} size={20} />
+                    </TouchableOpacity>
                     
                     <Text style={styles.inputLabel}>Dosagem *</Text>
                     <TextInput
@@ -1757,6 +1922,60 @@ export default function SupplementsScreen() {
           </Animated.View>
         </ScrollView>
       </SafeAreaView>
+      
+      <Modal
+        visible={showVitaminPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowVitaminPicker(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selecionar Vitamina</Text>
+              <View style={styles.searchInputContainer}>
+                <Search color={colors.textSecondary} size={18} />
+                <TextInput
+                  style={styles.searchInputField}
+                  placeholder="Pesquisar vitamina..."
+                  placeholderTextColor={colors.textSecondary}
+                  value={vitaminSearchQuery}
+                  onChangeText={setVitaminSearchQuery}
+                  autoFocus
+                />
+              </View>
+            </View>
+            
+            <ScrollView style={styles.vitaminList}>
+              {filteredVitamins.map((vitamin, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.vitaminItem}
+                  onPress={() => selectVitamin(vitamin)}
+                >
+                  <Text style={styles.vitaminItemName}>{vitamin.name}</Text>
+                  <Text style={styles.vitaminItemDosage}>Dosagem sugerida: {vitamin.defaultDosage}</Text>
+                </TouchableOpacity>
+              ))}
+              {filteredVitamins.length === 0 && (
+                <View style={styles.vitaminItem}>
+                  <Text style={styles.vitaminItemDosage}>Nenhuma vitamina encontrada</Text>
+                </View>
+              )}
+            </ScrollView>
+            
+            <TouchableOpacity
+              style={styles.modalCloseButton}
+              onPress={() => {
+                setShowVitaminPicker(false);
+                setVitaminSearchQuery('');
+              }}
+            >
+              <Text style={styles.modalCloseButtonText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
