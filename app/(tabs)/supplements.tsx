@@ -28,23 +28,58 @@ interface MyVitamin {
   notes?: string;
 }
 
+interface VitaminInfo {
+  name: string;
+  defaultDosage: string;
+  benefits: string;
+  category: 'vitamin' | 'mineral' | 'supplement';
+}
+
 const MY_VITAMINS_STORAGE_KEY = 'my_vitamins_v1';
 
-const COMMON_VITAMINS = [
-  { name: 'Vitamina D3', defaultDosage: '2000 UI/dia' },
-  { name: 'Vitamina C', defaultDosage: '500-1000 mg/dia' },
-  { name: 'Ómega-3', defaultDosage: '1000-2000 mg/dia' },
-  { name: 'Magnésio', defaultDosage: '300-400 mg/dia' },
-  { name: 'Zinco', defaultDosage: '11 mg/dia' },
-  { name: 'Vitamina B12', defaultDosage: '2.4 mcg/dia' },
-  { name: 'Cálcio', defaultDosage: '1000 mg/dia' },
-  { name: 'Ferro', defaultDosage: '18 mg/dia' },
-  { name: 'Whey Protein', defaultDosage: '25-30 g/dia' },
-  { name: 'Creatina', defaultDosage: '3-5 g/dia' },
-  { name: 'Multivitamínico', defaultDosage: '1 comprimido/dia' },
-  { name: 'Probióticos', defaultDosage: '1-2 cápsulas/dia' },
-  { name: 'Colágeno', defaultDosage: '10 g/dia' },
-  { name: 'Melatonina', defaultDosage: '1-3 mg/dia' },
+const COMMON_VITAMINS: VitaminInfo[] = [
+  { name: 'Vitamina A', defaultDosage: '900 mcg/dia', benefits: 'Visão, sistema imunológico, pele saudável', category: 'vitamin' as const },
+  { name: 'Vitamina B1 (Tiamina)', defaultDosage: '1.2 mg/dia', benefits: 'Metabolismo energético, função nervosa', category: 'vitamin' as const },
+  { name: 'Vitamina B2 (Riboflavina)', defaultDosage: '1.3 mg/dia', benefits: 'Produção de energia, saúde ocular', category: 'vitamin' as const },
+  { name: 'Vitamina B3 (Niacina)', defaultDosage: '16 mg/dia', benefits: 'Metabolismo, saúde cardiovascular', category: 'vitamin' as const },
+  { name: 'Vitamina B5 (Ácido Pantoténico)', defaultDosage: '5 mg/dia', benefits: 'Síntese de hormonas, metabolismo', category: 'vitamin' as const },
+  { name: 'Vitamina B6 (Piridoxina)', defaultDosage: '1.7 mg/dia', benefits: 'Função cerebral, produção de hemoglobina', category: 'vitamin' as const },
+  { name: 'Vitamina B7 (Biotina)', defaultDosage: '30 mcg/dia', benefits: 'Cabelo, pele, unhas saudáveis', category: 'vitamin' as const },
+  { name: 'Vitamina B9 (Ácido Fólico)', defaultDosage: '400 mcg/dia', benefits: 'Formação de DNA, gravidez saudável', category: 'vitamin' as const },
+  { name: 'Vitamina B12', defaultDosage: '2.4 mcg/dia', benefits: 'Energia, função nervosa, formação de glóbulos vermelhos', category: 'vitamin' as const },
+  { name: 'Vitamina C', defaultDosage: '500-1000 mg/dia', benefits: 'Antioxidante, imunidade, produção de colagénio', category: 'vitamin' as const },
+  { name: 'Vitamina D3', defaultDosage: '2000 UI/dia', benefits: 'Saúde óssea, imunidade, humor', category: 'vitamin' as const },
+  { name: 'Vitamina E', defaultDosage: '15 mg/dia', benefits: 'Antioxidante, saúde da pele, proteção celular', category: 'vitamin' as const },
+  { name: 'Vitamina K2', defaultDosage: '120 mcg/dia', benefits: 'Coagulação sanguínea, saúde óssea', category: 'vitamin' as const },
+  
+  { name: 'Cálcio', defaultDosage: '1000 mg/dia', benefits: 'Ossos e dentes fortes, função muscular', category: 'mineral' as const },
+  { name: 'Magnésio', defaultDosage: '300-400 mg/dia', benefits: 'Relaxamento muscular, sono, energia', category: 'mineral' as const },
+  { name: 'Zinco', defaultDosage: '11 mg/dia', benefits: 'Imunidade, cicatrização, saúde reprodutiva', category: 'mineral' as const },
+  { name: 'Ferro', defaultDosage: '18 mg/dia', benefits: 'Transporte de oxigénio, energia, prevenção de anemia', category: 'mineral' as const },
+  { name: 'Selénio', defaultDosage: '55 mcg/dia', benefits: 'Antioxidante, função tiroideia, imunidade', category: 'mineral' as const },
+  { name: 'Iodo', defaultDosage: '150 mcg/dia', benefits: 'Função tiroideia, metabolismo', category: 'mineral' as const },
+  { name: 'Potássio', defaultDosage: '3500 mg/dia', benefits: 'Pressão arterial, função muscular e nervosa', category: 'mineral' as const },
+  { name: 'Crómio', defaultDosage: '35 mcg/dia', benefits: 'Metabolismo de açúcar, controlo de glicose', category: 'mineral' as const },
+  { name: 'Cobre', defaultDosage: '900 mcg/dia', benefits: 'Formação de glóbulos vermelhos, saúde nervosa', category: 'mineral' as const },
+  { name: 'Manganês', defaultDosage: '2.3 mg/dia', benefits: 'Metabolismo ósseo, antioxidante', category: 'mineral' as const },
+  { name: 'Molibdénio', defaultDosage: '45 mcg/dia', benefits: 'Metabolismo de aminoácidos, desintoxicação', category: 'mineral' as const },
+  
+  { name: 'Ómega-3', defaultDosage: '1000-2000 mg/dia', benefits: 'Saúde cardiovascular, função cerebral, anti-inflamatório', category: 'supplement' as const },
+  { name: 'Whey Protein', defaultDosage: '25-30 g/dia', benefits: 'Crescimento muscular, recuperação, saciedade', category: 'supplement' as const },
+  { name: 'Creatina', defaultDosage: '3-5 g/dia', benefits: 'Força muscular, performance atlética, função cognitiva', category: 'supplement' as const },
+  { name: 'Colágeno', defaultDosage: '10 g/dia', benefits: 'Pele, articulações, cabelo e unhas', category: 'supplement' as const },
+  { name: 'Probióticos', defaultDosage: '1-2 cápsulas/dia', benefits: 'Saúde intestinal, digestão, imunidade', category: 'supplement' as const },
+  { name: 'Coenzima Q10', defaultDosage: '100-200 mg/dia', benefits: 'Energia celular, saúde cardiovascular, antioxidante', category: 'supplement' as const },
+  { name: 'Curcumina', defaultDosage: '500-1000 mg/dia', benefits: 'Anti-inflamatório, antioxidante, saúde articular', category: 'supplement' as const },
+  { name: 'Ashwagandha', defaultDosage: '300-500 mg/dia', benefits: 'Redução de stress, energia, equilíbrio hormonal', category: 'supplement' as const },
+  { name: 'Melatonina', defaultDosage: '1-3 mg/dia', benefits: 'Qualidade do sono, regulação do ritmo circadiano', category: 'supplement' as const },
+  { name: 'L-Teanina', defaultDosage: '200 mg/dia', benefits: 'Relaxamento, foco, redução de ansiedade', category: 'supplement' as const },
+  { name: 'Glucosamina', defaultDosage: '1500 mg/dia', benefits: 'Saúde articular, cartilagem', category: 'supplement' as const },
+  { name: 'Condroitina', defaultDosage: '1200 mg/dia', benefits: 'Saúde articular, flexibilidade', category: 'supplement' as const },
+  { name: 'MSM', defaultDosage: '1000-3000 mg/dia', benefits: 'Articulações, pele, anti-inflamatório', category: 'supplement' as const },
+  { name: 'Spirulina', defaultDosage: '3-5 g/dia', benefits: 'Proteína, antioxidantes, desintoxicação', category: 'supplement' as const },
+  { name: 'Chlorella', defaultDosage: '3-5 g/dia', benefits: 'Desintoxicação, imunidade, nutrientes', category: 'supplement' as const },
+  { name: 'Multivitamínico', defaultDosage: '1 comprimido/dia', benefits: 'Cobertura geral de vitaminas e minerais', category: 'supplement' as const },
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 const COMMON_DOSAGES = [
@@ -52,15 +87,47 @@ const COMMON_DOSAGES = [
   '2 comprimidos/dia',
   '1 cápsula/dia',
   '2 cápsulas/dia',
+  '30 mcg/dia',
+  '35 mcg/dia',
+  '45 mcg/dia',
+  '55 mcg/dia',
+  '120 mcg/dia',
+  '150 mcg/dia',
+  '400 mcg/dia',
+  '900 mcg/dia',
+  '1.2 mg/dia',
+  '1.3 mg/dia',
+  '1.7 mg/dia',
+  '2.3 mg/dia',
+  '2.4 mcg/dia',
+  '5 mg/dia',
+  '11 mg/dia',
+  '15 mg/dia',
+  '16 mg/dia',
+  '18 mg/dia',
+  '100 mg/dia',
+  '200 mg/dia',
+  '300 mg/dia',
+  '300-400 mg/dia',
+  '300-500 mg/dia',
   '500 mg/dia',
+  '500-1000 mg/dia',
   '1000 mg/dia',
+  '1000-2000 mg/dia',
+  '1000-3000 mg/dia',
+  '1200 mg/dia',
+  '1500 mg/dia',
   '2000 mg/dia',
+  '3000 mg/dia',
+  '3500 mg/dia',
   '2000 UI/dia',
   '4000 UI/dia',
+  '3g/dia',
+  '3-5g/dia',
+  '5g/dia',
+  '10g/dia',
   '25g/dia',
   '30g/dia',
-  '3-5g/dia',
-  '10g/dia',
 ];
 
 const COMMON_TIMES = [
@@ -488,7 +555,8 @@ export default function SupplementsScreen() {
   };
   
   const filteredVitamins = COMMON_VITAMINS.filter(vitamin => 
-    vitamin.name.toLowerCase().includes(vitaminSearchQuery.toLowerCase())
+    vitamin.name.toLowerCase().includes(vitaminSearchQuery.toLowerCase()) ||
+    vitamin.benefits.toLowerCase().includes(vitaminSearchQuery.toLowerCase())
   );
 
   const styles = useThemedStyles((colors, isDark) => StyleSheet.create({
@@ -990,6 +1058,7 @@ export default function SupplementsScreen() {
                 >
                   <Text style={styles.modalItemName}>{vitamin.name}</Text>
                   <Text style={styles.modalItemDosage}>{vitamin.defaultDosage}</Text>
+                  <Text style={[styles.modalItemDosage, { marginTop: 4, fontSize: 14 }]}>{vitamin.benefits}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
