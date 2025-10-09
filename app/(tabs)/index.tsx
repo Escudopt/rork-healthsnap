@@ -992,7 +992,7 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                 </View>
                 
-                <View style={styles.modalContent}>
+                <View style={{ padding: 20 }}>
                   <View style={styles.inputContainer}>
                     <Hash color="rgba(255, 255, 255, 0.8)" size={20} />
                     <TextInput
@@ -1068,7 +1068,7 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                 </View>
                 
-                <View style={styles.modalContent}>
+                <View style={{ padding: 20 }}>
                   <View style={styles.inputContainer}>
                     <Hash color="rgba(255, 255, 255, 0.8)" size={20} />
                     <TextInput
@@ -1231,12 +1231,12 @@ export default function HomeScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.modalOverlay}
           >
-            <View style={styles.modalContainer}>
+            <View style={[styles.modalContainer, { maxHeight: '90%' }]}>
               <LinearGradient
                 colors={['rgba(0, 0, 0, 0.8)', 'rgba(26, 26, 46, 0.9)', 'rgba(22, 33, 62, 0.8)']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={styles.modalGradient}
+                style={[styles.modalGradient, { flex: 1 }]}
               >
                 <View style={styles.modalHeader}>
                   <Text style={styles.modalTitle}>Adicionar Refeição Manual</Text>
@@ -1249,10 +1249,11 @@ export default function HomeScreen() {
                 </View>
                 
                 <ScrollView 
-                  style={styles.modalContent} 
+                  style={{ flex: 1 }} 
                   contentContainerStyle={styles.modalScrollContent}
                   showsVerticalScrollIndicator={false}
                   keyboardShouldPersistTaps="handled"
+                  bounces={false}
                 >
                     <View style={styles.inputContainer}>
                       <Utensils color="rgba(255, 255, 255, 0.8)" size={20} />
@@ -1990,7 +1991,6 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   modalContainer: {
     width: '100%',
     maxWidth: 400,
-    maxHeight: '85%',
     borderRadius: 24,
     overflow: 'hidden',
     shadowColor: 'rgba(0, 122, 255, 0.5)',
@@ -2000,7 +2000,6 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     elevation: 20,
   },
   modalGradient: {
-    padding: 0,
     borderRadius: 24,
   },
   modalHeader: {
@@ -2018,13 +2017,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   closeButton: {
     padding: 4,
   },
-  modalContent: {
-    flex: 1,
-  },
   modalScrollContent: {
     padding: 20,
     paddingTop: 10,
     paddingBottom: 40,
+    flexGrow: 1,
   },
   inputContainer: {
     flexDirection: 'row',
