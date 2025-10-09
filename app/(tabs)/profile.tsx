@@ -1302,7 +1302,7 @@ export default function ProfileScreen() {
                   )}
                   <Text style={styles.profileName}>{userProfile.name}</Text>
                   <Text style={styles.profileDetails}>
-                    {userProfile.age} anos • {userProfile.gender === 'male' ? 'Masculino' : 'Feminino'}
+                    {userProfile.age} anos • {userProfile.height} cm • {userProfile.weight} kg
                   </Text>
                   <Text style={styles.profileGoal}>
                     {goals.find(g => g.key === userProfile.goal)?.label}
