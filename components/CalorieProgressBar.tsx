@@ -25,6 +25,8 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
   const cameraButtonScale = useRef(new Animated.Value(1)).current;
   const manualButtonScale = useRef(new Animated.Value(1)).current;
   const vitaminsButtonScale = useRef(new Animated.Value(1)).current;
+  const vitaminsPulseAnim = useRef(new Animated.Value(1)).current;
+  const vitaminsGlowAnim = useRef(new Animated.Value(0)).current;
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
@@ -65,7 +67,37 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
         }),
       ])
     ).start();
-  }, [percentage, progressAnim, scaleAnim, pulseAnim]);
+    
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(vitaminsPulseAnim, {
+          toValue: 1.08,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(vitaminsPulseAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+    
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(vitaminsGlowAnim, {
+          toValue: 1,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(vitaminsGlowAnim, {
+          toValue: 0,
+          duration: 2000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  }, [percentage, progressAnim, scaleAnim, pulseAnim, vitaminsPulseAnim, vitaminsGlowAnim]);
   
   const strokeDashoffset = progressAnim.interpolate({
     inputRange: [0, 100],
@@ -116,25 +148,30 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
           
           <View style={styles.rightContent}>
             <View style={styles.buttonsRow}>
-              <Animated.View style={{ transform: [{ scale: vitaminsButtonScale }] }}>
+              <Animated.View style={{ 
+                transform: [{ 
+                  scale: Animated.multiply(vitaminsPulseAnim, vitaminsButtonScale) 
+                }] 
+              }}>
                 <TouchableOpacity 
                   onPress={async () => {
                     if (isAnalyzing || !onVitaminsPress) return;
                     
                     if (Platform.OS !== 'web') {
-                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     }
                     
                     Animated.sequence([
                       Animated.timing(vitaminsButtonScale, {
                         toValue: 0.85,
-                        duration: 200,
+                        duration: 150,
                         useNativeDriver: true,
                       }),
-                      Animated.timing(vitaminsButtonScale, {
+                      Animated.spring(vitaminsButtonScale, {
                         toValue: 1,
-                        duration: 200,
                         useNativeDriver: true,
+                        tension: 100,
+                        friction: 5,
                       }),
                     ]).start();
                     
@@ -143,16 +180,28 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                   style={[styles.vitaminsButton, {
                     shadowColor: '#4CAF50',
                   }]}
-                  activeOpacity={0.7}
+                  activeOpacity={0.8}
                   disabled={isAnalyzing}
                 >
+                  <Animated.View style={[
+                    styles.vitaminsGlowEffect,
+                    {
+                      opacity: vitaminsGlowAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.3, 0.8],
+                      }),
+                    }
+                  ]} />
                   <LinearGradient
-                    colors={['#4CAF50', '#45A049']}
+                    colors={['#66BB6A', '#4CAF50', '#43A047']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.vitaminsButtonGradient}
                   >
-                    <Pill color="#FFFFFF" size={20} strokeWidth={2} />
+                    <View style={styles.vitaminsIconContainer}>
+                      <Pill color="#FFFFFF" size={24} strokeWidth={2.5} />
+                      <View style={styles.vitaminsShineDot} />
+                    </View>
                   </LinearGradient>
                 </TouchableOpacity>
               </Animated.View>
@@ -328,20 +377,48 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   vitaminsButton: {
-    borderRadius: 24,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
+    borderRadius: 28,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.45,
+    shadowRadius: 16,
+    elevation: 8,
+    position: 'relative' as const,
+  },
+  vitaminsGlowEffect: {
+    position: 'absolute' as const,
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderRadius: 32,
+    backgroundColor: '#4CAF50',
   },
   vitaminsButtonGradient: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  vitaminsIconContainer: {
+    position: 'relative' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+  },
+  vitaminsShineDot: {
+    position: 'absolute' as const,
+    top: -8,
+    right: -8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    shadowColor: '#FFFFFF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 4,
   },
   manualButton: {
     borderRadius: 24,
