@@ -1227,21 +1227,12 @@ export default function HomeScreen() {
           animationType="slide"
           onRequestClose={() => setShowManualMealModal(false)}
         >
-          <KeyboardAvoidingView 
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.modalOverlay}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-          >
-            <TouchableOpacity 
-              activeOpacity={1} 
-              style={styles.modalOverlay}
-              onPress={() => setShowManualMealModal(false)}
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView 
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={styles.modalKeyboardAvoid}
             >
-              <TouchableOpacity 
-                activeOpacity={1} 
-                style={styles.modalContainer}
-                onPress={(e) => e.stopPropagation()}
-              >
+              <View style={styles.modalContainer}>
                 <LinearGradient
                   colors={['rgba(0, 0, 0, 0.8)', 'rgba(26, 26, 46, 0.9)', 'rgba(22, 33, 62, 0.8)']}
                   start={{ x: 0, y: 0 }}
@@ -1263,109 +1254,108 @@ export default function HomeScreen() {
                     contentContainerStyle={styles.modalScrollContent}
                     showsVerticalScrollIndicator={false}
                     keyboardShouldPersistTaps="handled"
-                    bounces={false}
                   >
-                  <View style={styles.inputContainer}>
-                    <Utensils color="rgba(255, 255, 255, 0.8)" size={20} />
-                    <TextInput
-                      style={styles.calorieInput}
-                      placeholder="Nome da refeição"
-                      placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                      value={manualMealName}
-                      onChangeText={setManualMealName}
-                      maxLength={50}
-                    />
-                  </View>
-                  
-                  <View style={styles.mealTypeSelector}>
-                    <Text style={styles.mealTypeSelectorLabel}>Tipo de Refeição</Text>
-                    <View style={styles.mealTypeButtons}>
-                      {(['Café da Manhã', 'Almoço', 'Jantar', 'Lanche'] as const).map((type) => (
-                        <TouchableOpacity
-                          key={type}
-                          onPress={() => setManualMealType(type)}
-                          style={[
-                            styles.mealTypeButton,
-                            manualMealType === type && styles.mealTypeButtonActive
-                          ]}
-                        >
-                          <Text style={[
-                            styles.mealTypeButtonText,
-                            manualMealType === type && styles.mealTypeButtonTextActive
-                          ]}>
-                            {type}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-                  
-                  <View style={styles.inputContainer}>
-                    <Hash color="rgba(255, 255, 255, 0.8)" size={20} />
-                    <TextInput
-                      style={styles.calorieInput}
-                      placeholder="Calorias (ex: 250)"
-                      placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                      value={manualMealCalories}
-                      onChangeText={setManualMealCalories}
-                      keyboardType="numeric"
-                      maxLength={5}
-                    />
-                  </View>
-                  
-                  <Text style={styles.sectionLabel}>Macronutrientes (opcional)</Text>
-                  
-                  <View style={styles.macroInputsRow}>
-                    <View style={[styles.inputContainer, styles.macroInput]}>
+                    <View style={styles.inputContainer}>
+                      <Utensils color="rgba(255, 255, 255, 0.8)" size={20} />
                       <TextInput
                         style={styles.calorieInput}
-                        placeholder="Proteína (g)"
+                        placeholder="Nome da refeição"
                         placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                        value={manualMealProtein}
-                        onChangeText={setManualMealProtein}
-                        keyboardType="numeric"
-                        maxLength={4}
+                        value={manualMealName}
+                        onChangeText={setManualMealName}
+                        maxLength={50}
                       />
                     </View>
                     
-                    <View style={[styles.inputContainer, styles.macroInput]}>
-                      <TextInput
-                        style={styles.calorieInput}
-                        placeholder="Carboidratos (g)"
-                        placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                        value={manualMealCarbs}
-                        onChangeText={setManualMealCarbs}
-                        keyboardType="numeric"
-                        maxLength={4}
-                      />
+                    <View style={styles.mealTypeSelector}>
+                      <Text style={styles.mealTypeSelectorLabel}>Tipo de Refeição</Text>
+                      <View style={styles.mealTypeButtons}>
+                        {(['Café da Manhã', 'Almoço', 'Jantar', 'Lanche'] as const).map((type) => (
+                          <TouchableOpacity
+                            key={type}
+                            onPress={() => setManualMealType(type)}
+                            style={[
+                              styles.mealTypeButton,
+                              manualMealType === type && styles.mealTypeButtonActive
+                            ]}
+                          >
+                            <Text style={[
+                              styles.mealTypeButtonText,
+                              manualMealType === type && styles.mealTypeButtonTextActive
+                            ]}>
+                              {type}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
                     </View>
-                  </View>
-                  
-                  <View style={styles.macroInputsRow}>
-                    <View style={[styles.inputContainer, styles.macroInput]}>
+                    
+                    <View style={styles.inputContainer}>
+                      <Hash color="rgba(255, 255, 255, 0.8)" size={20} />
                       <TextInput
                         style={styles.calorieInput}
-                        placeholder="Gordura (g)"
+                        placeholder="Calorias (ex: 250)"
                         placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                        value={manualMealFat}
-                        onChangeText={setManualMealFat}
+                        value={manualMealCalories}
+                        onChangeText={setManualMealCalories}
                         keyboardType="numeric"
-                        maxLength={4}
+                        maxLength={5}
                       />
                     </View>
                     
-                    <View style={[styles.inputContainer, styles.macroInput]}>
-                      <TextInput
-                        style={styles.calorieInput}
-                        placeholder="Porção"
-                        placeholderTextColor="rgba(255, 255, 255, 0.6)"
-                        value={manualMealPortion}
-                        onChangeText={setManualMealPortion}
-                        maxLength={20}
-                      />
+                    <Text style={styles.sectionLabel}>Macronutrientes (opcional)</Text>
+                    
+                    <View style={styles.macroInputsRow}>
+                      <View style={[styles.inputContainer, styles.macroInput]}>
+                        <TextInput
+                          style={styles.calorieInput}
+                          placeholder="Proteína (g)"
+                          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                          value={manualMealProtein}
+                          onChangeText={setManualMealProtein}
+                          keyboardType="numeric"
+                          maxLength={4}
+                        />
+                      </View>
+                      
+                      <View style={[styles.inputContainer, styles.macroInput]}>
+                        <TextInput
+                          style={styles.calorieInput}
+                          placeholder="Carboidratos (g)"
+                          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                          value={manualMealCarbs}
+                          onChangeText={setManualMealCarbs}
+                          keyboardType="numeric"
+                          maxLength={4}
+                        />
+                      </View>
                     </View>
-                  </View>
-                  
+                    
+                    <View style={styles.macroInputsRow}>
+                      <View style={[styles.inputContainer, styles.macroInput]}>
+                        <TextInput
+                          style={styles.calorieInput}
+                          placeholder="Gordura (g)"
+                          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                          value={manualMealFat}
+                          onChangeText={setManualMealFat}
+                          keyboardType="numeric"
+                          maxLength={4}
+                        />
+                      </View>
+                      
+                      <View style={[styles.inputContainer, styles.macroInput]}>
+                        <TextInput
+                          style={styles.calorieInput}
+                          placeholder="Porção"
+                          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+                          value={manualMealPortion}
+                          onChangeText={setManualMealPortion}
+                          maxLength={20}
+                        />
+                      </View>
+                    </View>
+                    
                     <View style={styles.modalButtons}>
                       <TouchableOpacity
                         style={styles.cancelButton}
@@ -1390,9 +1380,9 @@ export default function HomeScreen() {
                     </View>
                   </ScrollView>
                 </LinearGradient>
-              </TouchableOpacity>
-            </TouchableOpacity>
-          </KeyboardAvoidingView>
+              </View>
+            </KeyboardAvoidingView>
+          </View>
         </Modal>
       </SafeAreaView>
     </View>
@@ -1998,6 +1988,11 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+  },
+  modalKeyboardAvoid: {
+    width: '100%',
+    maxWidth: 400,
+    maxHeight: '85%',
   },
   modalContainer: {
     width: '100%',
