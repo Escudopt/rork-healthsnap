@@ -1293,29 +1293,7 @@ export default function SupplementsScreen() {
     },
     
     // Personalized recommendations styles
-    personalizedSection: {
-      marginBottom: 24,
-    },
-    personalizedHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 16,
-      paddingHorizontal: 4,
-    },
-    personalizedTitle: {
-      fontSize: 22,
-      fontWeight: '800',
-      color: colors.text,
-      marginLeft: 12,
-      letterSpacing: 0.3,
-    },
-    personalizedSubtitle: {
-      fontSize: 15,
-      color: colors.textSecondary,
-      marginBottom: 20,
-      paddingHorizontal: 4,
-      lineHeight: 22,
-    },
+
     priorityBadge: {
       alignSelf: 'center',
       paddingHorizontal: 12,
@@ -1367,21 +1345,41 @@ export default function SupplementsScreen() {
       textAlign: 'center',
       lineHeight: 22,
     },
-    myVitaminsSection: {
-      marginBottom: 32,
+    sectionContainer: {
+      marginBottom: 40,
     },
-    myVitaminsHeader: {
+    sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 16,
-      paddingHorizontal: 4,
+      marginBottom: 12,
     },
-    myVitaminsTitle: {
-      fontSize: 22,
+    sectionHeaderLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    sectionIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    sectionTitle: {
+      fontSize: 24,
       fontWeight: '800' as const,
       color: colors.text,
       letterSpacing: 0.3,
+    },
+    sectionDescription: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      marginBottom: 20,
+      lineHeight: 22,
+    },
+    recommendationsContainer: {
+      gap: 16,
     },
     addButton: {
       flexDirection: 'row',
@@ -1700,7 +1698,8 @@ export default function SupplementsScreen() {
       fontWeight: '500',
     },
     analysisSection: {
-      marginBottom: 32,
+      marginTop: 24,
+      marginBottom: 0,
     },
     coverageCard: {
       padding: 20,
@@ -1833,20 +1832,42 @@ export default function SupplementsScreen() {
             <View style={styles.headerTop}>
               <View style={styles.headerLeft}>
                 <Text style={[styles.greeting, { color: colors.text }]}>
-                  Suplementos Inteligentes
+                  Vitaminas & Suplementos
                 </Text>
                 <Text style={[styles.date, { color: colors.textSecondary }]}>
-                  Guia completo com informações seguras e avisos importantes
+                  Gerencie suas vitaminas e descubra suplementos recomendados
                 </Text>
               </View>
             </View>
           </Animated.View>
 
           <Animated.View style={[styles.supplementsSection, { opacity: fadeAnim }]}>
+            {/* ========== SEÇÃO 1: MINHAS VITAMINAS ========== */}
+            <View style={styles.sectionContainer}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionHeaderLeft}>
+                  <View style={[styles.sectionIcon, { backgroundColor: '#4CAF50' }]}>
+                    <Pill color="white" size={24} strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.sectionTitle}>Minhas Vitaminas</Text>
+                </View>
+                {!isAddingVitamin && (
+                  <TouchableOpacity 
+                    style={styles.addButton}
+                    onPress={() => setIsAddingVitamin(true)}
+                  >
+                    <Plus color="white" size={18} strokeWidth={2.5} />
+                    <Text style={styles.addButtonText}>Adicionar</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+              
+              <Text style={styles.sectionDescription}>
+                Registre as vitaminas e suplementos que você toma diariamente
+              </Text>
 
-
-            {/* AI Analysis Section */}
-            {myVitamins.length > 0 && (
+              {/* Add Vitamin Form */}
+              {isAddingVitamin && (
               <View style={styles.analysisSection}>
                 <BlurCard style={styles.analysisCard}>
                   <View style={styles.analysisHeader}>
@@ -1924,21 +1945,7 @@ export default function SupplementsScreen() {
               </View>
             )}
 
-            {/* My Vitamins Section */}
-            <View style={styles.myVitaminsSection}>
-              <View style={styles.myVitaminsHeader}>
-                <Text style={styles.myVitaminsTitle}>As Minhas Vitaminas</Text>
-                {!isAddingVitamin && (
-                  <TouchableOpacity 
-                    style={styles.addButton}
-                    onPress={() => setIsAddingVitamin(true)}
-                  >
-                    <Plus color="white" size={18} strokeWidth={2.5} />
-                    <Text style={styles.addButtonText}>Adicionar</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              
+              {/* Add Vitamin Form */}
               {isAddingVitamin && (
                 <BlurCard style={styles.addVitaminForm}>
                   <Text style={styles.formTitle}>Adicionar Nova Vitamina</Text>
@@ -2013,7 +2020,8 @@ export default function SupplementsScreen() {
                   </View>
                 </BlurCard>
               )}
-              
+
+              {/* Empty State */}
               {myVitamins.length === 0 && !isAddingVitamin && (
                 <BlurCard style={styles.emptyVitaminsCard}>
                   <View style={styles.emptyVitaminsIcon}>
@@ -2025,7 +2033,8 @@ export default function SupplementsScreen() {
                   </Text>
                 </BlurCard>
               )}
-              
+
+              {/* Vitamin List */}
               {myVitamins.map((vitamin) => (
                 editingVitaminId === vitamin.id ? (
                   <BlurCard key={vitamin.id} style={styles.addVitaminForm}>
@@ -2132,21 +2141,105 @@ export default function SupplementsScreen() {
                   </BlurCard>
                 )
               ))}
-            </View>
-            
-            {/* Personalized Recommendations */}
-            {userProfile && personalizedRecommendations.length > 0 && (
-              <View style={styles.personalizedSection}>
-                <View style={styles.personalizedHeader}>
-                  <View style={[styles.summaryCardIcon, { backgroundColor: '#4CAF50' }]}>
-                    <Target color="white" size={20} strokeWidth={2.5} />
-                  </View>
-                  <Text style={styles.personalizedTitle}>Recomendações Personalizadas</Text>
+
+              {/* AI Analysis Section */}
+              {myVitamins.length > 0 && (
+                <View style={styles.analysisSection}>
+                  <BlurCard style={styles.analysisCard}>
+                    <View style={styles.analysisHeader}>
+                      <View style={[styles.summaryCardIcon, { backgroundColor: '#FF9800' }]}>
+                        <Brain color="white" size={20} strokeWidth={2.5} />
+                      </View>
+                      <Text style={styles.analysisTitle}>Análise Inteligente</Text>
+                    </View>
+                    <Text style={styles.analysisText}>
+                      {aiAnalysis.isAnalyzing 
+                        ? 'Analisando sua suplementação e alimentação...'
+                        : 'Baseado nas suas vitaminas e alimentação de hoje'}
+                    </Text>
+                  </BlurCard>
+                  
+                  {!aiAnalysis.isAnalyzing && aiAnalysis.coverage.length > 0 && (
+                    <BlurCard style={styles.coverageCard}>
+                      <Text style={styles.coverageTitle}>✅ Bem Coberto</Text>
+                      <Text style={styles.coverageDescription}>
+                        Estas necessidades nutricionais estão sendo bem supridas:
+                      </Text>
+                      <View style={styles.coverageList}>
+                        {aiAnalysis.coverage.map((item, index) => (
+                          <View key={index} style={styles.coverageItem}>
+                            <View style={[styles.coverageBullet, { backgroundColor: '#4CAF50' }]} />
+                            <Text style={styles.coverageItemText}>{item}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </BlurCard>
+                  )}
+                  
+                  {!aiAnalysis.isAnalyzing && aiAnalysis.missing.length > 0 && (
+                    <BlurCard style={styles.missingCard}>
+                      <Text style={styles.missingTitle}>⚠️ Deficiências Detectadas</Text>
+                      <Text style={styles.missingDescription}>
+                        Estas necessidades nutricionais precisam de atenção:
+                      </Text>
+                      <View style={styles.suggestionsList}>
+                        {aiAnalysis.missing.map((item, index) => (
+                          <View key={index} style={styles.suggestionItem}>
+                            <Text style={styles.suggestionText}>{item}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </BlurCard>
+                  )}
+                  
+                  {!aiAnalysis.isAnalyzing && aiAnalysis.suggestions.length > 0 && (
+                    <BlurCard style={styles.missingCard}>
+                      <Text style={styles.missingTitle}>💡 Sugestões Personalizadas</Text>
+                      <Text style={styles.missingDescription}>
+                        Recomendações para otimizar sua suplementação:
+                      </Text>
+                      <View style={styles.suggestionsList}>
+                        {aiAnalysis.suggestions.map((item, index) => (
+                          <View key={index} style={styles.suggestionItem}>
+                            <Text style={styles.suggestionText}>{item}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </BlurCard>
+                  )}
+                  
+                  {!aiAnalysis.isAnalyzing && 
+                   aiAnalysis.coverage.length === 0 && 
+                   aiAnalysis.missing.length === 0 && 
+                   aiAnalysis.suggestions.length === 0 && (
+                    <BlurCard style={styles.successCard}>
+                      <Text style={styles.successText}>
+                        ✨ Sua suplementação está equilibrada! Continue assim.
+                      </Text>
+                    </BlurCard>
+                  )}
                 </View>
-                <Text style={styles.personalizedSubtitle}>
-                  Baseado no seu perfil e análise nutricional
-                </Text>
-                
+              )}
+            </View>
+
+            {/* ========== SEÇÃO 2: SUPLEMENTOS RECOMENDADOS ========== */}
+            <View style={styles.sectionContainer}>
+              <View style={styles.sectionHeader}>
+                <View style={styles.sectionHeaderLeft}>
+                  <View style={[styles.sectionIcon, { backgroundColor: '#2196F3' }]}>
+                    <Target color="white" size={24} strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.sectionTitle}>Suplementos Recomendados</Text>
+                </View>
+              </View>
+              
+              <Text style={styles.sectionDescription}>
+                Baseado no seu perfil, idade e análise nutricional
+              </Text>
+
+            {/* Personalized Recommendations */}
+            {userProfile && personalizedRecommendations.length > 0 ? (
+              <View style={styles.recommendationsContainer}>
                 {personalizedRecommendations.slice(0, 3).map((supplement, index) => {
                   const isAlreadyTaking = myVitamins.some(v => 
                     v.name.toLowerCase().includes(supplement.name.toLowerCase().split(' ')[0]) ||
@@ -2242,10 +2335,20 @@ export default function SupplementsScreen() {
                   );
                 })}
               </View>
+            ) : (
+              <BlurCard style={styles.noProfileCard}>
+                <View style={styles.noProfileIcon}>
+                  <AlertTriangle color="white" size={24} />
+                </View>
+                <Text style={styles.noProfileTitle}>Complete seu Perfil</Text>
+                <Text style={styles.noProfileText}>
+                  Configure seu perfil na aba Perfil para receber recomendações personalizadas de suplementos.
+                </Text>
+              </BlurCard>
             )}
-            
-            {/* General Supplements */}
-            <Text style={styles.generalSupplementsTitle}>Guia de Suplementos</Text>
+
+            {/* General Supplements Guide */}
+            <Text style={styles.generalSupplementsTitle}>Guia Geral de Suplementos</Text>
             {supplements.slice(0, 5).map((supplement, index) => (
               <BlurCard key={supplement.id} style={styles.supplementCard}>
                 <LinearGradient
@@ -2291,6 +2394,7 @@ export default function SupplementsScreen() {
                 Consulte sempre um médico antes de iniciar qualquer suplementação.
               </Text>
             </BlurCard>
+            </View>
           </Animated.View>
         </ScrollView>
       </SafeAreaView>
