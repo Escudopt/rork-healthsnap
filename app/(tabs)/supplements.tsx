@@ -729,13 +729,13 @@ export default function SupplementsScreen() {
   }, []);
   
   useEffect(() => {
-    if (myVitamins.length > 0 && meals.length > 0 && !aiAnalysis.isAnalyzing) {
+    if ((myVitamins.length > 0 || meals.length > 0) && !aiAnalysis.isAnalyzing) {
       const timeoutId = setTimeout(() => {
         analyzeVitaminCoverage();
       }, 1000);
       return () => clearTimeout(timeoutId);
     }
-  }, [myVitamins.length, meals.length]);
+  }, [myVitamins, meals]);
   
   const loadMyVitamins = async () => {
     try {
