@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Alert } from 'react-native';
-import { Meal, UserProfile, HealthMetrics } from '@/types/food';
+import { Meal, UserProfile, HealthMetrics, SupplementIntake } from '@/types/food';
 
 // Health sync types (mock implementation for demonstration)
 interface HealthRecord {
@@ -33,6 +33,7 @@ interface CalorieTrackerContextType {
   isHealthSyncEnabled: boolean;
   healthSyncStatus: 'idle' | 'syncing' | 'success' | 'error';
   workoutSessions: WorkoutSession[];
+  supplementIntakes: SupplementIntake[];
   addMeal: (mealData: Omit<Meal, 'id' | 'timestamp'>) => Promise<void>;
   addManualCalories: (calories: number, description?: string) => Promise<void>;
   deleteMeal: (id: string) => Promise<void>;
@@ -51,6 +52,9 @@ interface CalorieTrackerContextType {
   deleteWorkoutSession: (id: string) => Promise<void>;
   getTodayWorkouts: () => WorkoutSession[];
   getWeeklyWorkouts: () => WorkoutSession[];
+  addSupplementIntake: (intakeData: Omit<SupplementIntake, 'id' | 'timestamp' | 'date'>) => Promise<void>;
+  deleteSupplementIntake: (id: string) => Promise<void>;
+  getTodaySupplements: () => SupplementIntake[];
 }
 
 const STORAGE_KEY = 'calorie_tracker_meals_v4'; // Updated version for better persistence
@@ -61,6 +65,7 @@ const PROFILE_STORAGE_KEY = 'user_profile';
 const HEALTH_SYNC_KEY = 'health_sync_enabled';
 const LAST_HEALTH_SYNC_KEY = 'last_health_sync';
 const WORKOUTS_STORAGE_KEY = 'workout_sessions_v1';
+const SUPPLEMENTS_STORAGE_KEY = 'supplement_intakes_v1';
 
 // Removed global state management - now using component state
 
@@ -125,6 +130,7 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
   const [isHealthSyncEnabled, setIsHealthSyncEnabled] = useState<boolean>(false);
   const [healthSyncStatus, setHealthSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const [workoutSessions, setWorkoutSessions] = useState<WorkoutSession[]>([]);
+  const [supplementIntakes, setSupplementIntakes] = useState<SupplementIntake[]>([]);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
   
   console.log('🔢 Provider state - meals count:', meals.length, 'isInitialized:', isInitialized);
@@ -324,6 +330,35 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
     }
   }, []);
 
+  const loadSupplementIntakes = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem(SUPPLEMENTS_STORAGE_KEY);
+      if (stored) {
+        try {
+          const intakes = JSON.parse(stored) as SupplementIntake[];
+          if (Array.isArray(intakes)) {
+            setSupplementIntakes(intakes);
+            console.log('💊 Loaded supplement intakes:', intakes.length);
+          }
+        } catch (parseError) {
+          console.error('❌ Error parsing supplement intakes:', parseError);
+          await AsyncStorage.removeItem(SUPPLEMENTS_STORAGE_KEY);
+        }
+      }
+    } catch (error) {
+      console.error('❌ Error loading supplement intakes:', error);
+    }
+  }, []);
+
+  const saveSupplementIntakes = useCallback(async (intakes: SupplementIntake[]) => {
+    try {
+      await AsyncStorage.setItem(SUPPLEMENTS_STORAGE_KEY, JSON.stringify(intakes));
+      console.log('💾 Saved supplement intakes:', intakes.length);
+    } catch (error) {
+      console.error('❌ Error saving supplement intakes:', error);
+    }
+  }, []);
+
   const loadUserProfile = useCallback(async () => {
     try {
       const stored = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
@@ -433,7 +468,8 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
             loadDailyGoal(),
             loadUserProfile(),
             loadMeals(),
-            loadWorkoutSessions()
+            loadWorkoutSessions(),
+            loadSupplementIntakes()
           ]);
         }, 0);
         
@@ -450,7 +486,7 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
         cleanup.then(cleanupFn => cleanupFn?.());
       }
     };
-  }, [loadMeals, loadDailyGoal, loadUserProfile, loadWorkoutSessions]);
+  }, [loadMeals, loadDailyGoal, loadUserProfile, loadWorkoutSessions, loadSupplementIntakes]);
 
   const addMeal = useCallback(async (mealData: Omit<Meal, 'id' | 'timestamp'>) => {
     console.log('🍽️ ========== ADD MEAL STARTED ==========');
@@ -917,6 +953,51 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
     });
   }, [workoutSessions]);
 
+  const addSupplementIntake = useCallback(async (intakeData: Omit<SupplementIntake, 'id' | 'timestamp' | 'date'>) => {
+    try {
+      const now = new Date();
+      const newIntake: SupplementIntake = {
+        ...intakeData,
+        id: `supplement_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: now.toISOString(),
+        date: now.toDateString(),
+      };
+      
+      console.log(`💊 Adding supplement intake: ${intakeData.name} - ${intakeData.amount}${intakeData.unit}`);
+      
+      const updatedIntakes = [newIntake, ...supplementIntakes];
+      setSupplementIntakes(updatedIntakes);
+      await saveSupplementIntakes(updatedIntakes);
+      
+    } catch (error) {
+      console.error('❌ Error adding supplement intake:', error);
+      throw error;
+    }
+  }, [supplementIntakes, saveSupplementIntakes]);
+
+  const deleteSupplementIntake = useCallback(async (id: string) => {
+    try {
+      const updatedIntakes = supplementIntakes.filter(intake => intake.id !== id);
+      setSupplementIntakes(updatedIntakes);
+      await saveSupplementIntakes(updatedIntakes);
+      console.log(`🗑️ Deleted supplement intake: ${id}`);
+    } catch (error) {
+      console.error('❌ Error deleting supplement intake:', error);
+      throw error;
+    }
+  }, [supplementIntakes, saveSupplementIntakes]);
+
+  const getTodaySupplements = useCallback(() => {
+    const today = new Date().toDateString();
+    return supplementIntakes.filter(intake => {
+      try {
+        return intake.date === today;
+      } catch {
+        return false;
+      }
+    });
+  }, [supplementIntakes]);
+
   // Emergency cleanup function
   const emergencyCleanup = useCallback(async () => {
     console.log('🚨 Emergency cleanup');
@@ -930,7 +1011,8 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
         HEALTH_SYNC_KEY,
         LAST_HEALTH_SYNC_KEY,
         RESET_FLAG_KEY,
-        WORKOUTS_STORAGE_KEY
+        WORKOUTS_STORAGE_KEY,
+        SUPPLEMENTS_STORAGE_KEY
       ]);
       
       // Reset state
@@ -954,6 +1036,7 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
     setHealthSyncStatus('idle');
     setDailyGoalState(2000);
     setWorkoutSessions([]);
+    setSupplementIntakes([]);
     
     // Clear storage
     await emergencyCleanup();
@@ -1081,5 +1164,9 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
     deleteWorkoutSession,
     getTodayWorkouts,
     getWeeklyWorkouts,
+    supplementIntakes,
+    addSupplementIntake,
+    deleteSupplementIntake,
+    getTodaySupplements,
   };
 });
