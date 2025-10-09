@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Target, Plus, X, Edit2, Check, ChevronDown, Search, CheckCircle } from 'lucide-react-native';
+import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Target, Plus, X, Edit2, Check, ChevronDown, Search } from 'lucide-react-native';
 import { BlurCard } from '@/components/BlurCard';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
@@ -42,8 +42,6 @@ interface MyVitamin {
   dosage: string;
   time: string;
   notes?: string;
-  takenToday?: boolean;
-  lastTaken?: string;
 }
 
 const MY_VITAMINS_STORAGE_KEY = 'my_vitamins_v1';
@@ -678,7 +676,7 @@ export default function SupplementsScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const { colors, isDark } = useTheme();
-  const { userProfile, meals, healthMetrics, addManualCalories } = useCalorieTracker();
+  const { userProfile, meals, healthMetrics } = useCalorieTracker();
   
   const [myVitamins, setMyVitamins] = useState<MyVitamin[]>([]);
   const [isAddingVitamin, setIsAddingVitamin] = useState<boolean>(false);
@@ -730,12 +728,7 @@ export default function SupplementsScreen() {
         try {
           const vitamins = JSON.parse(stored) as MyVitamin[];
           if (Array.isArray(vitamins)) {
-            const today = new Date().toDateString();
-            const updatedVitamins = vitamins.map(v => ({
-              ...v,
-              takenToday: !!(v.lastTaken && new Date(v.lastTaken).toDateString() === today)
-            }));
-            setMyVitamins(updatedVitamins);
+            setMyVitamins(vitamins);
             console.log('💊 Loaded my vitamins:', vitamins.length);
           } else {
             console.error('❌ Invalid vitamins data format, clearing storage');
@@ -870,96 +863,6 @@ export default function SupplementsScreen() {
   const filteredVitamins = COMMON_VITAMINS.filter(vitamin => 
     vitamin.name.toLowerCase().includes(vitaminSearchQuery.toLowerCase())
   );
-  
-  const extractCaloriesFromDosage = (dosage: string, vitaminName: string): number => {
-    if (vitaminName.toLowerCase().includes('whey') || vitaminName.toLowerCase().includes('protein')) {
-      const gMatch = dosage.match(/(\d+)\s*g/);
-      if (gMatch) {
-        const grams = parseInt(gMatch[1]);
-        return Math.round(grams * 4);
-      }
-      const scoopMatch = dosage.match(/(\d+(?:\.\d+)?)\s*scoop/);
-      if (scoopMatch) {
-        const scoops = parseFloat(scoopMatch[1]);
-        return Math.round(scoops * 25 * 4);
-      }
-    }
-    
-    if (vitaminName.toLowerCase().includes('colágeno') || vitaminName.toLowerCase().includes('colageno')) {
-      const gMatch = dosage.match(/(\d+)\s*g/);
-      if (gMatch) {
-        const grams = parseInt(gMatch[1]);
-        return Math.round(grams * 4);
-      }
-    }
-    
-    return 0;
-  };
-  
-  const extractProteinFromDosage = (dosage: string, vitaminName: string): number => {
-    if (vitaminName.toLowerCase().includes('whey') || vitaminName.toLowerCase().includes('protein')) {
-      const gMatch = dosage.match(/(\d+)\s*g/);
-      if (gMatch) {
-        const grams = parseInt(gMatch[1]);
-        return Math.round(grams * 0.8);
-      }
-      const scoopMatch = dosage.match(/(\d+(?:\.\d+)?)\s*scoop/);
-      if (scoopMatch) {
-        const scoops = parseFloat(scoopMatch[1]);
-        return Math.round(scoops * 25 * 0.8);
-      }
-    }
-    
-    if (vitaminName.toLowerCase().includes('colágeno') || vitaminName.toLowerCase().includes('colageno')) {
-      const gMatch = dosage.match(/(\d+)\s*g/);
-      if (gMatch) {
-        return parseInt(gMatch[1]);
-      }
-    }
-    
-    return 0;
-  };
-  
-  const markVitaminAsTaken = async (vitamin: MyVitamin) => {
-    try {
-      const now = new Date().toISOString();
-      const today = new Date().toDateString();
-      
-      const alreadyTakenToday = vitamin.lastTaken && new Date(vitamin.lastTaken).toDateString() === today;
-      
-      if (alreadyTakenToday) {
-        Alert.alert('Já Tomado', 'Você já tomou este suplemento hoje.');
-        return;
-      }
-      
-      const calories = extractCaloriesFromDosage(vitamin.dosage, vitamin.name);
-      const protein = extractProteinFromDosage(vitamin.dosage, vitamin.name);
-      
-      if (calories > 0) {
-        await addManualCalories(calories, `${vitamin.name} - ${vitamin.dosage}`);
-        console.log(`✅ Added ${calories} kcal from ${vitamin.name}`);
-      }
-      
-      const updatedVitamins = myVitamins.map(v => 
-        v.id === vitamin.id 
-          ? { ...v, takenToday: true, lastTaken: now }
-          : v
-      );
-      
-      setMyVitamins(updatedVitamins);
-      await saveMyVitamins(updatedVitamins);
-      
-      const message = calories > 0 
-        ? `${vitamin.name} registado! ${calories} kcal${protein > 0 ? ` e ${protein}g de proteína` : ''} adicionados ao seu dia.`
-        : `${vitamin.name} registado!`;
-      
-      Alert.alert('Suplemento Tomado', message);
-      
-    } catch (error) {
-      console.error('❌ Error marking vitamin as taken:', error);
-      Alert.alert('Erro', 'Não foi possível registar o suplemento.');
-    }
-  };
 
   const styles = useThemedStyles((colors, isDark) => StyleSheet.create({
     container: {
@@ -1393,15 +1296,6 @@ export default function SupplementsScreen() {
     },
     deleteButton: {
       backgroundColor: isDark ? 'rgba(244, 67, 54, 0.2)' : 'rgba(244, 67, 54, 0.15)',
-    },
-    takeButton: {
-      backgroundColor: '#4CAF50',
-    },
-    takenButton: {
-      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.15)',
-    },
-    takenBadge: {
-      marginLeft: 4,
     },
     addVitaminForm: {
       padding: 20,
@@ -1962,14 +1856,7 @@ export default function SupplementsScreen() {
                   <BlurCard key={vitamin.id} style={styles.myVitaminCard}>
                     <View style={styles.myVitaminHeader}>
                       <View style={styles.myVitaminInfo}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                          <Text style={styles.myVitaminName} numberOfLines={2}>{vitamin.name}</Text>
-                          {vitamin.takenToday && (
-                            <View style={styles.takenBadge}>
-                              <CheckCircle color="#4CAF50" size={16} strokeWidth={2.5} />
-                            </View>
-                          )}
-                        </View>
+                        <Text style={styles.myVitaminName} numberOfLines={2}>{vitamin.name}</Text>
                         <View style={styles.myVitaminDetails}>
                           <Text style={styles.myVitaminDosage} numberOfLines={1}>{vitamin.dosage}</Text>
                           <Text style={styles.myVitaminSeparator}>•</Text>
@@ -1977,13 +1864,6 @@ export default function SupplementsScreen() {
                         </View>
                       </View>
                       <View style={styles.myVitaminActions}>
-                        <TouchableOpacity 
-                          style={[styles.actionButton, styles.takeButton, vitamin.takenToday && styles.takenButton]}
-                          onPress={() => markVitaminAsTaken(vitamin)}
-                          disabled={vitamin.takenToday}
-                        >
-                          <CheckCircle color={vitamin.takenToday ? '#4CAF50' : 'white'} size={16} strokeWidth={2} />
-                        </TouchableOpacity>
                         <TouchableOpacity 
                           style={[styles.actionButton, styles.editButton]}
                           onPress={() => startEditVitamin(vitamin)}
