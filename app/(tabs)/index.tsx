@@ -376,24 +376,26 @@ export default function HomeScreen() {
   };
 
   const handleManualMealSubmit = async () => {
+    console.log('🍽️ ========== MANUAL MEAL SUBMIT STARTED ==========');
+    console.log('Form values:', {
+      name: manualMealName,
+      calories: manualMealCalories,
+      protein: manualMealProtein,
+      carbs: manualMealCarbs,
+      fat: manualMealFat,
+      portion: manualMealPortion,
+      type: manualMealType
+    });
+    
     try {
-      console.log('🍽️ Manual meal submit started');
-      console.log('Form values:', {
-        name: manualMealName,
-        calories: manualMealCalories,
-        protein: manualMealProtein,
-        carbs: manualMealCarbs,
-        fat: manualMealFat,
-        portion: manualMealPortion,
-        type: manualMealType
-      });
-      
       const name = manualMealName.trim();
       const calories = parseFloat(manualMealCalories);
       const protein = parseFloat(manualMealProtein) || 0;
       const carbs = parseFloat(manualMealCarbs) || 0;
       const fat = parseFloat(manualMealFat) || 0;
       const portion = manualMealPortion.trim() || '1 porção';
+      
+      console.log('Parsed values:', { name, calories, protein, carbs, fat, portion });
       
       if (!name) {
         console.log('❌ Validation failed: no name');
@@ -402,7 +404,7 @@ export default function HomeScreen() {
       }
       
       if (isNaN(calories) || calories <= 0) {
-        console.log('❌ Validation failed: invalid calories');
+        console.log('❌ Validation failed: invalid calories', { calories, isNaN: isNaN(calories) });
         Alert.alert('Erro', 'Por favor, insira um número válido de calorias.');
         return;
       }
@@ -423,11 +425,15 @@ export default function HomeScreen() {
         totalCalories: calories,
       };
       
-      console.log('📤 Calling addMeal with:', mealData);
+      console.log('📤 About to call addMeal with:', JSON.stringify(mealData, null, 2));
+      
       await addMeal(mealData);
-      console.log('✅ Meal added successfully');
+      
+      console.log('✅ addMeal completed successfully');
+      console.log('Current meals count after add:', meals.length);
       
       // Reset form
+      console.log('Resetting form...');
       setManualMealName('');
       setManualMealCalories('');
       setManualMealProtein('');
@@ -435,16 +441,23 @@ export default function HomeScreen() {
       setManualMealFat('');
       setManualMealPortion('');
       setManualMealType('Lanche');
+      
+      console.log('Closing modal...');
       setShowManualMealModal(false);
       
       if (Platform.OS !== 'web') {
         await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
       
+      console.log('Showing success alert...');
       Alert.alert('Sucesso', 'Refeição adicionada com sucesso!');
+      
+      console.log('🍽️ ========== MANUAL MEAL SUBMIT COMPLETED ==========');
     } catch (error) {
-      console.error('❌ Error adding manual meal:', error);
-      Alert.alert('Erro', 'Não foi possível adicionar a refeição. Tente novamente.');
+      console.error('❌ ========== ERROR IN MANUAL MEAL SUBMIT ==========');
+      console.error('Error details:', error);
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      Alert.alert('Erro', `Não foi possível adicionar a refeição: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   };
 
