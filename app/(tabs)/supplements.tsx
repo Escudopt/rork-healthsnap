@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -653,6 +653,11 @@ export default function SupplementsScreen() {
   const [newVitaminNotes, setNewVitaminNotes] = useState<string>('');
   const [showDosagePicker, setShowDosagePicker] = useState<boolean>(false);
   const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
+  const [deficiencyAnalysis, setDeficiencyAnalysis] = useState<{
+    covered: string[];
+    missing: string[];
+    suggestions: string[];
+  } | null>(null);
   
   // Get intelligent personalized recommendations
   const personalizedRecommendations = userProfile 
@@ -665,6 +670,86 @@ export default function SupplementsScreen() {
         healthMetrics
       )
     : [];
+
+  // Analyze vitamin coverage vs deficiencies
+  const analyzeVitaminCoverage = useCallback(() => {
+    if (!userProfile || personalizedRecommendations.length === 0 || myVitamins.length === 0) {
+      setDeficiencyAnalysis(null);
+      return;
+    }
+
+    const covered: string[] = [];
+    const missing: string[] = [];
+    const suggestions: string[] = [];
+
+    // Extract nutrients from user's vitamins
+    const userNutrients = myVitamins.map(v => v.name.toLowerCase());
+
+    // Check each recommendation
+    personalizedRecommendations.forEach(rec => {
+      const recName = rec.name.toLowerCase();
+      
+      // Check if user is taking something that covers this deficiency
+      const isCovered = userNutrients.some(nutrient => {
+        // Check for direct matches or related nutrients
+        if (nutrient.includes('multivitamínico') || nutrient.includes('multivitaminico')) {
+          return true; // Multivitamin covers many deficiencies
+        }
+        
+        // Check for specific nutrient matches
+        if (recName.includes('proteína') || recName.includes('protein')) {
+          return nutrient.includes('whey') || nutrient.includes('proteína') || nutrient.includes('protein');
+        }
+        if (recName.includes('ferro')) {
+          return nutrient.includes('ferro') || nutrient.includes('iron');
+        }
+        if (recName.includes('cálcio') || recName.includes('calcio')) {
+          return nutrient.includes('cálcio') || nutrient.includes('calcio') || nutrient.includes('calcium');
+        }
+        if (recName.includes('magnésio') || recName.includes('magnesio')) {
+          return nutrient.includes('magnésio') || nutrient.includes('magnesio') || nutrient.includes('magnesium');
+        }
+        if (recName.includes('vitamina d')) {
+          return nutrient.includes('vitamina d') || nutrient.includes('vitamin d') || nutrient.includes('d3');
+        }
+        if (recName.includes('ómega') || recName.includes('omega')) {
+          return nutrient.includes('ómega') || nutrient.includes('omega') || nutrient.includes('epa') || nutrient.includes('dha');
+        }
+        if (recName.includes('fibra')) {
+          return nutrient.includes('fibra') || nutrient.includes('fiber');
+        }
+        if (recName.includes('potássio') || recName.includes('potassio')) {
+          return nutrient.includes('potássio') || nutrient.includes('potassio') || nutrient.includes('potassium');
+        }
+        if (recName.includes('cromo') || recName.includes('chromium')) {
+          return nutrient.includes('cromo') || nutrient.includes('chromium');
+        }
+        
+        return false;
+      });
+
+      if (isCovered) {
+        covered.push(rec.name);
+      } else {
+        missing.push(rec.name);
+        
+        // Generate specific suggestion
+        if (rec.priority === 'high') {
+          suggestions.push(`⚠️ PRIORIDADE: ${rec.name} - ${rec.description}`);
+        } else {
+          suggestions.push(`💡 Considere adicionar: ${rec.name}`);
+        }
+      }
+    });
+
+    setDeficiencyAnalysis({ covered, missing, suggestions });
+    console.log('📊 Vitamin coverage analysis:', { covered: covered.length, missing: missing.length });
+  }, [userProfile, personalizedRecommendations, myVitamins]);
+
+  // Run analysis when vitamins or recommendations change
+  useEffect(() => {
+    analyzeVitaminCoverage();
+  }, [analyzeVitaminCoverage]);
 
   useEffect(() => {
     Animated.parallel([
@@ -1493,6 +1578,101 @@ export default function SupplementsScreen() {
       lineHeight: 22,
       fontWeight: '500',
     },
+    analysisSection: {
+      marginBottom: 32,
+    },
+    coverageCard: {
+      padding: 20,
+      marginBottom: 16,
+      borderRadius: 20,
+      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)',
+      borderWidth: 1.5,
+      borderColor: isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)',
+    },
+    coverageTitle: {
+      fontSize: 18,
+      fontWeight: '700' as const,
+      color: colors.text,
+      marginBottom: 8,
+      letterSpacing: 0.2,
+    },
+    coverageDescription: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 16,
+      lineHeight: 20,
+    },
+    coverageList: {
+      gap: 10,
+    },
+    coverageItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    coverageBullet: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+    coverageItemText: {
+      fontSize: 14,
+      color: colors.text,
+      fontWeight: '600' as const,
+      flex: 1,
+    },
+    missingCard: {
+      padding: 20,
+      marginBottom: 16,
+      borderRadius: 20,
+      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.15)' : 'rgba(255, 152, 0, 0.08)',
+      borderWidth: 1.5,
+      borderColor: isDark ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 152, 0, 0.2)',
+    },
+    missingTitle: {
+      fontSize: 18,
+      fontWeight: '700' as const,
+      color: colors.text,
+      marginBottom: 8,
+      letterSpacing: 0.2,
+    },
+    missingDescription: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginBottom: 16,
+      lineHeight: 20,
+    },
+    suggestionsList: {
+      gap: 12,
+    },
+    suggestionItem: {
+      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.1)' : 'rgba(255, 152, 0, 0.05)',
+      padding: 14,
+      borderRadius: 12,
+      borderLeftWidth: 3,
+      borderLeftColor: '#FF9800',
+    },
+    suggestionText: {
+      fontSize: 14,
+      color: colors.text,
+      lineHeight: 20,
+      fontWeight: '500' as const,
+    },
+    successCard: {
+      padding: 20,
+      borderRadius: 20,
+      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.12)',
+      borderWidth: 1.5,
+      borderColor: isDark ? 'rgba(76, 175, 80, 0.4)' : 'rgba(76, 175, 80, 0.3)',
+      alignItems: 'center',
+    },
+    successText: {
+      fontSize: 15,
+      color: colors.text,
+      textAlign: 'center',
+      lineHeight: 22,
+      fontWeight: '600' as const,
+    },
   }));
 
   return (
@@ -1542,6 +1722,61 @@ export default function SupplementsScreen() {
           </Animated.View>
 
           <Animated.View style={[styles.supplementsSection, { opacity: fadeAnim }]}>
+            {/* Deficiency Analysis Section */}
+            {deficiencyAnalysis && (deficiencyAnalysis.covered.length > 0 || deficiencyAnalysis.missing.length > 0) && (
+              <View style={styles.analysisSection}>
+                <View style={styles.analysisHeader}>
+                  <View style={[styles.summaryCardIcon, { backgroundColor: deficiencyAnalysis.missing.length === 0 ? '#4CAF50' : '#FF9800' }]}>
+                    <Target color="white" size={20} strokeWidth={2.5} />
+                  </View>
+                  <Text style={styles.analysisTitle}>
+                    {deficiencyAnalysis.missing.length === 0 ? '✅ Deficiências Cobertas' : '⚠️ Análise de Deficiências'}
+                  </Text>
+                </View>
+                
+                {deficiencyAnalysis.covered.length > 0 && (
+                  <View style={styles.coverageCard}>
+                    <Text style={styles.coverageTitle}>✅ Deficiências Cobertas ({deficiencyAnalysis.covered.length})</Text>
+                    <Text style={styles.coverageDescription}>
+                      As suas vitaminas atuais estão a ajudar com:
+                    </Text>
+                    <View style={styles.coverageList}>
+                      {deficiencyAnalysis.covered.map((item, index) => (
+                        <View key={`covered-${index}`} style={styles.coverageItem}>
+                          <View style={[styles.coverageBullet, { backgroundColor: '#4CAF50' }]} />
+                          <Text style={styles.coverageItemText}>{item}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                
+                {deficiencyAnalysis.missing.length > 0 && (
+                  <View style={styles.missingCard}>
+                    <Text style={styles.missingTitle}>⚠️ Deficiências Não Cobertas ({deficiencyAnalysis.missing.length})</Text>
+                    <Text style={styles.missingDescription}>
+                      Considere adicionar vitaminas para estas deficiências:
+                    </Text>
+                    <View style={styles.suggestionsList}>
+                      {deficiencyAnalysis.suggestions.map((suggestion, index) => (
+                        <View key={`suggestion-${index}`} style={styles.suggestionItem}>
+                          <Text style={styles.suggestionText}>{suggestion}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+                
+                {deficiencyAnalysis.missing.length === 0 && deficiencyAnalysis.covered.length > 0 && (
+                  <View style={styles.successCard}>
+                    <Text style={styles.successText}>
+                      🎉 Parabéns! As suas vitaminas estão a cobrir todas as deficiências nutricionais detectadas. Continue assim!
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+
             {/* My Vitamins Section */}
             <View style={styles.myVitaminsSection}>
               <View style={styles.myVitaminsHeader}>
