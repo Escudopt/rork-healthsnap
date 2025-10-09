@@ -925,70 +925,74 @@ export default function SupplementsScreen() {
         nutritionalAnalysis[key as keyof typeof nutritionalAnalysis] /= daysAnalyzed;
       });
       
-      const vitaminList = myVitamins.length > 0 
-        ? myVitamins.map(v => `${v.name} (${v.dosage})`).join(', ')
-        : 'Nenhum suplemento registrado';
-      
       const proteinValue = Math.round(nutritionalAnalysis.protein);
-      const carbsValue = Math.round(nutritionalAnalysis.carbs);
-      const fatValue = Math.round(nutritionalAnalysis.fat);
       const fiberValue = Math.round(nutritionalAnalysis.fiber);
       const calciumValue = Math.round(nutritionalAnalysis.calcium);
       const ironValue = Math.round(nutritionalAnalysis.iron);
       const vitaminCValue = Math.round(nutritionalAnalysis.vitaminC);
       const vitaminDValue = Math.round(nutritionalAnalysis.vitaminD);
       
-      console.log('🤖 Sending analysis request...');
+      console.log('📊 Nutritional analysis:', { proteinValue, fiberValue, calciumValue, ironValue, vitaminCValue, vitaminDValue });
       
-      const { generateObject } = await import('@rork/toolkit-sdk');
-      const zod = await import('zod');
-      const z = zod.z;
+      const coverage: string[] = [];
+      const missing: string[] = [];
+      const suggestions: string[] = [];
       
-      const prompt = `Analyze user supplementation and diet.
-
-Current supplements: ${vitaminList}
-
-Daily average (last 7 days):
-- Protein: ${proteinValue}g
-- Carbs: ${carbsValue}g
-- Fat: ${fatValue}g
-- Fiber: ${fiberValue}g
-- Calcium: ${calciumValue}mg
-- Iron: ${ironValue}mg
-- Vitamin C: ${vitaminCValue}mg
-- Vitamin D: ${vitaminDValue}IU
-
-Provide analysis in Portuguese with:
-1. coverage: 2-3 well covered nutritional needs
-2. missing: 2-3 detected deficiencies
-3. suggestions: 2-3 practical suggestions
-
-Keep responses concise and in Portuguese.`;
+      if (proteinValue >= 60) {
+        coverage.push(`Proteína: ${proteinValue}g/dia - Boa ingestão proteica`);
+      } else if (proteinValue < 40) {
+        missing.push(`Proteína baixa: ${proteinValue}g/dia (recomendado: 60-80g)`);
+        suggestions.push('Considere adicionar Whey Protein ou aumentar fontes proteicas');
+      }
       
-      const schema = z.object({
-        coverage: z.array(z.string()).describe('Well covered nutritional needs'),
-        missing: z.array(z.string()).describe('Detected deficiencies'),
-        suggestions: z.array(z.string()).describe('Practical suggestions')
-      });
+      if (fiberValue >= 20) {
+        coverage.push(`Fibras: ${fiberValue}g/dia - Boa ingestão de fibras`);
+      } else if (fiberValue < 15) {
+        missing.push(`Fibras baixas: ${fiberValue}g/dia (recomendado: 25-30g)`);
+        suggestions.push('Aumente consumo de vegetais, frutas e cereais integrais');
+      }
       
-      const analysis = await generateObject({
-        messages: [{ role: 'user', content: prompt }],
-        schema: schema
-      });
+      if (calciumValue >= 800) {
+        coverage.push(`Cálcio: ${calciumValue}mg/dia - Boa ingestão de cálcio`);
+      } else if (calciumValue < 500) {
+        missing.push(`Cálcio baixo: ${calciumValue}mg/dia (recomendado: 1000mg)`);
+        suggestions.push('Considere suplemento de Cálcio + Vitamina D3');
+      }
       
-      console.log('✅ AI Analysis received:', analysis);
+      if (vitaminCValue >= 75) {
+        coverage.push(`Vitamina C: ${vitaminCValue}mg/dia - Boa ingestão`);
+      } else if (vitaminCValue < 50) {
+        missing.push(`Vitamina C baixa: ${vitaminCValue}mg/dia (recomendado: 75-90mg)`);
+        suggestions.push('Aumente consumo de frutas cítricas ou considere suplemento');
+      }
+      
+      if (myVitamins.length > 0) {
+        coverage.push(`Suplementação ativa: ${myVitamins.length} vitamina(s) registrada(s)`);
+      }
+      
+      if (coverage.length === 0) {
+        coverage.push('Continue registrando suas refeições para análise mais precisa');
+      }
+      
+      if (missing.length === 0) {
+        missing.push('Nenhuma deficiência crítica detectada');
+      }
+      
+      if (suggestions.length === 0) {
+        suggestions.push('Mantenha uma alimentação variada e equilibrada');
+      }
+      
+      console.log('✅ Analysis completed:', { coverage, missing, suggestions });
       
       setAiAnalysis({
-        coverage: Array.isArray(analysis.coverage) ? analysis.coverage.slice(0, 4) : [],
-        missing: Array.isArray(analysis.missing) ? analysis.missing.slice(0, 4) : [],
-        suggestions: Array.isArray(analysis.suggestions) ? analysis.suggestions.slice(0, 4) : [],
+        coverage: coverage.slice(0, 4),
+        missing: missing.slice(0, 4),
+        suggestions: suggestions.slice(0, 4),
         isAnalyzing: false
       });
       
     } catch (error) {
       console.error('❌ Error analyzing vitamin coverage:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      console.error('Error details:', errorMessage);
       
       setAiAnalysis({
         coverage: [],
