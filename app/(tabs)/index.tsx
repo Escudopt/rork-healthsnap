@@ -740,17 +740,27 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     onPress={() => router.push('/(tabs)/profile')}
                     activeOpacity={0.7}
+                    style={styles.profileTouchable}
                   >
-                    {userProfile?.profilePhoto ? (
-                      <Image 
-                        source={{ uri: userProfile.profilePhoto }} 
-                        style={styles.greetingProfileImage}
-                      />
-                    ) : (
-                      <View style={[styles.greetingProfilePlaceholder, { backgroundColor: colors.surfaceElevated }]}>
-                        <User color={colors.textSecondary} size={24} strokeWidth={2} />
+                    <LinearGradient
+                      colors={['#FF6B35', '#F7931E', '#FDC830', '#F37335']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.profileGradientRing}
+                    >
+                      <View style={[styles.profileInnerRing, { backgroundColor: colors.surface }]}>
+                        {userProfile?.profilePhoto ? (
+                          <Image 
+                            source={{ uri: userProfile.profilePhoto }} 
+                            style={styles.greetingProfileImage}
+                          />
+                        ) : (
+                          <View style={[styles.greetingProfilePlaceholder, { backgroundColor: colors.surfaceElevated }]}>
+                            <User color={colors.textSecondary} size={24} strokeWidth={2} />
+                          </View>
+                        )}
                       </View>
-                    )}
+                    </LinearGradient>
                   </TouchableOpacity>
                   <View style={styles.greetingTextContainer}>
                     {userProfile?.name ? (
@@ -2208,21 +2218,41 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  greetingProfileImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+  profileTouchable: {
+    borderRadius: 32,
   },
-  greetingProfilePlaceholder: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  profileGradientRing: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    padding: 3,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)',
+    shadowColor: '#FF6B35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  profileInnerRing: {
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    padding: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  greetingProfileImage: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+  },
+  greetingProfilePlaceholder: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   greetingTextContainer: {
     flex: 1,
