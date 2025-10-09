@@ -9,6 +9,9 @@ import {
   TextInput,
   Alert,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -114,10 +117,17 @@ export default function SupplementsScreen() {
         acc.fiber += food.fiber || 0;
         acc.calcium += food.calcium || 0;
         acc.vitaminC += food.vitaminC || 0;
+        acc.vitaminD += food.vitaminD || 0;
+        acc.omega3 += food.omega3 || 0;
+        acc.magnesium += food.magnesium || 0;
+        acc.zinc += food.zinc || 0;
+        acc.vitaminB12 += food.vitaminB12 || 0;
+        acc.iron += food.iron || 0;
       });
       return acc;
     }, {
-      protein: 0, fiber: 0, calcium: 0, vitaminC: 0
+      protein: 0, fiber: 0, calcium: 0, vitaminC: 0, vitaminD: 0, 
+      omega3: 0, magnesium: 0, zinc: 0, vitaminB12: 0, iron: 0
     });
     
     myVitamins.forEach(vitamin => {
@@ -130,33 +140,125 @@ export default function SupplementsScreen() {
           nutritionalAnalysis.protein += parseInt(gramsMatch[1]);
         }
       }
+      
+      if (vitaminNameLower.includes('vitamina d')) {
+        const uiMatch = dosageLower.match(/(\d+)\s*ui/);
+        if (uiMatch) {
+          nutritionalAnalysis.vitaminD += parseInt(uiMatch[1]);
+        }
+      }
+      
+      if (vitaminNameLower.includes('vitamina c')) {
+        const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+        if (mgMatch) {
+          nutritionalAnalysis.vitaminC += parseInt(mgMatch[1]);
+        }
+      }
+      
+      if (vitaminNameLower.includes('ómega') || vitaminNameLower.includes('omega')) {
+        const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+        if (mgMatch) {
+          nutritionalAnalysis.omega3 += parseInt(mgMatch[1]);
+        }
+      }
+      
+      if (vitaminNameLower.includes('magnésio') || vitaminNameLower.includes('magnesio')) {
+        const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+        if (mgMatch) {
+          nutritionalAnalysis.magnesium += parseInt(mgMatch[1]);
+        }
+      }
+      
+      if (vitaminNameLower.includes('zinco')) {
+        const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+        if (mgMatch) {
+          nutritionalAnalysis.zinc += parseInt(mgMatch[1]);
+        }
+      }
+      
+      if (vitaminNameLower.includes('b12')) {
+        const mcgMatch = dosageLower.match(/(\d+\.?\d*)\s*mcg/);
+        if (mcgMatch) {
+          nutritionalAnalysis.vitaminB12 += parseFloat(mcgMatch[1]);
+        }
+      }
+      
+      if (vitaminNameLower.includes('cálcio') || vitaminNameLower.includes('calcio')) {
+        const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+        if (mgMatch) {
+          nutritionalAnalysis.calcium += parseInt(mgMatch[1]);
+        }
+      }
+      
+      if (vitaminNameLower.includes('ferro')) {
+        const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+        if (mgMatch) {
+          nutritionalAnalysis.iron += parseInt(mgMatch[1]);
+        }
+      }
     });
     
     const coverage: string[] = [];
     const missing: string[] = [];
     
     if (nutritionalAnalysis.protein >= 60) {
-      coverage.push(`Proteína: ${Math.round(nutritionalAnalysis.protein)}g`);
+      coverage.push(`Proteína: ${Math.round(nutritionalAnalysis.protein)}g ✓`);
     } else {
-      missing.push(`Proteína: ${Math.round(nutritionalAnalysis.protein)}g (meta: 60g)`);
+      missing.push(`Proteína: ${Math.round(nutritionalAnalysis.protein)}g / 60g`);
     }
     
-    if (nutritionalAnalysis.fiber >= 20) {
-      coverage.push(`Fibras: ${Math.round(nutritionalAnalysis.fiber)}g`);
+    if (nutritionalAnalysis.fiber >= 25) {
+      coverage.push(`Fibras: ${Math.round(nutritionalAnalysis.fiber)}g ✓`);
     } else {
-      missing.push(`Fibras: ${Math.round(nutritionalAnalysis.fiber)}g (meta: 25g)`);
+      missing.push(`Fibras: ${Math.round(nutritionalAnalysis.fiber)}g / 25g`);
     }
     
-    if (nutritionalAnalysis.calcium >= 800) {
-      coverage.push(`Cálcio: ${Math.round(nutritionalAnalysis.calcium)}mg`);
+    if (nutritionalAnalysis.calcium >= 1000) {
+      coverage.push(`Cálcio: ${Math.round(nutritionalAnalysis.calcium)}mg ✓`);
     } else {
-      missing.push(`Cálcio: ${Math.round(nutritionalAnalysis.calcium)}mg (meta: 1000mg)`);
+      missing.push(`Cálcio: ${Math.round(nutritionalAnalysis.calcium)}mg / 1000mg`);
     }
     
-    if (nutritionalAnalysis.vitaminC >= 75) {
-      coverage.push(`Vitamina C: ${Math.round(nutritionalAnalysis.vitaminC)}mg`);
+    if (nutritionalAnalysis.vitaminC >= 90) {
+      coverage.push(`Vitamina C: ${Math.round(nutritionalAnalysis.vitaminC)}mg ✓`);
     } else {
-      missing.push(`Vitamina C: ${Math.round(nutritionalAnalysis.vitaminC)}mg (meta: 90mg)`);
+      missing.push(`Vitamina C: ${Math.round(nutritionalAnalysis.vitaminC)}mg / 90mg`);
+    }
+    
+    if (nutritionalAnalysis.vitaminD >= 2000) {
+      coverage.push(`Vitamina D: ${Math.round(nutritionalAnalysis.vitaminD)}UI ✓`);
+    } else {
+      missing.push(`Vitamina D: ${Math.round(nutritionalAnalysis.vitaminD)}UI / 2000UI`);
+    }
+    
+    if (nutritionalAnalysis.omega3 >= 1000) {
+      coverage.push(`Ómega-3: ${Math.round(nutritionalAnalysis.omega3)}mg ✓`);
+    } else {
+      missing.push(`Ómega-3: ${Math.round(nutritionalAnalysis.omega3)}mg / 1000mg`);
+    }
+    
+    if (nutritionalAnalysis.magnesium >= 300) {
+      coverage.push(`Magnésio: ${Math.round(nutritionalAnalysis.magnesium)}mg ✓`);
+    } else {
+      missing.push(`Magnésio: ${Math.round(nutritionalAnalysis.magnesium)}mg / 300mg`);
+    }
+    
+    if (nutritionalAnalysis.zinc >= 11) {
+      coverage.push(`Zinco: ${Math.round(nutritionalAnalysis.zinc)}mg ✓`);
+    } else {
+      missing.push(`Zinco: ${Math.round(nutritionalAnalysis.zinc)}mg / 11mg`);
+    }
+    
+    if (nutritionalAnalysis.vitaminB12 >= 2.4) {
+      coverage.push(`Vitamina B12: ${nutritionalAnalysis.vitaminB12.toFixed(1)}mcg ✓`);
+    } else {
+      missing.push(`Vitamina B12: ${nutritionalAnalysis.vitaminB12.toFixed(1)}mcg / 2.4mcg`);
+    }
+    
+    if (nutritionalAnalysis.iron >= 18) {
+      coverage.push(`Ferro: ${Math.round(nutritionalAnalysis.iron)}mg ✓`);
+    } else {
+      missing.push(`Ferro: ${Math.round(nutritionalAnalysis.iron)}mg / 18mg`);
     }
     
     setAnalysis({ coverage, missing });
@@ -219,11 +321,17 @@ export default function SupplementsScreen() {
     setMyVitamins(updatedVitamins);
     await saveMyVitamins(updatedVitamins);
     
+    Keyboard.dismiss();
+    
     setNewVitaminName('');
     setNewVitaminDosage('');
     setNewVitaminTime('');
     setNewVitaminNotes('');
     setIsAddingVitamin(false);
+    
+    setTimeout(() => {
+      checkGoalAchievement(newVitamin);
+    }, 500);
   };
   
   const updateVitamin = async (id: string) => {
@@ -232,26 +340,32 @@ export default function SupplementsScreen() {
       return;
     }
     
+    const updatedVitamin = {
+      id,
+      name: newVitaminName.trim(),
+      dosage: newVitaminDosage.trim(),
+      time: newVitaminTime.trim() || 'Não especificado',
+      notes: newVitaminNotes.trim(),
+    };
+    
     const updatedVitamins = myVitamins.map(v => 
-      v.id === id 
-        ? {
-            ...v,
-            name: newVitaminName.trim(),
-            dosage: newVitaminDosage.trim(),
-            time: newVitaminTime.trim() || 'Não especificado',
-            notes: newVitaminNotes.trim(),
-          }
-        : v
+      v.id === id ? updatedVitamin : v
     );
     
     setMyVitamins(updatedVitamins);
     await saveMyVitamins(updatedVitamins);
+    
+    Keyboard.dismiss();
     
     setEditingVitaminId(null);
     setNewVitaminName('');
     setNewVitaminDosage('');
     setNewVitaminTime('');
     setNewVitaminNotes('');
+    
+    setTimeout(() => {
+      checkGoalAchievement(updatedVitamin);
+    }, 500);
   };
   
   const deleteVitamin = async (id: string) => {
@@ -290,6 +404,87 @@ export default function SupplementsScreen() {
     setNewVitaminNotes('');
     setShowVitaminPicker(false);
     setVitaminSearchQuery('');
+  };
+  
+  const checkGoalAchievement = (vitamin: MyVitamin) => {
+    const vitaminNameLower = vitamin.name.toLowerCase();
+    const dosageLower = vitamin.dosage.toLowerCase();
+    
+    let achievedGoals: string[] = [];
+    
+    if (vitaminNameLower.includes('whey') || vitaminNameLower.includes('proteína')) {
+      const gramsMatch = dosageLower.match(/(\d+)\s*g/);
+      if (gramsMatch) {
+        const proteinAmount = parseInt(gramsMatch[1]);
+        if (proteinAmount >= 20) {
+          achievedGoals.push(`Proteína: +${proteinAmount}g`);
+        }
+      }
+    }
+    
+    if (vitaminNameLower.includes('vitamina d')) {
+      const uiMatch = dosageLower.match(/(\d+)\s*ui/);
+      if (uiMatch && parseInt(uiMatch[1]) >= 2000) {
+        achievedGoals.push('Vitamina D: Meta diária atingida ✓');
+      }
+    }
+    
+    if (vitaminNameLower.includes('vitamina c')) {
+      const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+      if (mgMatch && parseInt(mgMatch[1]) >= 90) {
+        achievedGoals.push('Vitamina C: Meta diária atingida ✓');
+      }
+    }
+    
+    if (vitaminNameLower.includes('ómega') || vitaminNameLower.includes('omega')) {
+      const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+      if (mgMatch && parseInt(mgMatch[1]) >= 1000) {
+        achievedGoals.push('Ómega-3: Meta diária atingida ✓');
+      }
+    }
+    
+    if (vitaminNameLower.includes('magnésio') || vitaminNameLower.includes('magnesio')) {
+      const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+      if (mgMatch && parseInt(mgMatch[1]) >= 300) {
+        achievedGoals.push('Magnésio: Meta diária atingida ✓');
+      }
+    }
+    
+    if (vitaminNameLower.includes('zinco')) {
+      const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+      if (mgMatch && parseInt(mgMatch[1]) >= 11) {
+        achievedGoals.push('Zinco: Meta diária atingida ✓');
+      }
+    }
+    
+    if (vitaminNameLower.includes('b12')) {
+      const mcgMatch = dosageLower.match(/(\d+\.?\d*)\s*mcg/);
+      if (mcgMatch && parseFloat(mcgMatch[1]) >= 2.4) {
+        achievedGoals.push('Vitamina B12: Meta diária atingida ✓');
+      }
+    }
+    
+    if (vitaminNameLower.includes('cálcio') || vitaminNameLower.includes('calcio')) {
+      const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+      if (mgMatch && parseInt(mgMatch[1]) >= 1000) {
+        achievedGoals.push('Cálcio: Meta diária atingida ✓');
+      }
+    }
+    
+    if (vitaminNameLower.includes('ferro')) {
+      const mgMatch = dosageLower.match(/(\d+)\s*mg/);
+      if (mgMatch && parseInt(mgMatch[1]) >= 18) {
+        achievedGoals.push('Ferro: Meta diária atingida ✓');
+      }
+    }
+    
+    if (achievedGoals.length > 0) {
+      Alert.alert(
+        '🎉 Parabéns!',
+        achievedGoals.join('\n'),
+        [{ text: 'OK' }]
+      );
+    }
   };
   
   const filteredVitamins = COMMON_VITAMINS.filter(vitamin => 
@@ -479,8 +674,9 @@ export default function SupplementsScreen() {
     },
     analysisItem: {
       fontSize: 15,
-      color: colors.textSecondary,
+      color: colors.text,
       marginBottom: 6,
+      lineHeight: 22,
     },
     modalOverlay: {
       flex: 1,
@@ -544,7 +740,11 @@ export default function SupplementsScreen() {
   }));
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
       <LinearGradient
         colors={isDark ? ['#000000', '#1C1C1E'] : ['#F2F2F7', '#FFFFFF']}
         style={StyleSheet.absoluteFillObject}
@@ -561,6 +761,8 @@ export default function SupplementsScreen() {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
         >
           <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
             <Text style={styles.title}>Suplementos</Text>
@@ -878,6 +1080,6 @@ export default function SupplementsScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
