@@ -880,20 +880,19 @@ export default function SupplementsScreen() {
     try {
       setAiAnalysis({ coverage: [], missing: [], suggestions: [], isAnalyzing: true });
       
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-      
-      const recentMeals = meals.filter(meal => {
+      // Get TODAY's meals only for accurate daily analysis
+      const today = new Date().toDateString();
+      const todayMeals = meals.filter(meal => {
         if (!meal?.timestamp) return false;
         try {
-          return new Date(meal.timestamp) >= oneWeekAgo;
+          return new Date(meal.timestamp).toDateString() === today;
         } catch {
           return false;
         }
       });
       
-      if (recentMeals.length === 0 && myVitamins.length === 0) {
-        console.log('⚠️ No recent meals or vitamins to analyze');
+      if (todayMeals.length === 0 && myVitamins.length === 0) {
+        console.log('⚠️ No meals or vitamins to analyze today');
         setAiAnalysis({
           coverage: [],
           missing: [],
@@ -903,7 +902,8 @@ export default function SupplementsScreen() {
         return;
       }
       
-      const nutritionalAnalysis = recentMeals.reduce((acc, meal) => {
+      // Calculate TODAY's nutritional intake from meals
+      const nutritionalAnalysis = todayMeals.reduce((acc, meal) => {
         meal.foods?.forEach((food: any) => {
           acc.protein += food.protein || 0;
           acc.carbs += food.carbs || 0;
@@ -920,7 +920,7 @@ export default function SupplementsScreen() {
         calcium: 0, iron: 0, vitaminC: 0, vitaminD: 0
       });
       
-      // Add protein from supplements (Whey Protein)
+      // Add protein from supplements (Whey Protein) - DAILY intake
       myVitamins.forEach(vitamin => {
         const vitaminNameLower = vitamin.name.toLowerCase();
         const dosageLower = vitamin.dosage.toLowerCase();
@@ -946,11 +946,7 @@ export default function SupplementsScreen() {
         }
       });
       
-      const daysAnalyzed = Math.max(1, Math.ceil((Date.now() - oneWeekAgo.getTime()) / (1000 * 60 * 60 * 24)));
-      Object.keys(nutritionalAnalysis).forEach(key => {
-        nutritionalAnalysis[key as keyof typeof nutritionalAnalysis] /= daysAnalyzed;
-      });
-      
+      // NO DIVISION - these are TODAY's totals
       const proteinValue = Math.round(nutritionalAnalysis.protein);
       const fiberValue = Math.round(nutritionalAnalysis.fiber);
       const calciumValue = Math.round(nutritionalAnalysis.calcium);
@@ -958,39 +954,40 @@ export default function SupplementsScreen() {
       const vitaminCValue = Math.round(nutritionalAnalysis.vitaminC);
       const vitaminDValue = Math.round(nutritionalAnalysis.vitaminD);
       
-      console.log('📊 Nutritional analysis (including supplements):', { proteinValue, fiberValue, calciumValue, ironValue, vitaminCValue, vitaminDValue });
+      console.log('📊 TODAY\'s nutritional analysis (including supplements):', { proteinValue, fiberValue, calciumValue, ironValue, vitaminCValue, vitaminDValue });
       
       const coverage: string[] = [];
       const missing: string[] = [];
       const suggestions: string[] = [];
       
+      // Protein analysis - only show deficiency if below 60g
       if (proteinValue >= 60) {
-        coverage.push(`Proteína: ${proteinValue}g/dia - Boa ingestão proteica`);
-      } else if (proteinValue < 40) {
+        coverage.push(`Proteína: ${proteinValue}g/dia - Boa ingestão proteica ✅`);
+      } else if (proteinValue < 60) {
         missing.push(`Proteína baixa: ${proteinValue}g/dia (recomendado: 60-80g)`);
         suggestions.push('Considere adicionar Whey Protein ou aumentar fontes proteicas');
-      } else {
-        // Between 40-60g - moderate
-        coverage.push(`Proteína: ${proteinValue}g/dia - Ingestão moderada`);
       }
       
+      // Fiber analysis
       if (fiberValue >= 20) {
-        coverage.push(`Fibras: ${fiberValue}g/dia - Boa ingestão de fibras`);
-      } else if (fiberValue < 15) {
+        coverage.push(`Fibras: ${fiberValue}g/dia - Boa ingestão de fibras ✅`);
+      } else if (fiberValue < 20) {
         missing.push(`Fibras baixas: ${fiberValue}g/dia (recomendado: 25-30g)`);
         suggestions.push('Aumente consumo de vegetais, frutas e cereais integrais');
       }
       
+      // Calcium analysis
       if (calciumValue >= 800) {
-        coverage.push(`Cálcio: ${calciumValue}mg/dia - Boa ingestão de cálcio`);
-      } else if (calciumValue < 500) {
+        coverage.push(`Cálcio: ${calciumValue}mg/dia - Boa ingestão de cálcio ✅`);
+      } else if (calciumValue < 800) {
         missing.push(`Cálcio baixo: ${calciumValue}mg/dia (recomendado: 1000mg)`);
         suggestions.push('Considere suplemento de Cálcio + Vitamina D3');
       }
       
+      // Vitamin C analysis
       if (vitaminCValue >= 75) {
-        coverage.push(`Vitamina C: ${vitaminCValue}mg/dia - Boa ingestão`);
-      } else if (vitaminCValue < 50) {
+        coverage.push(`Vitamina C: ${vitaminCValue}mg/dia - Boa ingestão ✅`);
+      } else if (vitaminCValue < 75) {
         missing.push(`Vitamina C baixa: ${vitaminCValue}mg/dia (recomendado: 75-90mg)`);
         suggestions.push('Aumente consumo de frutas cítricas ou considere suplemento');
       }
