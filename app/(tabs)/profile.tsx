@@ -303,6 +303,39 @@ export default function ProfileScreen() {
       fontSize: 14,
       color: colors.textTertiary,
       fontStyle: 'italic',
+      marginBottom: 20,
+    },
+    profileStatsContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      width: '100%',
+      paddingTop: 20,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
+    },
+    profileStatItem: {
+      alignItems: 'center',
+      gap: 8,
+    },
+    profileStatIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 4,
+    },
+    profileStatValue: {
+      fontSize: 20,
+      fontWeight: '700' as const,
+      color: colors.text,
+    },
+    profileStatLabel: {
+      fontSize: 11,
+      fontWeight: '500' as const,
+      color: colors.textSecondary,
+      textTransform: 'uppercase' as const,
+      letterSpacing: 0.5,
     },
     summaryCards: {
       flexDirection: 'row',
@@ -1269,11 +1302,43 @@ export default function ProfileScreen() {
                   )}
                   <Text style={styles.profileName}>{userProfile.name}</Text>
                   <Text style={styles.profileDetails}>
-                    {userProfile.age} anos • {userProfile.weight} kg • {userProfile.height} cm
+                    {userProfile.age} anos • {userProfile.gender === 'male' ? 'Masculino' : 'Feminino'}
                   </Text>
                   <Text style={styles.profileGoal}>
                     {goals.find(g => g.key === userProfile.goal)?.label}
                   </Text>
+                  
+                  <View style={styles.profileStatsContainer}>
+                    <View style={styles.profileStatItem}>
+                      <View style={[styles.profileStatIcon, { backgroundColor: '#FF9500' }]}>
+                        <Ruler color="white" size={16} strokeWidth={2.5} />
+                      </View>
+                      <Text style={styles.profileStatValue}>{userProfile.height}</Text>
+                      <Text style={styles.profileStatLabel}>cm</Text>
+                    </View>
+                    
+                    <View style={styles.profileStatItem}>
+                      <View style={[styles.profileStatIcon, { backgroundColor: '#34C759' }]}>
+                        <Scale color="white" size={16} strokeWidth={2.5} />
+                      </View>
+                      <Text style={styles.profileStatValue}>{userProfile.weight}</Text>
+                      <Text style={styles.profileStatLabel}>kg</Text>
+                    </View>
+                    
+                    <View style={styles.profileStatItem}>
+                      <View style={[styles.profileStatIcon, { backgroundColor: '#007AFF' }]}>
+                        <Activity color="white" size={16} strokeWidth={2.5} />
+                      </View>
+                      <Text style={styles.profileStatValue}>{meals.filter(m => {
+                        try {
+                          return new Date(m.timestamp).toDateString() === new Date().toDateString();
+                        } catch {
+                          return false;
+                        }
+                      }).length}</Text>
+                      <Text style={styles.profileStatLabel}>refeições</Text>
+                    </View>
+                  </View>
                 </BlurCard>
 
                 {healthMetrics && (
