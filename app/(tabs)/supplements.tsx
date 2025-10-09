@@ -69,6 +69,23 @@ const COMMON_DOSAGES = [
   '1 gota/dia',
   '5 gotas/dia',
   '10 gotas/dia',
+  '10g/dia',
+  '15g/dia',
+  '20g/dia',
+  '25g/dia',
+  '30g/dia',
+  '35g/dia',
+  '40g/dia',
+  '45g/dia',
+  '50g/dia',
+  '1 scoop/dia',
+  '1.5 scoops/dia',
+  '2 scoops/dia',
+  '1 scoop pós-treino',
+  '2 scoops pós-treino',
+  '1 scoop manhã + 1 scoop pós-treino',
+  '1 scoop antes do treino',
+  '1 scoop entre refeições',
 ];
 
 const COMMON_TIMES = [
