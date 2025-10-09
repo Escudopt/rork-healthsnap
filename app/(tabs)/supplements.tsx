@@ -892,12 +892,12 @@ export default function SupplementsScreen() {
         }
       });
       
-      if (recentMeals.length === 0) {
-        console.log('⚠️ No recent meals to analyze');
+      if (recentMeals.length === 0 && myVitamins.length === 0) {
+        console.log('⚠️ No recent meals or vitamins to analyze');
         setAiAnalysis({
           coverage: [],
           missing: [],
-          suggestions: ['Adicione refeições para receber análise personalizada'],
+          suggestions: ['Adicione refeições e vitaminas para receber análise personalizada'],
           isAnalyzing: false
         });
         return;
@@ -920,6 +920,32 @@ export default function SupplementsScreen() {
         calcium: 0, iron: 0, vitaminC: 0, vitaminD: 0
       });
       
+      // Add protein from supplements (Whey Protein)
+      myVitamins.forEach(vitamin => {
+        const vitaminNameLower = vitamin.name.toLowerCase();
+        const dosageLower = vitamin.dosage.toLowerCase();
+        
+        // Extract protein from Whey Protein supplements
+        if (vitaminNameLower.includes('whey') || vitaminNameLower.includes('proteína')) {
+          // Try to extract grams from dosage (e.g., "25g/dia", "30 g/dia", "2 scoops/dia")
+          const gramsMatch = dosageLower.match(/(\d+)\s*g/);
+          if (gramsMatch) {
+            const proteinGrams = parseInt(gramsMatch[1]);
+            nutritionalAnalysis.protein += proteinGrams;
+            console.log(`✅ Added ${proteinGrams}g protein from ${vitamin.name}`);
+          } else {
+            // If dosage mentions scoops, estimate 25g per scoop
+            const scoopsMatch = dosageLower.match(/(\d+(?:\.\d+)?)\s*scoop/);
+            if (scoopsMatch) {
+              const scoops = parseFloat(scoopsMatch[1]);
+              const proteinGrams = Math.round(scoops * 25);
+              nutritionalAnalysis.protein += proteinGrams;
+              console.log(`✅ Added ${proteinGrams}g protein from ${vitamin.name} (${scoops} scoops)`);
+            }
+          }
+        }
+      });
+      
       const daysAnalyzed = Math.max(1, Math.ceil((Date.now() - oneWeekAgo.getTime()) / (1000 * 60 * 60 * 24)));
       Object.keys(nutritionalAnalysis).forEach(key => {
         nutritionalAnalysis[key as keyof typeof nutritionalAnalysis] /= daysAnalyzed;
@@ -932,7 +958,7 @@ export default function SupplementsScreen() {
       const vitaminCValue = Math.round(nutritionalAnalysis.vitaminC);
       const vitaminDValue = Math.round(nutritionalAnalysis.vitaminD);
       
-      console.log('📊 Nutritional analysis:', { proteinValue, fiberValue, calciumValue, ironValue, vitaminCValue, vitaminDValue });
+      console.log('📊 Nutritional analysis (including supplements):', { proteinValue, fiberValue, calciumValue, ironValue, vitaminCValue, vitaminDValue });
       
       const coverage: string[] = [];
       const missing: string[] = [];
@@ -943,6 +969,9 @@ export default function SupplementsScreen() {
       } else if (proteinValue < 40) {
         missing.push(`Proteína baixa: ${proteinValue}g/dia (recomendado: 60-80g)`);
         suggestions.push('Considere adicionar Whey Protein ou aumentar fontes proteicas');
+      } else {
+        // Between 40-60g - moderate
+        coverage.push(`Proteína: ${proteinValue}g/dia - Ingestão moderada`);
       }
       
       if (fiberValue >= 20) {
