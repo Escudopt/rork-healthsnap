@@ -1,40 +1,21 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   ScrollView,
-  Animated,
   StatusBar,
-  Platform,
   TouchableOpacity,
   TextInput,
   Alert,
   Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Heart, Shield, Zap, Brain, Bone, Eye, AlertTriangle, Pill, Target, Plus, X, Edit2, Check, ChevronDown, Search } from 'lucide-react-native';
-import { BlurCard } from '@/components/BlurCard';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Plus, X, Edit2, Check, ChevronDown, Pill } from 'lucide-react-native';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-interface Supplement {
-  id: string;
-  name: string;
-  description: string;
-  benefits: string[];
-  dosage: string;
-  icon: React.ReactNode;
-  color: string;
-  priority?: 'high' | 'medium' | 'low';
-  ageWarnings?: {
-    minAge?: number;
-    maxAge?: number;
-    warning: string;
-  }[];
-}
 
 interface MyVitamin {
   id: string;
@@ -46,637 +27,54 @@ interface MyVitamin {
 
 const MY_VITAMINS_STORAGE_KEY = 'my_vitamins_v1';
 
+const COMMON_VITAMINS = [
+  { name: 'Vitamina D3', defaultDosage: '2000 UI/dia' },
+  { name: 'Vitamina C', defaultDosage: '500-1000 mg/dia' },
+  { name: 'Ómega-3', defaultDosage: '1000-2000 mg/dia' },
+  { name: 'Magnésio', defaultDosage: '300-400 mg/dia' },
+  { name: 'Zinco', defaultDosage: '11 mg/dia' },
+  { name: 'Vitamina B12', defaultDosage: '2.4 mcg/dia' },
+  { name: 'Cálcio', defaultDosage: '1000 mg/dia' },
+  { name: 'Ferro', defaultDosage: '18 mg/dia' },
+  { name: 'Whey Protein', defaultDosage: '25-30 g/dia' },
+  { name: 'Creatina', defaultDosage: '3-5 g/dia' },
+  { name: 'Multivitamínico', defaultDosage: '1 comprimido/dia' },
+  { name: 'Probióticos', defaultDosage: '1-2 cápsulas/dia' },
+  { name: 'Colágeno', defaultDosage: '10 g/dia' },
+  { name: 'Melatonina', defaultDosage: '1-3 mg/dia' },
+].sort((a, b) => a.name.localeCompare(b.name));
+
 const COMMON_DOSAGES = [
   '1 comprimido/dia',
   '2 comprimidos/dia',
   '1 cápsula/dia',
   '2 cápsulas/dia',
-  '1 comprimido 2x/dia',
   '500 mg/dia',
   '1000 mg/dia',
-  '1500 mg/dia',
   '2000 mg/dia',
-  '100 mcg/dia',
-  '200 mcg/dia',
-  '500 mcg/dia',
-  '1000 UI/dia',
   '2000 UI/dia',
   '4000 UI/dia',
-  '5 ml/dia',
-  '10 ml/dia',
-  '1 colher de sopa/dia',
-  '1 sachê/dia',
-  '1 gota/dia',
-  '5 gotas/dia',
-  '10 gotas/dia',
-  '10g/dia',
-  '15g/dia',
-  '20g/dia',
   '25g/dia',
   '30g/dia',
-  '35g/dia',
-  '40g/dia',
-  '45g/dia',
-  '50g/dia',
-  '55g/dia',
-  '60g/dia',
-  '65g/dia',
-  '70g/dia',
-  '75g/dia',
-  '80g/dia',
-  '85g/dia',
-  '90g/dia',
-  '95g/dia',
-  '100g/dia',
-  '1 scoop/dia',
-  '1.5 scoops/dia',
-  '2 scoops/dia',
-  '2.5 scoops/dia',
-  '3 scoops/dia',
-  '3.5 scoops/dia',
-  '4 scoops/dia',
-  '1 scoop pós-treino',
-  '2 scoops pós-treino',
-  '3 scoops pós-treino',
-  '1 scoop manhã + 1 scoop pós-treino',
-  '1 scoop manhã + 2 scoops pós-treino',
-  '2 scoops manhã + 2 scoops pós-treino',
-  '1 scoop antes do treino',
-  '2 scoops antes do treino',
-  '1 scoop entre refeições',
-  '2 scoops entre refeições',
+  '3-5g/dia',
+  '10g/dia',
 ];
 
 const COMMON_TIMES = [
   'Após o pequeno-almoço',
   'Antes do pequeno-almoço',
   'Após o almoço',
-  'Antes do almoço',
-  'Após o jantar',
-  'Antes do jantar',
   'Antes de dormir',
   'Ao acordar',
   'Com as refeições',
-  'Entre as refeições',
   'Manhã',
-  'Tarde',
   'Noite',
-  '2x ao dia (manhã e noite)',
-  '3x ao dia (manhã, tarde e noite)',
-  'Em jejum',
-  'Com água',
-  'Com alimentos',
-];
-
-const COMMON_VITAMINS = [
-  { name: 'Vitamina A', defaultDosage: '900 mcg/dia' },
-  { name: 'Vitamina B1 (Tiamina)', defaultDosage: '1.2 mg/dia' },
-  { name: 'Vitamina B2 (Riboflavina)', defaultDosage: '1.3 mg/dia' },
-  { name: 'Vitamina B3 (Niacina)', defaultDosage: '16 mg/dia' },
-  { name: 'Vitamina B5 (Ácido Pantoténico)', defaultDosage: '5 mg/dia' },
-  { name: 'Vitamina B6 (Piridoxina)', defaultDosage: '1.7 mg/dia' },
-  { name: 'Vitamina B7 (Biotina)', defaultDosage: '30 mcg/dia' },
-  { name: 'Vitamina B9 (Ácido Fólico)', defaultDosage: '400 mcg/dia' },
-  { name: 'Vitamina B12 (Cobalamina)', defaultDosage: '2.4 mcg/dia' },
-  { name: 'Vitamina C (Ácido Ascórbico)', defaultDosage: '500-1000 mg/dia' },
-  { name: 'Vitamina D3 (Colecalciferol)', defaultDosage: '2000-4000 UI/dia' },
-  { name: 'Vitamina E (Tocoferol)', defaultDosage: '15 mg/dia' },
-  { name: 'Vitamina K', defaultDosage: '120 mcg/dia' },
-  { name: 'Complexo B', defaultDosage: '1 cápsula/dia' },
-  { name: 'Multivitamínico', defaultDosage: '1 comprimido/dia' },
-  { name: 'Ómega-3 (EPA/DHA)', defaultDosage: '1000-2000 mg/dia' },
-  { name: 'Cálcio', defaultDosage: '1000 mg/dia' },
-  { name: 'Magnésio', defaultDosage: '300-400 mg/dia' },
-  { name: 'Zinco', defaultDosage: '11 mg/dia' },
-  { name: 'Ferro', defaultDosage: '18 mg/dia' },
-  { name: 'Selénio', defaultDosage: '55 mcg/dia' },
-  { name: 'Iodo', defaultDosage: '150 mcg/dia' },
-  { name: 'Crómio', defaultDosage: '200-400 mcg/dia' },
-  { name: 'Potássio', defaultDosage: '3500-4700 mg/dia' },
-  { name: 'Coenzima Q10', defaultDosage: '100-200 mg/dia' },
-  { name: 'Colágeno', defaultDosage: '10 g/dia' },
-  { name: 'Probióticos', defaultDosage: '1-2 cápsulas/dia' },
-  { name: 'Melatonina', defaultDosage: '1-3 mg/dia' },
-  { name: 'Whey Protein', defaultDosage: '25-30 g/dia' },
-  { name: 'Creatina', defaultDosage: '3-5 g/dia' },
-  { name: 'L-Carnitina', defaultDosage: '1000 mg/dia' },
-  { name: 'Ginkgo Biloba', defaultDosage: '120-240 mg/dia' },
-  { name: 'Curcuma (Açafrão)', defaultDosage: '500-1000 mg/dia' },
-  { name: 'Ashwagandha', defaultDosage: '300-500 mg/dia' },
-  { name: 'Glucosamina', defaultDosage: '1500 mg/dia' },
-  { name: 'Condroitina', defaultDosage: '1200 mg/dia' },
-].sort((a, b) => a.name.localeCompare(b.name));
-
-// Intelligent supplement recommendation system based on age, diet, and nutritional analysis
-const getIntelligentSupplementRecommendations = (
-  age: number, 
-  gender: 'male' | 'female', 
-  activityLevel: string, 
-  goal: string,
-  meals: any[],
-  healthMetrics: any
-) => {
-  const recommendations: Supplement[] = [];
-  
-  // Analyze nutritional intake from recent meals (last 7 days)
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  
-  const recentMeals = meals.filter(meal => {
-    if (!meal?.timestamp) return false;
-    try {
-      return new Date(meal.timestamp) >= oneWeekAgo;
-    } catch {
-      return false;
-    }
-  });
-  
-  // Calculate average daily nutritional intake
-  const nutritionalAnalysis = recentMeals.reduce((acc, meal) => {
-    meal.foods?.forEach((food: any) => {
-      acc.protein += food.protein || 0;
-      acc.carbs += food.carbs || 0;
-      acc.fat += food.fat || 0;
-      acc.fiber += food.fiber || 0;
-      acc.sugar += food.sugar || 0;
-      acc.sodium += food.sodium || 0;
-      acc.calcium += food.calcium || 0;
-      acc.iron += food.iron || 0;
-      acc.vitaminC += food.vitaminC || 0;
-      acc.vitaminD += food.vitaminD || 0;
-    });
-    return acc;
-  }, {
-    protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0,
-    calcium: 0, iron: 0, vitaminC: 0, vitaminD: 0
-  });
-  
-  // Calculate daily averages
-  const daysAnalyzed = Math.max(1, Math.ceil((Date.now() - oneWeekAgo.getTime()) / (1000 * 60 * 60 * 24)));
-  Object.keys(nutritionalAnalysis).forEach(key => {
-    nutritionalAnalysis[key as keyof typeof nutritionalAnalysis] /= daysAnalyzed;
-  });
-  
-  console.log('📊 Nutritional Analysis (daily avg):', nutritionalAnalysis);
-  
-  // INTELLIGENT RECOMMENDATIONS BASED ON NUTRITIONAL DEFICIENCIES
-  
-  // Protein deficiency check
-  const proteinTarget = (healthMetrics?.bmr || 1500) * 0.15 / 4; // 15% of BMR in grams
-  if (nutritionalAnalysis.protein < proteinTarget * 0.8) {
-    recommendations.push({
-      id: 'protein-deficiency',
-      name: 'Whey Protein (Deficiência Detectada)',
-      description: `Sua ingestão média de proteína (${Math.round(nutritionalAnalysis.protein)}g/dia) está abaixo do recomendado (${Math.round(proteinTarget)}g/dia)`,
-      benefits: ['Suprir deficiência proteica', 'Manutenção muscular', 'Saciedade'],
-      dosage: `${Math.round((proteinTarget - nutritionalAnalysis.protein) * 1.2)}g ao dia`,
-      icon: <Zap color="white" size={24} />,
-      color: '#E91E63',
-      priority: 'high' as const
-    });
-  }
-  
-  // Fiber deficiency check
-  const fiberTarget = age < 50 ? (gender === 'male' ? 38 : 25) : (gender === 'male' ? 30 : 21);
-  if (nutritionalAnalysis.fiber < fiberTarget * 0.7) {
-    recommendations.push({
-      id: 'fiber-supplement',
-      name: 'Suplemento de Fibras',
-      description: `Sua ingestão de fibras (${Math.round(nutritionalAnalysis.fiber)}g/dia) está muito baixa. Meta: ${fiberTarget}g/dia`,
-      benefits: ['Saúde digestiva', 'Controle glicêmico', 'Saciedade'],
-      dosage: '10-15g ao dia com bastante água',
-      icon: <Shield color="white" size={24} />,
-      color: '#4CAF50',
-      priority: 'high' as const
-    });
-  }
-  
-  // Iron deficiency (especially for women)
-  const ironTarget = gender === 'female' && age < 51 ? 18 : 8;
-  if (nutritionalAnalysis.iron < ironTarget * 0.6) {
-    recommendations.push({
-      id: 'iron-deficiency',
-      name: 'Ferro + Vitamina C',
-      description: `Baixa ingestão de ferro detectada (${Math.round(nutritionalAnalysis.iron)}mg/dia). Recomendado: ${ironTarget}mg/dia`,
-      benefits: ['Prevenção anemia', 'Energia', 'Transporte de oxigênio'],
-      dosage: `${Math.round(ironTarget - nutritionalAnalysis.iron)}mg com vitamina C`,
-      icon: <Heart color="white" size={24} />,
-      color: '#F44336',
-      priority: 'high' as const
-    });
-  }
-  
-  // Calcium deficiency
-  const calciumTarget = age < 51 ? 1000 : 1200;
-  if (nutritionalAnalysis.calcium < calciumTarget * 0.5) {
-    recommendations.push({
-      id: 'calcium-deficiency',
-      name: 'Cálcio + Magnésio + D3',
-      description: `Ingestão de cálcio muito baixa (${Math.round(nutritionalAnalysis.calcium)}mg/dia). Meta: ${calciumTarget}mg/dia`,
-      benefits: ['Saúde óssea', 'Prevenção osteoporose', 'Função muscular'],
-      dosage: `${Math.round((calciumTarget - nutritionalAnalysis.calcium) * 0.8)}mg com magnésio e D3`,
-      icon: <Bone color="white" size={24} />,
-      color: '#FF9800',
-      priority: 'high' as const
-    });
-  }
-  
-  // High sodium intake warning
-  if (nutritionalAnalysis.sodium > 2300) {
-    recommendations.push({
-      id: 'potassium-high-sodium',
-      name: 'Potássio (Alto Sódio Detectado)',
-      description: `Sua ingestão de sódio (${Math.round(nutritionalAnalysis.sodium)}mg/dia) está alta. Potássio ajuda a equilibrar`,
-      benefits: ['Equilibra sódio', 'Pressão arterial', 'Função cardíaca'],
-      dosage: '3500-4700mg ao dia',
-      icon: <Heart color="white" size={24} />,
-      color: '#2196F3',
-      priority: 'medium' as const
-    });
-  }
-  
-  // High sugar intake warning
-  if (nutritionalAnalysis.sugar > 50) {
-    recommendations.push({
-      id: 'chromium-high-sugar',
-      name: 'Cromo (Alto Açúcar Detectado)',
-      description: `Ingestão elevada de açúcar (${Math.round(nutritionalAnalysis.sugar)}g/dia). Cromo ajuda no controle glicêmico`,
-      benefits: ['Controle glicêmico', 'Reduz desejos por doce', 'Metabolismo'],
-      dosage: '200-400mcg ao dia',
-      icon: <Target color="white" size={24} />,
-      color: '#9C27B0',
-      priority: 'medium' as const
-    });
-  }
-  
-  // AGE-BASED RECOMMENDATIONS
-  if (age < 18) {
-    recommendations.push({
-      id: 'teen-multi',
-      name: 'Multivitamínico Teen',
-      description: 'Fórmula específica para adolescentes em crescimento',
-      benefits: ['Suporte ao crescimento', 'Desenvolvimento cognitivo', 'Sistema imunológico'],
-      dosage: '1 comprimido ao dia com refeição',
-      icon: <Shield color="white" size={24} />,
-      color: '#4CAF50',
-      priority: 'high'
-    });
-    
-    recommendations.push({
-      id: 'teen-calcium',
-      name: 'Cálcio + Vitamina D',
-      description: 'Essencial para desenvolvimento ósseo na adolescência',
-      benefits: ['Formação óssea', 'Crescimento', 'Dentes fortes'],
-      dosage: '600-800mg de cálcio + 600 UI de vitamina D',
-      icon: <Bone color="white" size={24} />,
-      color: '#FF9800',
-      priority: 'high'
-    });
-  } else if (age >= 18 && age <= 30) {
-    recommendations.push({
-      id: 'young-adult-multi',
-      name: 'Multivitamínico Adulto',
-      description: 'Suporte nutricional para vida ativa',
-      benefits: ['Energia', 'Imunidade', 'Metabolismo'],
-      dosage: '1 comprimido ao dia',
-      icon: <Shield color="white" size={24} />,
-      color: '#2196F3',
-      priority: 'medium'
-    });
-    
-    if (gender === 'female') {
-      recommendations.push({
-        id: 'iron-women',
-        name: 'Ferro para Mulheres',
-        description: 'Prevenção de anemia em mulheres em idade fértil',
-        benefits: ['Prevenção anemia', 'Energia', 'Concentração'],
-        dosage: '18mg ao dia com vitamina C',
-        icon: <Heart color="white" size={24} />,
-        color: '#E91E63',
-        priority: 'high'
-      });
-    }
-  } else if (age >= 31 && age <= 50) {
-    recommendations.push({
-      id: 'adult-multi',
-      name: 'Multivitamínico 30+',
-      description: 'Fórmula para adultos com vida ativa',
-      benefits: ['Antioxidantes', 'Energia', 'Saúde cardiovascular'],
-      dosage: '1 comprimido ao dia',
-      icon: <Shield color="white" size={24} />,
-      color: '#9C27B0',
-      priority: 'medium'
-    });
-    
-    recommendations.push({
-      id: 'coq10-adult',
-      name: 'Coenzima Q10',
-      description: 'Antioxidante para energia celular e coração',
-      benefits: ['Energia celular', 'Saúde cardíaca', 'Antioxidante'],
-      dosage: '100mg ao dia',
-      icon: <Heart color="white" size={24} />,
-      color: '#F44336',
-      priority: 'medium'
-    });
-  } else if (age >= 51 && age <= 65) {
-    recommendations.push({
-      id: 'senior-multi',
-      name: 'Multivitamínico 50+',
-      description: 'Fórmula específica para maturidade',
-      benefits: ['Saúde óssea', 'Memória', 'Imunidade'],
-      dosage: '1 comprimido ao dia',
-      icon: <Shield color="white" size={24} />,
-      color: '#607D8B',
-      priority: 'high'
-    });
-    
-    recommendations.push({
-      id: 'calcium-senior',
-      name: 'Cálcio + Magnésio + D3',
-      description: 'Prevenção de osteoporose e saúde óssea',
-      benefits: ['Densidade óssea', 'Prevenção fraturas', 'Absorção mineral'],
-      dosage: '1000mg cálcio + 400mg magnésio + 1000 UI D3',
-      icon: <Bone color="white" size={24} />,
-      color: '#795548',
-      priority: 'high'
-    });
-    
-    recommendations.push({
-      id: 'omega3-senior',
-      name: 'Ômega-3 EPA/DHA',
-      description: 'Proteção cardiovascular e cerebral',
-      benefits: ['Saúde cardíaca', 'Função cerebral', 'Anti-inflamatório'],
-      dosage: '1000-2000mg ao dia',
-      icon: <Brain color="white" size={24} />,
-      color: '#00BCD4',
-      priority: 'high'
-    });
-  } else if (age > 65) {
-    recommendations.push({
-      id: 'elderly-multi',
-      name: 'Multivitamínico Sênior',
-      description: 'Suporte nutricional para terceira idade',
-      benefits: ['Imunidade', 'Energia', 'Saúde cognitiva'],
-      dosage: '1 comprimido ao dia com refeição',
-      icon: <Shield color="white" size={24} />,
-      color: '#8BC34A',
-      priority: 'high'
-    });
-    
-    recommendations.push({
-      id: 'b12-elderly',
-      name: 'Vitamina B12',
-      description: 'Essencial para idosos - absorção reduzida com idade',
-      benefits: ['Energia', 'Memória', 'Sistema nervoso'],
-      dosage: '500-1000mcg ao dia',
-      icon: <Brain color="white" size={24} />,
-      color: '#FF5722',
-      priority: 'high'
-    });
-    
-    recommendations.push({
-      id: 'vitamin-d-elderly',
-      name: 'Vitamina D3 Alta Potência',
-      description: 'Dose elevada para idosos com pouca exposição solar',
-      benefits: ['Saúde óssea', 'Imunidade', 'Força muscular'],
-      dosage: '2000-4000 UI ao dia',
-      icon: <Bone color="white" size={24} />,
-      color: '#FFC107',
-      priority: 'high'
-    });
-  }
-  
-  // Activity level based recommendations
-  if (activityLevel === 'active' || activityLevel === 'very_active') {
-    if (age >= 18) {
-      recommendations.push({
-        id: 'magnesium-active',
-        name: 'Magnésio para Atletas',
-        description: 'Recuperação muscular e redução de cãibras',
-        benefits: ['Recuperação muscular', 'Reduz cãibras', 'Qualidade do sono'],
-        dosage: '300-400mg antes de dormir',
-        icon: <Zap color="white" size={24} />,
-        color: '#4CAF50',
-        priority: 'medium'
-      });
-    }
-  }
-  
-  // Goal-based recommendations
-  if (goal === 'lose' && age >= 18) {
-    recommendations.push({
-      id: 'chromium-weight',
-      name: 'Cromo + L-Carnitina',
-      description: 'Suporte ao metabolismo e controle de açúcar',
-      benefits: ['Metabolismo', 'Controle glicêmico', 'Queima de gordura'],
-      dosage: '200mcg cromo + 1000mg L-carnitina',
-      icon: <Target color="white" size={24} />,
-      color: '#E91E63',
-      priority: 'medium'
-    });
-  }
-  
-  // Universal recommendations for all ages
-  recommendations.push({
-    id: 'vitamin-c-universal',
-    name: 'Vitamina C',
-    description: 'Antioxidante essencial para todas as idades',
-    benefits: ['Sistema imunológico', 'Antioxidante', 'Absorção de ferro'],
-    dosage: age < 18 ? '65-75mg ao dia' : '500-1000mg ao dia',
-    icon: <Shield color="white" size={24} />,
-    color: '#FF9800',
-    priority: 'medium'
-  });
-  
-  return recommendations.sort((a, b) => {
-    const priorityOrder = { high: 3, medium: 2, low: 1 };
-    return (priorityOrder[b.priority as keyof typeof priorityOrder] || 0) - (priorityOrder[a.priority as keyof typeof priorityOrder] || 0);
-  });
-};
-
-const supplements: Supplement[] = [
-  {
-    id: '1',
-    name: 'Multivitamínico',
-    description: 'Suporte nutricional completo com vitaminas e minerais essenciais',
-    benefits: ['Fortalece sistema imunológico', 'Melhora energia e disposição', 'Suporte ao metabolismo'],
-    dosage: '1 comprimido ao dia com refeição',
-    icon: <Shield color="white" size={24} />,
-    color: '#00d4ff'
-  },
-  {
-    id: '2',
-    name: 'Ômega-3',
-    description: 'Ácidos graxos essenciais para cérebro e coração',
-    benefits: ['Melhora função cerebral', 'Protege saúde cardiovascular', 'Reduz inflamação'],
-    dosage: '1000-2000mg ao dia com refeição',
-    icon: <Brain color="white" size={24} />,
-    color: '#4fc3f7'
-  },
-  {
-    id: '3',
-    name: 'Vitamina D3',
-    description: 'Essencial para ossos fortes e imunidade robusta',
-    benefits: ['Fortalece ossos e dentes', 'Melhora absorção de cálcio', 'Suporte imunológico'],
-    dosage: '2000-4000 UI ao dia',
-    icon: <Bone color="white" size={24} />,
-    color: '#ffa726'
-  },
-  {
-    id: '4',
-    name: 'Whey Protein',
-    description: 'Suporte para massa muscular e recuperação',
-    benefits: ['Ganho muscular', 'Recuperação pós-treino', 'Saciedade'],
-    dosage: '25-30g pós-treino',
-    icon: <Zap color="white" size={24} />,
-    color: '#E91E63',
-    ageWarnings: [
-      {
-        maxAge: 16,
-        warning: 'Não recomendado para menores de 16 anos. O crescimento natural deve ser priorizado.'
-      }
-    ]
-  },
-  {
-    id: '5',
-    name: 'Creatina',
-    description: 'Melhora performance e força muscular',
-    benefits: ['Força muscular', 'Performance atlética', 'Recuperação'],
-    dosage: '3-5g ao dia',
-    icon: <Zap color="white" size={24} />,
-    color: '#FF6B35',
-    ageWarnings: [
-      {
-        maxAge: 18,
-        warning: 'Não recomendado para menores de 18 anos. Pode interferir no desenvolvimento natural.'
-      }
-    ]
-  },
-  {
-    id: '6',
-    name: 'Cafeína (Suplemento)',
-    description: 'Estimulante para energia e foco',
-    benefits: ['Energia', 'Foco mental', 'Performance física'],
-    dosage: '100-200mg ao dia',
-    icon: <Zap color="white" size={24} />,
-    color: '#8B4513',
-    ageWarnings: [
-      {
-        maxAge: 18,
-        warning: 'Perigoso para menores de 18 anos. Pode causar ansiedade, insônia e problemas cardíacos.'
-      },
-      {
-        minAge: 65,
-        warning: 'Cuidado em idosos. Pode interferir com medicamentos e causar problemas cardíacos.'
-      }
-    ]
-  },
-  {
-    id: '7',
-    name: 'Complexo B',
-    description: 'Energia e metabolismo saudável',
-    benefits: ['Energia', 'Metabolismo', 'Sistema nervoso'],
-    dosage: '1 cápsula ao dia',
-    icon: <Zap color="white" size={24} />,
-    color: '#9C27B0'
-  },
-  {
-    id: '8',
-    name: 'Magnésio',
-    description: 'Relaxamento muscular e qualidade do sono',
-    benefits: ['Relaxamento', 'Qualidade do sono', 'Função muscular'],
-    dosage: '200-400mg antes de dormir',
-    icon: <Heart color="white" size={24} />,
-    color: '#607D8B'
-  },
-  {
-    id: '9',
-    name: 'Coenzima Q10',
-    description: 'Antioxidante para saúde cardiovascular',
-    benefits: ['Saúde cardíaca', 'Energia celular', 'Antioxidante'],
-    dosage: '100-200mg ao dia',
-    icon: <Heart color="white" size={24} />,
-    color: '#F44336'
-  },
-  {
-    id: '10',
-    name: 'Probióticos',
-    description: 'Saúde intestinal e imunidade',
-    benefits: ['Saúde digestiva', 'Imunidade', 'Absorção de nutrientes'],
-    dosage: '1-2 cápsulas ao dia',
-    icon: <Shield color="white" size={24} />,
-    color: '#4CAF50'
-  },
-  {
-    id: '11',
-    name: 'Vitamina C',
-    description: 'Antioxidante e suporte imunológico',
-    benefits: ['Sistema imunológico', 'Antioxidante', 'Síntese de colágeno'],
-    dosage: '500-1000mg ao dia',
-    icon: <Shield color="white" size={24} />,
-    color: '#FF5722'
-  },
-  {
-    id: '12',
-    name: 'Colágeno',
-    description: 'Saúde da pele, articulações e ossos',
-    benefits: ['Saúde da pele', 'Articulações', 'Elasticidade'],
-    dosage: '10g ao dia',
-    icon: <Eye color="white" size={24} />,
-    color: '#E91E63'
-  },
-  {
-    id: '13',
-    name: 'Ginkgo Biloba',
-    description: 'Circulação e função cognitiva',
-    benefits: ['Circulação', 'Memória', 'Concentração'],
-    dosage: '120-240mg ao dia',
-    icon: <Brain color="white" size={24} />,
-    color: '#009688',
-    ageWarnings: [
-      {
-        maxAge: 18,
-        warning: 'Não recomendado para menores de 18 anos. Pode interferir com medicamentos.'
-      }
-    ]
-  },
-  {
-    id: '14',
-    name: 'Melatonina',
-    description: 'Regulação do sono e ritmo circadiano',
-    benefits: ['Qualidade do sono', 'Regulação do ritmo', 'Antioxidante'],
-    dosage: '1-3mg antes de dormir',
-    icon: <Heart color="white" size={24} />,
-    color: '#6A5ACD',
-    ageWarnings: [
-      {
-        maxAge: 18,
-        warning: 'Perigoso para menores de 18 anos. Pode interferir no desenvolvimento hormonal natural.'
-      }
-    ]
-  },
-  {
-    id: '15',
-    name: 'Ferro',
-    description: 'Prevenção de anemia e transporte de oxigênio',
-    benefits: ['Prevenção anemia', 'Energia', 'Transporte oxigênio'],
-    dosage: '18mg ao dia (mulheres), 8mg (homens)',
-    icon: <Shield color="white" size={24} />,
-    color: '#B22222',
-    ageWarnings: [
-      {
-        minAge: 50,
-        warning: 'Cuidado em homens acima de 50 anos. Excesso de ferro pode ser prejudicial ao coração.'
-      }
-    ]
-  }
 ];
 
 export default function SupplementsScreen() {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.9)).current;
   const { colors, isDark } = useTheme();
-  const { userProfile, meals, healthMetrics } = useCalorieTracker();
+  const { meals } = useCalorieTracker();
+  const insets = useSafeAreaInsets();
   
   const [myVitamins, setMyVitamins] = useState<MyVitamin[]>([]);
   const [isAddingVitamin, setIsAddingVitamin] = useState<boolean>(false);
@@ -690,86 +88,109 @@ export default function SupplementsScreen() {
   const [showDosagePicker, setShowDosagePicker] = useState<boolean>(false);
   const [showTimePicker, setShowTimePicker] = useState<boolean>(false);
 
-  
-  // Get intelligent personalized recommendations
-  const [aiAnalysis, setAiAnalysis] = useState<{
+  const [analysis, setAnalysis] = useState<{
     coverage: string[];
     missing: string[];
-    suggestions: string[];
-    isAnalyzing: boolean;
-  }>({ coverage: [], missing: [], suggestions: [], isAnalyzing: false });
-  
-  const personalizedRecommendations = userProfile 
-    ? getIntelligentSupplementRecommendations(
-        userProfile.age, 
-        userProfile.gender, 
-        userProfile.activityLevel, 
-        userProfile.goal,
-        meals,
-        healthMetrics
-      )
-    : [];
+  }>({ coverage: [], missing: [] });
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        friction: 8,
-        tension: 40,
-        useNativeDriver: true,
-      }),
-    ]).start();
-    
     loadMyVitamins();
   }, []);
   
-  useEffect(() => {
-    if ((myVitamins.length > 0 || meals.length > 0) && !aiAnalysis.isAnalyzing) {
-      const timeoutId = setTimeout(() => {
-        analyzeVitaminCoverage();
-      }, 1000);
-      return () => clearTimeout(timeoutId);
+  const analyzeNutrition = useCallback(() => {
+    const today = new Date().toDateString();
+    const todayMeals = meals.filter(meal => {
+      if (!meal?.timestamp) return false;
+      try {
+        return new Date(meal.timestamp).toDateString() === today;
+      } catch {
+        return false;
+      }
+    });
+    
+    const nutritionalAnalysis = todayMeals.reduce((acc, meal) => {
+      meal.foods?.forEach((food: any) => {
+        acc.protein += food.protein || 0;
+        acc.fiber += food.fiber || 0;
+        acc.calcium += food.calcium || 0;
+        acc.vitaminC += food.vitaminC || 0;
+      });
+      return acc;
+    }, {
+      protein: 0, fiber: 0, calcium: 0, vitaminC: 0
+    });
+    
+    myVitamins.forEach(vitamin => {
+      const vitaminNameLower = vitamin.name.toLowerCase();
+      const dosageLower = vitamin.dosage.toLowerCase();
+      
+      if (vitaminNameLower.includes('whey') || vitaminNameLower.includes('proteína')) {
+        const gramsMatch = dosageLower.match(/(\d+)\s*g/);
+        if (gramsMatch) {
+          nutritionalAnalysis.protein += parseInt(gramsMatch[1]);
+        }
+      }
+    });
+    
+    const coverage: string[] = [];
+    const missing: string[] = [];
+    
+    if (nutritionalAnalysis.protein >= 60) {
+      coverage.push(`Proteína: ${Math.round(nutritionalAnalysis.protein)}g`);
+    } else {
+      missing.push(`Proteína: ${Math.round(nutritionalAnalysis.protein)}g (meta: 60g)`);
     }
-  }, [myVitamins, meals]);
+    
+    if (nutritionalAnalysis.fiber >= 20) {
+      coverage.push(`Fibras: ${Math.round(nutritionalAnalysis.fiber)}g`);
+    } else {
+      missing.push(`Fibras: ${Math.round(nutritionalAnalysis.fiber)}g (meta: 25g)`);
+    }
+    
+    if (nutritionalAnalysis.calcium >= 800) {
+      coverage.push(`Cálcio: ${Math.round(nutritionalAnalysis.calcium)}mg`);
+    } else {
+      missing.push(`Cálcio: ${Math.round(nutritionalAnalysis.calcium)}mg (meta: 1000mg)`);
+    }
+    
+    if (nutritionalAnalysis.vitaminC >= 75) {
+      coverage.push(`Vitamina C: ${Math.round(nutritionalAnalysis.vitaminC)}mg`);
+    } else {
+      missing.push(`Vitamina C: ${Math.round(nutritionalAnalysis.vitaminC)}mg (meta: 90mg)`);
+    }
+    
+    setAnalysis({ coverage, missing });
+  }, [meals, myVitamins]);
+  
+  useEffect(() => {
+    if (myVitamins.length > 0 || meals.length > 0) {
+      analyzeNutrition();
+    }
+  }, [myVitamins, meals, analyzeNutrition]);
   
   const loadMyVitamins = async () => {
     try {
       const stored = await AsyncStorage.getItem(MY_VITAMINS_STORAGE_KEY);
       if (stored) {
-        try {
-          const vitamins = JSON.parse(stored) as MyVitamin[];
-          if (Array.isArray(vitamins)) {
-            setMyVitamins(vitamins);
-            console.log('💊 Loaded my vitamins:', vitamins.length);
-          } else {
-            console.error('❌ Invalid vitamins data format, clearing storage');
-            await AsyncStorage.removeItem(MY_VITAMINS_STORAGE_KEY);
-            setMyVitamins([]);
-          }
-        } catch (parseError) {
-          console.error('❌ JSON Parse error for vitamins, clearing corrupted data:', parseError);
-          await AsyncStorage.removeItem(MY_VITAMINS_STORAGE_KEY);
-          setMyVitamins([]);
+        const vitamins = JSON.parse(stored) as MyVitamin[];
+        if (Array.isArray(vitamins)) {
+          setMyVitamins(vitamins);
         }
       }
     } catch (error) {
-      console.error('❌ Error loading my vitamins:', error);
+      console.error('Error loading vitamins:', error);
     }
   };
   
   const saveMyVitamins = async (vitamins: MyVitamin[]) => {
     try {
       await AsyncStorage.setItem(MY_VITAMINS_STORAGE_KEY, JSON.stringify(vitamins));
-      console.log('💾 Saved my vitamins:', vitamins.length);
     } catch (error) {
-      console.error('❌ Error saving my vitamins:', error);
+      console.error('Error saving vitamins:', error);
     }
   };
+  
+
   
   const selectVitamin = (vitamin: { name: string; defaultDosage: string }) => {
     setNewVitaminName(vitamin.name);
@@ -781,18 +202,13 @@ export default function SupplementsScreen() {
   };
   
   const addVitamin = async () => {
-    if (!newVitaminName.trim()) {
-      Alert.alert('Erro', 'Por favor, selecione a vitamina');
-      return;
-    }
-    
-    if (!newVitaminDosage.trim()) {
-      Alert.alert('Erro', 'Por favor, insira a dosagem');
+    if (!newVitaminName.trim() || !newVitaminDosage.trim()) {
+      Alert.alert('Erro', 'Preencha nome e dosagem');
       return;
     }
     
     const newVitamin: MyVitamin = {
-      id: `vitamin_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `vitamin_${Date.now()}`,
       name: newVitaminName.trim(),
       dosage: newVitaminDosage.trim(),
       time: newVitaminTime.trim() || 'Não especificado',
@@ -812,7 +228,7 @@ export default function SupplementsScreen() {
   
   const updateVitamin = async (id: string) => {
     if (!newVitaminName.trim() || !newVitaminDosage.trim()) {
-      Alert.alert('Erro', 'Por favor, preencha os campos obrigatórios');
+      Alert.alert('Erro', 'Preencha nome e dosagem');
       return;
     }
     
@@ -840,8 +256,8 @@ export default function SupplementsScreen() {
   
   const deleteVitamin = async (id: string) => {
     Alert.alert(
-      'Eliminar Vitamina',
-      'Tem a certeza que deseja eliminar esta vitamina?',
+      'Eliminar',
+      'Tem a certeza?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -876,159 +292,6 @@ export default function SupplementsScreen() {
     setVitaminSearchQuery('');
   };
   
-  const analyzeVitaminCoverage = async () => {
-    try {
-      setAiAnalysis({ coverage: [], missing: [], suggestions: [], isAnalyzing: true });
-      
-      // Get TODAY's meals only for accurate daily analysis
-      const today = new Date().toDateString();
-      const todayMeals = meals.filter(meal => {
-        if (!meal?.timestamp) return false;
-        try {
-          return new Date(meal.timestamp).toDateString() === today;
-        } catch {
-          return false;
-        }
-      });
-      
-      if (todayMeals.length === 0 && myVitamins.length === 0) {
-        console.log('⚠️ No meals or vitamins to analyze today');
-        setAiAnalysis({
-          coverage: [],
-          missing: [],
-          suggestions: ['Adicione refeições e vitaminas para receber análise personalizada'],
-          isAnalyzing: false
-        });
-        return;
-      }
-      
-      // Calculate TODAY's nutritional intake from meals
-      const nutritionalAnalysis = todayMeals.reduce((acc, meal) => {
-        meal.foods?.forEach((food: any) => {
-          acc.protein += food.protein || 0;
-          acc.carbs += food.carbs || 0;
-          acc.fat += food.fat || 0;
-          acc.fiber += food.fiber || 0;
-          acc.calcium += food.calcium || 0;
-          acc.iron += food.iron || 0;
-          acc.vitaminC += food.vitaminC || 0;
-          acc.vitaminD += food.vitaminD || 0;
-        });
-        return acc;
-      }, {
-        protein: 0, carbs: 0, fat: 0, fiber: 0,
-        calcium: 0, iron: 0, vitaminC: 0, vitaminD: 0
-      });
-      
-      // Add protein from supplements (Whey Protein) - DAILY intake
-      myVitamins.forEach(vitamin => {
-        const vitaminNameLower = vitamin.name.toLowerCase();
-        const dosageLower = vitamin.dosage.toLowerCase();
-        
-        // Extract protein from Whey Protein supplements
-        if (vitaminNameLower.includes('whey') || vitaminNameLower.includes('proteína')) {
-          // Try to extract grams from dosage (e.g., "25g/dia", "30 g/dia", "2 scoops/dia")
-          const gramsMatch = dosageLower.match(/(\d+)\s*g/);
-          if (gramsMatch) {
-            const proteinGrams = parseInt(gramsMatch[1]);
-            nutritionalAnalysis.protein += proteinGrams;
-            console.log(`✅ Added ${proteinGrams}g protein from ${vitamin.name}`);
-          } else {
-            // If dosage mentions scoops, estimate 25g per scoop
-            const scoopsMatch = dosageLower.match(/(\d+(?:\.\d+)?)\s*scoop/);
-            if (scoopsMatch) {
-              const scoops = parseFloat(scoopsMatch[1]);
-              const proteinGrams = Math.round(scoops * 25);
-              nutritionalAnalysis.protein += proteinGrams;
-              console.log(`✅ Added ${proteinGrams}g protein from ${vitamin.name} (${scoops} scoops)`);
-            }
-          }
-        }
-      });
-      
-      // NO DIVISION - these are TODAY's totals
-      const proteinValue = Math.round(nutritionalAnalysis.protein);
-      const fiberValue = Math.round(nutritionalAnalysis.fiber);
-      const calciumValue = Math.round(nutritionalAnalysis.calcium);
-      const ironValue = Math.round(nutritionalAnalysis.iron);
-      const vitaminCValue = Math.round(nutritionalAnalysis.vitaminC);
-      const vitaminDValue = Math.round(nutritionalAnalysis.vitaminD);
-      
-      console.log('📊 TODAY\'s nutritional analysis (including supplements):', { proteinValue, fiberValue, calciumValue, ironValue, vitaminCValue, vitaminDValue });
-      
-      const coverage: string[] = [];
-      const missing: string[] = [];
-      const suggestions: string[] = [];
-      
-      // Protein analysis - only show deficiency if below 60g
-      if (proteinValue >= 60) {
-        coverage.push(`Proteína: ${proteinValue}g/dia - Boa ingestão proteica ✅`);
-      } else if (proteinValue < 60) {
-        missing.push(`Proteína baixa: ${proteinValue}g/dia (recomendado: 60-80g)`);
-        suggestions.push('Considere adicionar Whey Protein ou aumentar fontes proteicas');
-      }
-      
-      // Fiber analysis
-      if (fiberValue >= 20) {
-        coverage.push(`Fibras: ${fiberValue}g/dia - Boa ingestão de fibras ✅`);
-      } else if (fiberValue < 20) {
-        missing.push(`Fibras baixas: ${fiberValue}g/dia (recomendado: 25-30g)`);
-        suggestions.push('Aumente consumo de vegetais, frutas e cereais integrais');
-      }
-      
-      // Calcium analysis
-      if (calciumValue >= 800) {
-        coverage.push(`Cálcio: ${calciumValue}mg/dia - Boa ingestão de cálcio ✅`);
-      } else if (calciumValue < 800) {
-        missing.push(`Cálcio baixo: ${calciumValue}mg/dia (recomendado: 1000mg)`);
-        suggestions.push('Considere suplemento de Cálcio + Vitamina D3');
-      }
-      
-      // Vitamin C analysis
-      if (vitaminCValue >= 75) {
-        coverage.push(`Vitamina C: ${vitaminCValue}mg/dia - Boa ingestão ✅`);
-      } else if (vitaminCValue < 75) {
-        missing.push(`Vitamina C baixa: ${vitaminCValue}mg/dia (recomendado: 75-90mg)`);
-        suggestions.push('Aumente consumo de frutas cítricas ou considere suplemento');
-      }
-      
-      if (myVitamins.length > 0) {
-        coverage.push(`Suplementação ativa: ${myVitamins.length} vitamina(s) registrada(s)`);
-      }
-      
-      if (coverage.length === 0) {
-        coverage.push('Continue registrando suas refeições para análise mais precisa');
-      }
-      
-      if (missing.length === 0) {
-        missing.push('Nenhuma deficiência crítica detectada');
-      }
-      
-      if (suggestions.length === 0) {
-        suggestions.push('Mantenha uma alimentação variada e equilibrada');
-      }
-      
-      console.log('✅ Analysis completed:', { coverage, missing, suggestions });
-      
-      setAiAnalysis({
-        coverage: coverage.slice(0, 4),
-        missing: missing.slice(0, 4),
-        suggestions: suggestions.slice(0, 4),
-        isAnalyzing: false
-      });
-      
-    } catch (error) {
-      console.error('❌ Error analyzing vitamin coverage:', error);
-      
-      setAiAnalysis({
-        coverage: [],
-        missing: [],
-        suggestions: ['Erro ao analisar. Tente novamente mais tarde.'],
-        isAnalyzing: false
-      });
-    }
-  };
-  
   const filteredVitamins = COMMON_VITAMINS.filter(vitamin => 
     vitamin.name.toLowerCase().includes(vitaminSearchQuery.toLowerCase())
   );
@@ -1038,315 +301,29 @@ export default function SupplementsScreen() {
       flex: 1,
       backgroundColor: isDark ? '#000000' : '#F2F2F7',
     },
-    safeArea: {
-      flex: 1,
-    },
     scrollView: {
       flex: 1,
     },
     scrollContent: {
-      paddingBottom: 120,
+      paddingBottom: 100,
     },
     header: {
       paddingHorizontal: 20,
-      paddingTop: 8,
-      paddingBottom: 16,
+      paddingBottom: 20,
     },
-    headerTop: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: 24,
-    },
-    headerLeft: {
-      flex: 1,
-    },
-    greeting: {
+    title: {
       fontSize: 34,
       fontWeight: '700' as const,
-      marginBottom: 2,
-      letterSpacing: -0.4,
-      ...Platform.select({
-        ios: {
-          fontFamily: 'System',
-        },
-      }),
+      color: colors.text,
+      marginBottom: 4,
     },
-    date: {
+    subtitle: {
       fontSize: 17,
-      fontWeight: '400' as const,
-      textTransform: 'capitalize' as const,
-      lineHeight: 22,
-      opacity: 0.6,
+      color: colors.textSecondary,
     },
-
-    supplementsSection: {
+    section: {
       paddingHorizontal: 20,
-    },
-    supplementCard: {
-      padding: 24,
-      marginBottom: 20,
-      borderRadius: 24,
-      position: 'relative',
-      overflow: 'hidden',
-    },
-    supplementGradient: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    },
-    supplementHeader: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      marginBottom: 20,
-      zIndex: 1,
-    },
-    supplementIcon: {
-      width: 60,
-      height: 60,
-      borderRadius: 18,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginRight: 16,
-      shadowColor: 'rgba(0, 0, 0, 0.2)',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-    },
-    supplementInfo: {
-      flex: 1,
-      paddingRight: 16,
-    },
-    supplementName: {
-      fontSize: 22,
-      fontWeight: '800',
-      color: colors.text,
-      marginBottom: 6,
-      letterSpacing: 0.3,
-    },
-    supplementDescription: {
-      fontSize: 15,
-      color: colors.textSecondary,
-      lineHeight: 22,
-      fontWeight: '500',
-    },
-    benefitsSection: {
-      marginBottom: 20,
-    },
-    benefitsTitle: {
-      fontSize: 16,
-      fontWeight: '700',
-      color: colors.text,
-      marginBottom: 12,
-      letterSpacing: 0.2,
-    },
-    benefitsGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 8,
-    },
-    benefitChip: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.surfaceSecondary,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: colors.border,
-      gap: 6,
-    },
-    benefitDot: {
-      width: 6,
-      height: 6,
-      borderRadius: 3,
-    },
-    benefitText: {
-      fontSize: 13,
-      color: colors.textSecondary,
-      fontWeight: '600',
-    },
-    dosageSection: {
-      backgroundColor: colors.surfaceSecondary,
-      padding: 16,
-      borderRadius: 16,
-      borderWidth: 1,
-      borderColor: colors.border,
-      marginBottom: 16,
-    },
-    dosageHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 8,
-      gap: 8,
-    },
-    dosageTitle: {
-      fontSize: 15,
-      fontWeight: '700',
-      color: colors.text,
-      letterSpacing: 0.2,
-    },
-    dosageText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      fontWeight: '600',
-      lineHeight: 20,
-    },
-    warningSection: {
-      backgroundColor: isDark ? 'rgba(255, 107, 53, 0.12)' : 'rgba(255, 107, 53, 0.08)',
-      padding: 16,
-      borderRadius: 16,
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(255, 107, 53, 0.3)' : 'rgba(255, 107, 53, 0.2)',
-    },
-    warningHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 12,
-      gap: 8,
-    },
-    warningTitle: {
-      fontSize: 16,
-      fontWeight: '700',
-      color: '#ff6b35',
-      letterSpacing: 0.2,
-    },
-    warningContent: {
-      gap: 8,
-    },
-    warningItem: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: 8,
-    },
-    warningBullet: {
-      width: 6,
-      height: 6,
-      borderRadius: 3,
-      backgroundColor: '#ff6b35',
-      marginTop: 7,
-    },
-    warningText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      lineHeight: 20,
-      fontWeight: '500',
-      flex: 1,
-    },
-    disclaimerCard: {
-      padding: 24,
-      marginTop: 20,
-      backgroundColor: isDark ? 'rgba(255, 107, 53, 0.15)' : 'rgba(255, 107, 53, 0.08)',
-      borderRadius: 20,
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(255, 107, 53, 0.35)' : 'rgba(255, 107, 53, 0.2)',
-    },
-    disclaimerHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 16,
-      gap: 12,
-    },
-    disclaimerTitle: {
-      fontSize: 18,
-      fontWeight: '800',
-      color: colors.text,
-      letterSpacing: 0.3,
-    },
-    disclaimerText: {
-      fontSize: 15,
-      color: colors.textSecondary,
-      lineHeight: 22,
-      fontWeight: '500',
-    },
-    safetyCard: {
-      padding: 24,
-      marginTop: 16,
-      backgroundColor: isDark ? 'rgba(0, 212, 255, 0.12)' : 'rgba(0, 122, 255, 0.08)',
-      borderRadius: 20,
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(0, 212, 255, 0.3)' : 'rgba(0, 122, 255, 0.2)',
-    },
-    safetyHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 16,
-      gap: 12,
-    },
-    safetyTitle: {
-      fontSize: 18,
-      fontWeight: '800',
-      color: colors.text,
-      letterSpacing: 0.3,
-    },
-    safetyTips: {
-      gap: 10,
-    },
-    safetyTip: {
-      fontSize: 15,
-      color: colors.textSecondary,
-      lineHeight: 22,
-      fontWeight: '500',
-      paddingLeft: 4,
-    },
-    
-    // Personalized recommendations styles
-
-    priorityBadge: {
-      alignSelf: 'center',
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 16,
-      shadowColor: 'rgba(0, 0, 0, 0.15)',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.8,
-      shadowRadius: 4,
-      elevation: 3,
-      marginBottom: 16,
-    },
-    priorityText: {
-      fontSize: 11,
-      fontWeight: '800',
-      color: 'white',
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-      textAlign: 'center',
-    },
-    noProfileCard: {
-      padding: 24,
-      marginBottom: 20,
-      borderRadius: 20,
-      alignItems: 'center',
-      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.15)' : 'rgba(255, 152, 0, 0.08)',
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 152, 0, 0.2)',
-    },
-    noProfileIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      backgroundColor: '#FF9800',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: 16,
-    },
-    noProfileTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: colors.text,
-      marginBottom: 8,
-      textAlign: 'center',
-    },
-    noProfileText: {
-      fontSize: 15,
-      color: colors.textSecondary,
-      textAlign: 'center',
-      lineHeight: 22,
-    },
-    sectionContainer: {
-      marginBottom: 40,
+      marginBottom: 32,
     },
     sectionHeader: {
       flexDirection: 'row',
@@ -1354,212 +331,167 @@ export default function SupplementsScreen() {
       justifyContent: 'space-between',
       marginBottom: 12,
     },
-    sectionHeaderLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-    },
-    sectionIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
     sectionTitle: {
-      fontSize: 24,
-      fontWeight: '800' as const,
+      fontSize: 22,
+      fontWeight: '700' as const,
       color: colors.text,
-      letterSpacing: 0.3,
-    },
-    sectionDescription: {
-      fontSize: 15,
-      color: colors.textSecondary,
-      marginBottom: 20,
-      lineHeight: 22,
-    },
-    recommendationsContainer: {
-      gap: 16,
     },
     addButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#4CAF50',
-      paddingHorizontal: 16,
-      paddingVertical: 10,
+      backgroundColor: '#007AFF',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
       borderRadius: 20,
-      gap: 6,
+      gap: 4,
     },
     addButtonText: {
-      fontSize: 14,
-      fontWeight: '700' as const,
+      fontSize: 15,
+      fontWeight: '600' as const,
       color: 'white',
     },
-    myVitaminCard: {
+    card: {
+      backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+      borderRadius: 12,
       padding: 16,
-      marginBottom: 10,
-      borderRadius: 16,
-      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.12)' : 'rgba(76, 175, 80, 0.06)',
-      borderWidth: 1,
-      borderColor: isDark ? 'rgba(76, 175, 80, 0.25)' : 'rgba(76, 175, 80, 0.15)',
+      marginBottom: 8,
     },
-    myVitaminHeader: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      justifyContent: 'space-between',
-    },
-    myVitaminInfo: {
-      flex: 1,
-      gap: 8,
-    },
-    myVitaminName: {
-      fontSize: 18,
-      fontWeight: '800' as const,
-      color: colors.text,
-      letterSpacing: 0.2,
-      marginBottom: 4,
-    },
-    myVitaminDetails: {
+    vitaminRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
-      flexWrap: 'wrap',
+      justifyContent: 'space-between',
     },
-    myVitaminDosage: {
-      fontSize: 14,
-      color: colors.textSecondary,
+    vitaminInfo: {
+      flex: 1,
+    },
+    vitaminName: {
+      fontSize: 17,
       fontWeight: '600' as const,
+      color: colors.text,
+      marginBottom: 4,
     },
-    myVitaminTime: {
-      fontSize: 14,
+    vitaminDosage: {
+      fontSize: 15,
       color: colors.textSecondary,
-      fontWeight: '500' as const,
     },
-    myVitaminSeparator: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      fontWeight: '400' as const,
-    },
-    myVitaminNotes: {
-      fontSize: 12,
-      color: colors.textSecondary,
-      fontStyle: 'italic' as const,
-      marginTop: 6,
-      lineHeight: 16,
-    },
-    myVitaminActions: {
+    vitaminActions: {
       flexDirection: 'row',
-      gap: 6,
+      gap: 8,
     },
-    actionButton: {
+    iconButton: {
       width: 32,
       height: 32,
       borderRadius: 16,
+      backgroundColor: isDark ? '#2C2C2E' : '#F2F2F7',
       justifyContent: 'center',
       alignItems: 'center',
     },
-    editButton: {
-      backgroundColor: isDark ? 'rgba(33, 150, 243, 0.2)' : 'rgba(33, 150, 243, 0.15)',
+    emptyCard: {
+      backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+      borderRadius: 12,
+      padding: 24,
+      alignItems: 'center',
     },
-    deleteButton: {
-      backgroundColor: isDark ? 'rgba(244, 67, 54, 0.2)' : 'rgba(244, 67, 54, 0.15)',
+    emptyText: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginTop: 8,
     },
-    addVitaminForm: {
-      padding: 20,
-      marginBottom: 16,
-      borderRadius: 20,
-      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)',
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)',
-    },
-    formTitle: {
-      fontSize: 18,
-      fontWeight: '700' as const,
-      color: colors.text,
-      marginBottom: 16,
-    },
-    inputLabel: {
-      fontSize: 14,
-      fontWeight: '600' as const,
-      color: colors.text,
+    formCard: {
+      backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+      borderRadius: 12,
+      padding: 16,
       marginBottom: 8,
     },
-    input: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      fontSize: 15,
-      color: colors.text,
-      marginBottom: 16,
+    inputLabel: {
+      fontSize: 13,
+      fontWeight: '600' as const,
+      color: colors.textSecondary,
+      marginBottom: 6,
+      marginTop: 12,
     },
-    inputMultiline: {
-      height: 80,
-      textAlignVertical: 'top' as const,
+    input: {
+      backgroundColor: isDark ? '#2C2C2E' : '#F2F2F7',
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 17,
+      color: colors.text,
+    },
+    pickerButton: {
+      backgroundColor: isDark ? '#2C2C2E' : '#F2F2F7',
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    pickerButtonText: {
+      fontSize: 17,
+      color: colors.text,
+    },
+    pickerPlaceholder: {
+      color: colors.textSecondary,
     },
     formActions: {
       flexDirection: 'row',
-      gap: 12,
-      marginTop: 8,
+      gap: 8,
+      marginTop: 16,
     },
     formButton: {
       flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 14,
-      borderRadius: 12,
-      gap: 8,
+      paddingVertical: 12,
+      borderRadius: 8,
+      gap: 6,
     },
     saveButton: {
-      backgroundColor: '#4CAF50',
+      backgroundColor: '#007AFF',
     },
     cancelButton: {
-      backgroundColor: isDark ? 'rgba(158, 158, 158, 0.2)' : 'rgba(158, 158, 158, 0.15)',
+      backgroundColor: isDark ? '#2C2C2E' : '#F2F2F7',
     },
     formButtonText: {
-      fontSize: 15,
-      fontWeight: '700' as const,
+      fontSize: 17,
+      fontWeight: '600' as const,
+    },
+    saveButtonText: {
       color: 'white',
     },
     cancelButtonText: {
       color: colors.text,
     },
-    vitaminPickerButton: {
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
+    analysisCard: {
+      backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
       borderRadius: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      marginBottom: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
+      padding: 16,
+      marginBottom: 8,
     },
-    vitaminPickerButtonText: {
-      fontSize: 15,
+    analysisTitle: {
+      fontSize: 17,
+      fontWeight: '600' as const,
       color: colors.text,
-      flex: 1,
+      marginBottom: 12,
     },
-    vitaminPickerPlaceholder: {
+    analysisItem: {
+      fontSize: 15,
       color: colors.textSecondary,
+      marginBottom: 6,
     },
     modalOverlay: {
       flex: 1,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 20,
+      justifyContent: 'flex-end',
     },
     modalContent: {
       backgroundColor: colors.surface,
-      borderRadius: 20,
-      width: '100%',
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
       maxHeight: '80%',
-      overflow: 'hidden',
     },
     modalHeader: {
       padding: 20,
@@ -1573,45 +505,29 @@ export default function SupplementsScreen() {
       marginBottom: 12,
     },
     searchInput: {
-      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-      borderRadius: 12,
-      paddingHorizontal: 16,
+      backgroundColor: isDark ? '#2C2C2E' : '#F2F2F7',
+      borderRadius: 10,
+      paddingHorizontal: 12,
       paddingVertical: 10,
-      fontSize: 15,
+      fontSize: 17,
       color: colors.text,
-      flexDirection: 'row',
-      alignItems: 'center',
     },
-    searchInputContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-      borderRadius: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-    },
-    searchInputField: {
-      flex: 1,
-      fontSize: 15,
-      color: colors.text,
-      marginLeft: 8,
-    },
-    vitaminList: {
+    modalList: {
       maxHeight: 400,
     },
-    vitaminItem: {
+    modalItem: {
       padding: 16,
       borderBottomWidth: 1,
       borderBottomColor: colors.border,
     },
-    vitaminItemName: {
-      fontSize: 16,
+    modalItemName: {
+      fontSize: 17,
       fontWeight: '600' as const,
       color: colors.text,
       marginBottom: 4,
     },
-    vitaminItemDosage: {
-      fontSize: 14,
+    modalItemDosage: {
+      fontSize: 15,
       color: colors.textSecondary,
     },
     modalCloseButton: {
@@ -1621,194 +537,16 @@ export default function SupplementsScreen() {
       borderTopColor: colors.border,
     },
     modalCloseButtonText: {
-      fontSize: 16,
+      fontSize: 17,
       fontWeight: '600' as const,
-      color: '#4CAF50',
-    },
-    emptyVitaminsCard: {
-      padding: 24,
-      marginBottom: 16,
-      borderRadius: 20,
-      alignItems: 'center',
-      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)',
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)',
-    },
-    emptyVitaminsIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      backgroundColor: '#4CAF50',
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: 16,
-    },
-    emptyVitaminsTitle: {
-      fontSize: 18,
-      fontWeight: '700' as const,
-      color: colors.text,
-      marginBottom: 8,
-      textAlign: 'center',
-    },
-    emptyVitaminsText: {
-      fontSize: 15,
-      color: colors.textSecondary,
-      textAlign: 'center',
-      lineHeight: 22,
-    },
-    generalSupplementsTitle: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: colors.text,
-      marginBottom: 16,
-      paddingHorizontal: 4,
-      letterSpacing: 0.2,
-    },
-    summaryCardIcon: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    analysisCard: {
-      padding: 20,
-      marginBottom: 20,
-      borderRadius: 20,
-      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.15)' : 'rgba(255, 152, 0, 0.08)',
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 152, 0, 0.2)',
-    },
-    analysisHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 12,
-    },
-    analysisTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: colors.text,
-      marginLeft: 12,
-      letterSpacing: 0.2,
-    },
-    analysisText: {
-      fontSize: 15,
-      color: colors.textSecondary,
-      lineHeight: 22,
-      fontWeight: '500',
-    },
-    analysisSection: {
-      marginTop: 24,
-      marginBottom: 0,
-    },
-    coverageCard: {
-      padding: 20,
-      marginBottom: 16,
-      borderRadius: 20,
-      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)',
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)',
-    },
-    coverageTitle: {
-      fontSize: 18,
-      fontWeight: '700' as const,
-      color: colors.text,
-      marginBottom: 8,
-      letterSpacing: 0.2,
-    },
-    coverageDescription: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      marginBottom: 16,
-      lineHeight: 20,
-    },
-    coverageList: {
-      gap: 10,
-    },
-    coverageItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-    },
-    coverageBullet: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-    },
-    coverageItemText: {
-      fontSize: 14,
-      color: colors.text,
-      fontWeight: '600' as const,
-      flex: 1,
-    },
-    missingCard: {
-      padding: 20,
-      marginBottom: 16,
-      borderRadius: 20,
-      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.15)' : 'rgba(255, 152, 0, 0.08)',
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 152, 0, 0.2)',
-    },
-    missingTitle: {
-      fontSize: 18,
-      fontWeight: '700' as const,
-      color: colors.text,
-      marginBottom: 8,
-      letterSpacing: 0.2,
-    },
-    missingDescription: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      marginBottom: 16,
-      lineHeight: 20,
-    },
-    suggestionsList: {
-      gap: 12,
-    },
-    suggestionItem: {
-      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.1)' : 'rgba(255, 152, 0, 0.05)',
-      padding: 14,
-      borderRadius: 12,
-      borderLeftWidth: 3,
-      borderLeftColor: '#FF9800',
-    },
-    suggestionText: {
-      fontSize: 14,
-      color: colors.text,
-      lineHeight: 20,
-      fontWeight: '500' as const,
-    },
-    successCard: {
-      padding: 20,
-      borderRadius: 20,
-      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.12)',
-      borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(76, 175, 80, 0.4)' : 'rgba(76, 175, 80, 0.3)',
-      alignItems: 'center',
-    },
-    successText: {
-      fontSize: 15,
-      color: colors.text,
-      textAlign: 'center',
-      lineHeight: 22,
-      fontWeight: '600' as const,
+      color: '#007AFF',
     },
   }));
 
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={isDark ? [
-          '#000000',
-          '#1C1C1E',
-          '#2C2C2E'
-        ] : [
-          '#F2F2F7',
-          '#FFFFFF',
-          '#F2F2F7'
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        colors={isDark ? ['#000000', '#1C1C1E'] : ['#F2F2F7', '#FFFFFF']}
         style={StyleSheet.absoluteFillObject}
       />
       
@@ -1817,190 +555,138 @@ export default function SupplementsScreen() {
         backgroundColor="transparent" 
         translucent 
       />
-      <SafeAreaView style={styles.safeArea} edges={['top']}>
+      
+      <View style={{ flex: 1 }}>
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <Animated.View style={[
-            styles.header, 
-            { 
-              opacity: fadeAnim,
-            }
-          ]}>
-            <View style={styles.headerTop}>
-              <View style={styles.headerLeft}>
-                <Text style={[styles.greeting, { color: colors.text }]}>
-                  Vitaminas & Suplementos
-                </Text>
-                <Text style={[styles.date, { color: colors.textSecondary }]}>
-                  Gerencie suas vitaminas e descubra suplementos recomendados
-                </Text>
-              </View>
+          <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+            <Text style={styles.title}>Suplementos</Text>
+            <Text style={styles.subtitle}>Gerencie suas vitaminas</Text>
+          </View>
+
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Minhas Vitaminas</Text>
+              {!isAddingVitamin && (
+                <TouchableOpacity 
+                  style={styles.addButton}
+                  onPress={() => setIsAddingVitamin(true)}
+                >
+                  <Plus color="white" size={18} strokeWidth={2.5} />
+                  <Text style={styles.addButtonText}>Adicionar</Text>
+                </TouchableOpacity>
+              )}
             </View>
-          </Animated.View>
 
-          <Animated.View style={[styles.supplementsSection, { opacity: fadeAnim }]}>
-            {/* ========== SEÇÃO 1: MINHAS VITAMINAS ========== */}
-            <View style={styles.sectionContainer}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionHeaderLeft}>
-                  <View style={[styles.sectionIcon, { backgroundColor: '#4CAF50' }]}>
-                    <Pill color="white" size={24} strokeWidth={2.5} />
-                  </View>
-                  <Text style={styles.sectionTitle}>Minhas Vitaminas</Text>
-                </View>
-                {!isAddingVitamin && (
-                  <TouchableOpacity 
-                    style={styles.addButton}
-                    onPress={() => setIsAddingVitamin(true)}
-                  >
-                    <Plus color="white" size={18} strokeWidth={2.5} />
-                    <Text style={styles.addButtonText}>Adicionar</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              
-              <Text style={styles.sectionDescription}>
-                Registre as vitaminas e suplementos que você toma diariamente
-              </Text>
-
-              {/* Add Vitamin Form */}
-              {isAddingVitamin && (
-              <View style={styles.analysisSection}>
-                <BlurCard style={styles.analysisCard}>
-                  <View style={styles.analysisHeader}>
-                    <View style={[styles.summaryCardIcon, { backgroundColor: '#FF9800' }]}>
-                      <Brain color="white" size={20} strokeWidth={2.5} />
-                    </View>
-                    <Text style={styles.analysisTitle}>Análise Inteligente</Text>
-                  </View>
-                  <Text style={styles.analysisText}>
-                    {aiAnalysis.isAnalyzing 
-                      ? 'Analisando sua suplementação e alimentação...'
-                      : 'Baseado nas suas vitaminas e alimentação dos últimos 7 dias'}
+            {isAddingVitamin && (
+              <View style={styles.formCard}>
+                <Text style={styles.inputLabel}>Vitamina</Text>
+                <TouchableOpacity 
+                  style={styles.pickerButton}
+                  onPress={() => setShowVitaminPicker(true)}
+                >
+                  <Text style={[
+                    styles.pickerButtonText,
+                    !newVitaminName && styles.pickerPlaceholder
+                  ]}>
+                    {newVitaminName || 'Selecionar'}
                   </Text>
-                </BlurCard>
+                  <ChevronDown color={colors.textSecondary} size={20} />
+                </TouchableOpacity>
                 
-                {!aiAnalysis.isAnalyzing && aiAnalysis.coverage.length > 0 && (
-                  <BlurCard style={styles.coverageCard}>
-                    <Text style={styles.coverageTitle}>✅ Bem Coberto</Text>
-                    <Text style={styles.coverageDescription}>
-                      Estas necessidades nutricionais estão sendo bem supridas:
-                    </Text>
-                    <View style={styles.coverageList}>
-                      {aiAnalysis.coverage.map((item, index) => (
-                        <View key={index} style={styles.coverageItem}>
-                          <View style={[styles.coverageBullet, { backgroundColor: '#4CAF50' }]} />
-                          <Text style={styles.coverageItemText}>{item}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </BlurCard>
-                )}
+                <Text style={styles.inputLabel}>Dosagem</Text>
+                <TouchableOpacity 
+                  style={styles.pickerButton}
+                  onPress={() => setShowDosagePicker(true)}
+                >
+                  <Text style={[
+                    styles.pickerButtonText,
+                    !newVitaminDosage && styles.pickerPlaceholder
+                  ]}>
+                    {newVitaminDosage || 'Selecionar'}
+                  </Text>
+                  <ChevronDown color={colors.textSecondary} size={20} />
+                </TouchableOpacity>
                 
-                {!aiAnalysis.isAnalyzing && aiAnalysis.missing.length > 0 && (
-                  <BlurCard style={styles.missingCard}>
-                    <Text style={styles.missingTitle}>⚠️ Deficiências Detectadas</Text>
-                    <Text style={styles.missingDescription}>
-                      Estas necessidades nutricionais precisam de atenção:
-                    </Text>
-                    <View style={styles.suggestionsList}>
-                      {aiAnalysis.missing.map((item, index) => (
-                        <View key={index} style={styles.suggestionItem}>
-                          <Text style={styles.suggestionText}>{item}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </BlurCard>
-                )}
+                <Text style={styles.inputLabel}>Horário (opcional)</Text>
+                <TouchableOpacity 
+                  style={styles.pickerButton}
+                  onPress={() => setShowTimePicker(true)}
+                >
+                  <Text style={[
+                    styles.pickerButtonText,
+                    !newVitaminTime && styles.pickerPlaceholder
+                  ]}>
+                    {newVitaminTime || 'Selecionar'}
+                  </Text>
+                  <ChevronDown color={colors.textSecondary} size={20} />
+                </TouchableOpacity>
                 
-                {!aiAnalysis.isAnalyzing && aiAnalysis.suggestions.length > 0 && (
-                  <BlurCard style={styles.missingCard}>
-                    <Text style={styles.missingTitle}>💡 Sugestões Personalizadas</Text>
-                    <Text style={styles.missingDescription}>
-                      Recomendações para otimizar sua suplementação:
-                    </Text>
-                    <View style={styles.suggestionsList}>
-                      {aiAnalysis.suggestions.map((item, index) => (
-                        <View key={index} style={styles.suggestionItem}>
-                          <Text style={styles.suggestionText}>{item}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </BlurCard>
-                )}
-                
-                {!aiAnalysis.isAnalyzing && 
-                 aiAnalysis.coverage.length === 0 && 
-                 aiAnalysis.missing.length === 0 && 
-                 aiAnalysis.suggestions.length === 0 && (
-                  <BlurCard style={styles.successCard}>
-                    <Text style={styles.successText}>
-                      ✨ Sua suplementação está equilibrada! Continue assim.
-                    </Text>
-                  </BlurCard>
-                )}
+                <View style={styles.formActions}>
+                  <TouchableOpacity 
+                    style={[styles.formButton, styles.cancelButton]}
+                    onPress={cancelEdit}
+                  >
+                    <X color={colors.text} size={18} strokeWidth={2.5} />
+                    <Text style={[styles.formButtonText, styles.cancelButtonText]}>Cancelar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.formButton, styles.saveButton]}
+                    onPress={addVitamin}
+                  >
+                    <Check color="white" size={18} strokeWidth={2.5} />
+                    <Text style={[styles.formButtonText, styles.saveButtonText]}>Guardar</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             )}
 
-              {/* Add Vitamin Form */}
-              {isAddingVitamin && (
-                <BlurCard style={styles.addVitaminForm}>
-                  <Text style={styles.formTitle}>Adicionar Nova Vitamina</Text>
-                  
-                  <Text style={styles.inputLabel}>Nome da Vitamina *</Text>
+            {myVitamins.length === 0 && !isAddingVitamin && (
+              <View style={styles.emptyCard}>
+                <Pill color={colors.textSecondary} size={32} />
+                <Text style={styles.emptyText}>
+                  Nenhuma vitamina adicionada
+                </Text>
+              </View>
+            )}
+
+            {myVitamins.map((vitamin) => (
+              editingVitaminId === vitamin.id ? (
+                <View key={vitamin.id} style={styles.formCard}>
+                  <Text style={styles.inputLabel}>Vitamina</Text>
                   <TouchableOpacity 
-                    style={styles.vitaminPickerButton}
+                    style={styles.pickerButton}
                     onPress={() => setShowVitaminPicker(true)}
                   >
-                    <Text style={[
-                      styles.vitaminPickerButtonText,
-                      !newVitaminName && styles.vitaminPickerPlaceholder
-                    ]}>
-                      {newVitaminName || 'Selecione uma vitamina'}
-                    </Text>
+                    <Text style={styles.pickerButtonText}>{newVitaminName}</Text>
                     <ChevronDown color={colors.textSecondary} size={20} />
                   </TouchableOpacity>
                   
-                  <Text style={styles.inputLabel}>Dosagem *</Text>
+                  <Text style={styles.inputLabel}>Dosagem</Text>
                   <TouchableOpacity 
-                    style={styles.vitaminPickerButton}
+                    style={styles.pickerButton}
                     onPress={() => setShowDosagePicker(true)}
                   >
-                    <Text style={[
-                      styles.vitaminPickerButtonText,
-                      !newVitaminDosage && styles.vitaminPickerPlaceholder
-                    ]}>
-                      {newVitaminDosage || 'Selecione a dosagem'}
-                    </Text>
+                    <Text style={styles.pickerButtonText}>{newVitaminDosage}</Text>
                     <ChevronDown color={colors.textSecondary} size={20} />
                   </TouchableOpacity>
                   
                   <Text style={styles.inputLabel}>Horário</Text>
                   <TouchableOpacity 
-                    style={styles.vitaminPickerButton}
+                    style={styles.pickerButton}
                     onPress={() => setShowTimePicker(true)}
                   >
                     <Text style={[
-                      styles.vitaminPickerButtonText,
-                      !newVitaminTime && styles.vitaminPickerPlaceholder
+                      styles.pickerButtonText,
+                      !newVitaminTime && styles.pickerPlaceholder
                     ]}>
-                      {newVitaminTime || 'Selecione o horário'}
+                      {newVitaminTime || 'Selecionar'}
                     </Text>
                     <ChevronDown color={colors.textSecondary} size={20} />
                   </TouchableOpacity>
-                  
-                  <Text style={styles.inputLabel}>Notas</Text>
-                  <TextInput
-                    style={[styles.input, styles.inputMultiline]}
-                    placeholder="Notas adicionais (opcional)"
-                    placeholderTextColor={colors.textSecondary}
-                    value={newVitaminNotes}
-                    onChangeText={setNewVitaminNotes}
-                    multiline
-                  />
                   
                   <View style={styles.formActions}>
                     <TouchableOpacity 
@@ -2012,432 +698,98 @@ export default function SupplementsScreen() {
                     </TouchableOpacity>
                     <TouchableOpacity 
                       style={[styles.formButton, styles.saveButton]}
-                      onPress={addVitamin}
+                      onPress={() => updateVitamin(vitamin.id)}
                     >
                       <Check color="white" size={18} strokeWidth={2.5} />
-                      <Text style={styles.formButtonText}>Guardar</Text>
+                      <Text style={[styles.formButtonText, styles.saveButtonText]}>Guardar</Text>
                     </TouchableOpacity>
                   </View>
-                </BlurCard>
-              )}
-
-              {/* Empty State */}
-              {myVitamins.length === 0 && !isAddingVitamin && (
-                <BlurCard style={styles.emptyVitaminsCard}>
-                  <View style={styles.emptyVitaminsIcon}>
-                    <Pill color="white" size={24} />
-                  </View>
-                  <Text style={styles.emptyVitaminsTitle}>Nenhuma Vitamina Adicionada</Text>
-                  <Text style={styles.emptyVitaminsText}>
-                    Adicione as vitaminas e suplementos que toma diariamente para manter um registo organizado.
-                  </Text>
-                </BlurCard>
-              )}
-
-              {/* Vitamin List */}
-              {myVitamins.map((vitamin) => (
-                editingVitaminId === vitamin.id ? (
-                  <BlurCard key={vitamin.id} style={styles.addVitaminForm}>
-                    <Text style={styles.formTitle}>Editar Vitamina</Text>
-                    
-                    <Text style={styles.inputLabel}>Nome da Vitamina *</Text>
-                    <TouchableOpacity 
-                      style={styles.vitaminPickerButton}
-                      onPress={() => setShowVitaminPicker(true)}
-                    >
-                      <Text style={[
-                        styles.vitaminPickerButtonText,
-                        !newVitaminName && styles.vitaminPickerPlaceholder
-                      ]}>
-                        {newVitaminName || 'Selecione uma vitamina'}
+                </View>
+              ) : (
+                <View key={vitamin.id} style={styles.card}>
+                  <View style={styles.vitaminRow}>
+                    <View style={styles.vitaminInfo}>
+                      <Text style={styles.vitaminName}>{vitamin.name}</Text>
+                      <Text style={styles.vitaminDosage}>
+                        {vitamin.dosage} • {vitamin.time}
                       </Text>
-                      <ChevronDown color={colors.textSecondary} size={20} />
-                    </TouchableOpacity>
-                    
-                    <Text style={styles.inputLabel}>Dosagem *</Text>
-                    <TouchableOpacity 
-                      style={styles.vitaminPickerButton}
-                      onPress={() => setShowDosagePicker(true)}
-                    >
-                      <Text style={[
-                        styles.vitaminPickerButtonText,
-                        !newVitaminDosage && styles.vitaminPickerPlaceholder
-                      ]}>
-                        {newVitaminDosage || 'Selecione a dosagem'}
-                      </Text>
-                      <ChevronDown color={colors.textSecondary} size={20} />
-                    </TouchableOpacity>
-                    
-                    <Text style={styles.inputLabel}>Horário</Text>
-                    <TouchableOpacity 
-                      style={styles.vitaminPickerButton}
-                      onPress={() => setShowTimePicker(true)}
-                    >
-                      <Text style={[
-                        styles.vitaminPickerButtonText,
-                        !newVitaminTime && styles.vitaminPickerPlaceholder
-                      ]}>
-                        {newVitaminTime || 'Selecione o horário'}
-                      </Text>
-                      <ChevronDown color={colors.textSecondary} size={20} />
-                    </TouchableOpacity>
-                    
-                    <Text style={styles.inputLabel}>Notas</Text>
-                    <TextInput
-                      style={[styles.input, styles.inputMultiline]}
-                      placeholder="Notas adicionais (opcional)"
-                      placeholderTextColor={colors.textSecondary}
-                      value={newVitaminNotes}
-                      onChangeText={setNewVitaminNotes}
-                      multiline
-                    />
-                    
-                    <View style={styles.formActions}>
+                    </View>
+                    <View style={styles.vitaminActions}>
                       <TouchableOpacity 
-                        style={[styles.formButton, styles.cancelButton]}
-                        onPress={cancelEdit}
+                        style={styles.iconButton}
+                        onPress={() => startEditVitamin(vitamin)}
                       >
-                        <X color={colors.text} size={18} strokeWidth={2.5} />
-                        <Text style={[styles.formButtonText, styles.cancelButtonText]}>Cancelar</Text>
+                        <Edit2 color={colors.textSecondary} size={16} strokeWidth={2} />
                       </TouchableOpacity>
                       <TouchableOpacity 
-                        style={[styles.formButton, styles.saveButton]}
-                        onPress={() => updateVitamin(vitamin.id)}
+                        style={styles.iconButton}
+                        onPress={() => deleteVitamin(vitamin.id)}
                       >
-                        <Check color="white" size={18} strokeWidth={2.5} />
-                        <Text style={styles.formButtonText}>Guardar</Text>
+                        <X color={colors.textSecondary} size={16} strokeWidth={2} />
                       </TouchableOpacity>
                     </View>
-                  </BlurCard>
-                ) : (
-                  <BlurCard key={vitamin.id} style={styles.myVitaminCard}>
-                    <View style={styles.myVitaminHeader}>
-                      <View style={styles.myVitaminInfo}>
-                        <Text style={styles.myVitaminName} numberOfLines={2}>{vitamin.name}</Text>
-                        <View style={styles.myVitaminDetails}>
-                          <Text style={styles.myVitaminDosage} numberOfLines={1}>{vitamin.dosage}</Text>
-                          <Text style={styles.myVitaminSeparator}>•</Text>
-                          <Text style={styles.myVitaminTime} numberOfLines={1}>{vitamin.time}</Text>
-                        </View>
-                      </View>
-                      <View style={styles.myVitaminActions}>
-                        <TouchableOpacity 
-                          style={[styles.actionButton, styles.editButton]}
-                          onPress={() => startEditVitamin(vitamin)}
-                        >
-                          <Edit2 color="#2196F3" size={16} strokeWidth={2} />
-                        </TouchableOpacity>
-                        <TouchableOpacity 
-                          style={[styles.actionButton, styles.deleteButton]}
-                          onPress={() => deleteVitamin(vitamin.id)}
-                        >
-                          <X color="#F44336" size={16} strokeWidth={2} />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                    {vitamin.notes && (
-                      <Text style={styles.myVitaminNotes} numberOfLines={2}>{vitamin.notes}</Text>
-                    )}
-                  </BlurCard>
-                )
-              ))}
-
-              {/* AI Analysis Section */}
-              {myVitamins.length > 0 && (
-                <View style={styles.analysisSection}>
-                  <BlurCard style={styles.analysisCard}>
-                    <View style={styles.analysisHeader}>
-                      <View style={[styles.summaryCardIcon, { backgroundColor: '#FF9800' }]}>
-                        <Brain color="white" size={20} strokeWidth={2.5} />
-                      </View>
-                      <Text style={styles.analysisTitle}>Análise Inteligente</Text>
-                    </View>
-                    <Text style={styles.analysisText}>
-                      {aiAnalysis.isAnalyzing 
-                        ? 'Analisando sua suplementação e alimentação...'
-                        : 'Baseado nas suas vitaminas e alimentação de hoje'}
-                    </Text>
-                  </BlurCard>
-                  
-                  {!aiAnalysis.isAnalyzing && aiAnalysis.coverage.length > 0 && (
-                    <BlurCard style={styles.coverageCard}>
-                      <Text style={styles.coverageTitle}>✅ Bem Coberto</Text>
-                      <Text style={styles.coverageDescription}>
-                        Estas necessidades nutricionais estão sendo bem supridas:
-                      </Text>
-                      <View style={styles.coverageList}>
-                        {aiAnalysis.coverage.map((item, index) => (
-                          <View key={index} style={styles.coverageItem}>
-                            <View style={[styles.coverageBullet, { backgroundColor: '#4CAF50' }]} />
-                            <Text style={styles.coverageItemText}>{item}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </BlurCard>
-                  )}
-                  
-                  {!aiAnalysis.isAnalyzing && aiAnalysis.missing.length > 0 && (
-                    <BlurCard style={styles.missingCard}>
-                      <Text style={styles.missingTitle}>⚠️ Deficiências Detectadas</Text>
-                      <Text style={styles.missingDescription}>
-                        Estas necessidades nutricionais precisam de atenção:
-                      </Text>
-                      <View style={styles.suggestionsList}>
-                        {aiAnalysis.missing.map((item, index) => (
-                          <View key={index} style={styles.suggestionItem}>
-                            <Text style={styles.suggestionText}>{item}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </BlurCard>
-                  )}
-                  
-                  {!aiAnalysis.isAnalyzing && aiAnalysis.suggestions.length > 0 && (
-                    <BlurCard style={styles.missingCard}>
-                      <Text style={styles.missingTitle}>💡 Sugestões Personalizadas</Text>
-                      <Text style={styles.missingDescription}>
-                        Recomendações para otimizar sua suplementação:
-                      </Text>
-                      <View style={styles.suggestionsList}>
-                        {aiAnalysis.suggestions.map((item, index) => (
-                          <View key={index} style={styles.suggestionItem}>
-                            <Text style={styles.suggestionText}>{item}</Text>
-                          </View>
-                        ))}
-                      </View>
-                    </BlurCard>
-                  )}
-                  
-                  {!aiAnalysis.isAnalyzing && 
-                   aiAnalysis.coverage.length === 0 && 
-                   aiAnalysis.missing.length === 0 && 
-                   aiAnalysis.suggestions.length === 0 && (
-                    <BlurCard style={styles.successCard}>
-                      <Text style={styles.successText}>
-                        ✨ Sua suplementação está equilibrada! Continue assim.
-                      </Text>
-                    </BlurCard>
-                  )}
-                </View>
-              )}
-            </View>
-
-            {/* ========== SEÇÃO 2: SUPLEMENTOS RECOMENDADOS ========== */}
-            <View style={styles.sectionContainer}>
-              <View style={styles.sectionHeader}>
-                <View style={styles.sectionHeaderLeft}>
-                  <View style={[styles.sectionIcon, { backgroundColor: '#2196F3' }]}>
-                    <Target color="white" size={24} strokeWidth={2.5} />
-                  </View>
-                  <Text style={styles.sectionTitle}>Suplementos Recomendados</Text>
-                </View>
-              </View>
-              
-              <Text style={styles.sectionDescription}>
-                Baseado no seu perfil, idade e análise nutricional
-              </Text>
-
-            {/* Personalized Recommendations */}
-            {userProfile && personalizedRecommendations.length > 0 ? (
-              <View style={styles.recommendationsContainer}>
-                {personalizedRecommendations.slice(0, 3).map((supplement, index) => {
-                  const isAlreadyTaking = myVitamins.some(v => 
-                    v.name.toLowerCase().includes(supplement.name.toLowerCase().split(' ')[0]) ||
-                    supplement.name.toLowerCase().includes(v.name.toLowerCase().split(' ')[0])
-                  );
-                  
-                  return (
-                  <Animated.View
-                    key={supplement.id}
-                    style={[
-                      {
-                        transform: [{
-                          translateY: fadeAnim.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [30 + (index * 15), 0],
-                          })
-                        }]
-                      }
-                    ]}
-                  >
-                    <BlurCard style={styles.supplementCard}>
-                      <LinearGradient
-                        colors={[
-                          `${supplement.color}20`,
-                          `${supplement.color}10`,
-                          'transparent'
-                        ]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.supplementGradient}
-                      />
-                      
-                      {supplement.priority && !isAlreadyTaking && (
-                        <View style={[
-                          styles.priorityBadge,
-                          {
-                            backgroundColor: supplement.priority === 'high' ? '#FF6B35' : '#4CAF50'
-                          }
-                        ]}>
-                          <Text style={styles.priorityText}>
-                            {supplement.priority === 'high' ? 'PRIORIDADE' : 'RECOMENDADO'}
-                          </Text>
-                        </View>
-                      )}
-                      
-                      {isAlreadyTaking && (
-                        <View style={[
-                          styles.priorityBadge,
-                          {
-                            backgroundColor: '#4CAF50'
-                          }
-                        ]}>
-                          <Text style={styles.priorityText}>
-                            JÁ A TOMAR
-                          </Text>
-                        </View>
-                      )}
-                      
-                      <View style={styles.supplementHeader}>
-                        <View style={[
-                          styles.supplementIcon,
-                          { backgroundColor: supplement.color }
-                        ]}>
-                          {supplement.icon}
-                        </View>
-                        <View style={styles.supplementInfo}>
-                          <Text style={styles.supplementName}>{supplement.name}</Text>
-                          <Text style={styles.supplementDescription}>{supplement.description}</Text>
-                        </View>
-                      </View>
-                      
-                      <View style={styles.benefitsSection}>
-                        <Text style={styles.benefitsTitle}>Principais Benefícios</Text>
-                        <View style={styles.benefitsGrid}>
-                          {supplement.benefits.map((benefit, benefitIndex) => (
-                            <View key={`${supplement.id}-benefit-${benefitIndex}`} style={styles.benefitChip}>
-                              <View style={[styles.benefitDot, { backgroundColor: supplement.color }]} />
-                              <Text style={styles.benefitText}>{benefit}</Text>
-                            </View>
-                          ))}
-                        </View>
-                      </View>
-                      
-                      <View style={styles.dosageSection}>
-                        <View style={styles.dosageHeader}>
-                          <Pill color={colors.textSecondary} size={16} />
-                          <Text style={styles.dosageTitle}>Dosagem Recomendada</Text>
-                        </View>
-                        <Text style={styles.dosageText}>{supplement.dosage}</Text>
-                      </View>
-                    </BlurCard>
-                  </Animated.View>
-                  );
-                })}
-              </View>
-            ) : (
-              <BlurCard style={styles.noProfileCard}>
-                <View style={styles.noProfileIcon}>
-                  <AlertTriangle color="white" size={24} />
-                </View>
-                <Text style={styles.noProfileTitle}>Complete seu Perfil</Text>
-                <Text style={styles.noProfileText}>
-                  Configure seu perfil na aba Perfil para receber recomendações personalizadas de suplementos.
-                </Text>
-              </BlurCard>
-            )}
-
-            {/* General Supplements Guide */}
-            <Text style={styles.generalSupplementsTitle}>Guia Geral de Suplementos</Text>
-            {supplements.slice(0, 5).map((supplement, index) => (
-              <BlurCard key={supplement.id} style={styles.supplementCard}>
-                <LinearGradient
-                  colors={[
-                    `${supplement.color}15`,
-                    `${supplement.color}08`,
-                    'transparent'
-                  ]}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={styles.supplementGradient}
-                />
-                
-                <View style={styles.supplementHeader}>
-                  <View style={[
-                    styles.supplementIcon,
-                    { backgroundColor: supplement.color }
-                  ]}>
-                    {supplement.icon}
-                  </View>
-                  <View style={styles.supplementInfo}>
-                    <Text style={styles.supplementName}>{supplement.name}</Text>
-                    <Text style={styles.supplementDescription}>{supplement.description}</Text>
                   </View>
                 </View>
-                
-                <View style={styles.dosageSection}>
-                  <View style={styles.dosageHeader}>
-                    <Pill color={colors.textSecondary} size={16} />
-                    <Text style={styles.dosageTitle}>Dosagem</Text>
-                  </View>
-                  <Text style={styles.dosageText}>{supplement.dosage}</Text>
-                </View>
-              </BlurCard>
+              )
             ))}
+          </View>
 
-            <BlurCard style={styles.disclaimerCard}>
-              <View style={styles.disclaimerHeader}>
-                <AlertTriangle color="#ff6b35" size={24} />
-                <Text style={styles.disclaimerTitle}>Aviso Importante</Text>
-              </View>
-              <Text style={styles.disclaimerText}>
-                Consulte sempre um médico antes de iniciar qualquer suplementação.
-              </Text>
-            </BlurCard>
+          {(myVitamins.length > 0 || meals.length > 0) && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Análise de Hoje</Text>
+              
+              {analysis.coverage.length > 0 && (
+                <View style={styles.analysisCard}>
+                  <Text style={styles.analysisTitle}>✅ Bem Coberto</Text>
+                  {analysis.coverage.map((item, index) => (
+                    <Text key={index} style={styles.analysisItem}>• {item}</Text>
+                  ))}
+                </View>
+              )}
+              
+              {analysis.missing.length > 0 && (
+                <View style={styles.analysisCard}>
+                  <Text style={styles.analysisTitle}>⚠️ Atenção</Text>
+                  {analysis.missing.map((item, index) => (
+                    <Text key={index} style={styles.analysisItem}>• {item}</Text>
+                  ))}
+                </View>
+              )}
             </View>
-          </Animated.View>
+          )}
         </ScrollView>
-      </SafeAreaView>
+      </View>
       
       <Modal
         visible={showVitaminPicker}
         transparent
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => setShowVitaminPicker(false)}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Selecionar Vitamina</Text>
-              <View style={styles.searchInputContainer}>
-                <Search color={colors.textSecondary} size={18} />
-                <TextInput
-                  style={styles.searchInputField}
-                  placeholder="Pesquisar vitamina..."
-                  placeholderTextColor={colors.textSecondary}
-                  value={vitaminSearchQuery}
-                  onChangeText={setVitaminSearchQuery}
-                  autoFocus
-                />
-              </View>
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Pesquisar..."
+                placeholderTextColor={colors.textSecondary}
+                value={vitaminSearchQuery}
+                onChangeText={setVitaminSearchQuery}
+              />
             </View>
             
-            <ScrollView style={styles.vitaminList}>
+            <ScrollView style={styles.modalList}>
               {filteredVitamins.map((vitamin, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={styles.vitaminItem}
+                  style={styles.modalItem}
                   onPress={() => selectVitamin(vitamin)}
                 >
-                  <Text style={styles.vitaminItemName}>{vitamin.name}</Text>
-                  <Text style={styles.vitaminItemDosage}>Dosagem sugerida: {vitamin.defaultDosage}</Text>
+                  <Text style={styles.modalItemName}>{vitamin.name}</Text>
+                  <Text style={styles.modalItemDosage}>{vitamin.defaultDosage}</Text>
                 </TouchableOpacity>
               ))}
-              {filteredVitamins.length === 0 && (
-                <View style={styles.vitaminItem}>
-                  <Text style={styles.vitaminItemDosage}>Nenhuma vitamina encontrada</Text>
-                </View>
-              )}
             </ScrollView>
             
             <TouchableOpacity
@@ -2456,7 +808,7 @@ export default function SupplementsScreen() {
       <Modal
         visible={showDosagePicker}
         transparent
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => setShowDosagePicker(false)}
       >
         <View style={styles.modalOverlay}>
@@ -2465,17 +817,17 @@ export default function SupplementsScreen() {
               <Text style={styles.modalTitle}>Selecionar Dosagem</Text>
             </View>
             
-            <ScrollView style={styles.vitaminList}>
+            <ScrollView style={styles.modalList}>
               {COMMON_DOSAGES.map((dosage, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={styles.vitaminItem}
+                  style={styles.modalItem}
                   onPress={() => {
                     setNewVitaminDosage(dosage);
                     setShowDosagePicker(false);
                   }}
                 >
-                  <Text style={styles.vitaminItemName}>{dosage}</Text>
+                  <Text style={styles.modalItemName}>{dosage}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -2493,7 +845,7 @@ export default function SupplementsScreen() {
       <Modal
         visible={showTimePicker}
         transparent
-        animationType="fade"
+        animationType="slide"
         onRequestClose={() => setShowTimePicker(false)}
       >
         <View style={styles.modalOverlay}>
@@ -2502,17 +854,17 @@ export default function SupplementsScreen() {
               <Text style={styles.modalTitle}>Selecionar Horário</Text>
             </View>
             
-            <ScrollView style={styles.vitaminList}>
+            <ScrollView style={styles.modalList}>
               {COMMON_TIMES.map((time, index) => (
                 <TouchableOpacity
                   key={index}
-                  style={styles.vitaminItem}
+                  style={styles.modalItem}
                   onPress={() => {
                     setNewVitaminTime(time);
                     setShowTimePicker(false);
                   }}
                 >
-                  <Text style={styles.vitaminItemName}>{time}</Text>
+                  <Text style={styles.modalItemName}>{time}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -2529,4 +881,3 @@ export default function SupplementsScreen() {
     </View>
   );
 }
-
