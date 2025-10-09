@@ -805,6 +805,28 @@ export default function SupplementsScreen() {
       fontWeight: '600' as const,
       color: '#007AFF',
     },
+    infoCard: {
+      backgroundColor: isDark ? '#1C1C1E' : '#FFFFFF',
+      borderRadius: 12,
+      padding: 16,
+      marginTop: 12,
+    },
+    infoItem: {
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? '#2C2C2E' : '#F2F2F7',
+    },
+    infoItemName: {
+      fontSize: 16,
+      fontWeight: '600' as const,
+      color: colors.text,
+      marginBottom: 4,
+    },
+    infoItemBenefits: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      lineHeight: 20,
+    },
   }));
 
   return (
@@ -836,6 +858,30 @@ export default function SupplementsScreen() {
             <Text style={styles.title}>Suplementos</Text>
             <Text style={styles.subtitle}>Gerencie suas vitaminas</Text>
           </View>
+
+          {(myVitamins.length > 0 || meals.length > 0) && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Análise de Hoje</Text>
+              
+              {analysis.coverage.length > 0 && (
+                <View style={styles.analysisCard}>
+                  <Text style={styles.analysisTitle}>✅ Bem Coberto</Text>
+                  {analysis.coverage.map((item, index) => (
+                    <Text key={index} style={styles.analysisItem}>• {item}</Text>
+                  ))}
+                </View>
+              )}
+              
+              {analysis.missing.length > 0 && (
+                <View style={styles.analysisCard}>
+                  <Text style={styles.analysisTitle}>⚠️ Atenção</Text>
+                  {analysis.missing.map((item, index) => (
+                    <Text key={index} style={styles.analysisItem}>• {item}</Text>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
 
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -1004,29 +1050,29 @@ export default function SupplementsScreen() {
             ))}
           </View>
 
-          {(myVitamins.length > 0 || meals.length > 0) && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Análise de Hoje</Text>
-              
-              {analysis.coverage.length > 0 && (
-                <View style={styles.analysisCard}>
-                  <Text style={styles.analysisTitle}>✅ Bem Coberto</Text>
-                  {analysis.coverage.map((item, index) => (
-                    <Text key={index} style={styles.analysisItem}>• {item}</Text>
-                  ))}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Suplementos</Text>
+            <View style={styles.infoCard}>
+              {COMMON_VITAMINS.filter(v => v.category === 'supplement').map((supplement, index) => (
+                <View key={index} style={styles.infoItem}>
+                  <Text style={styles.infoItemName}>{supplement.name}</Text>
+                  <Text style={styles.infoItemBenefits}>{supplement.benefits}</Text>
                 </View>
-              )}
-              
-              {analysis.missing.length > 0 && (
-                <View style={styles.analysisCard}>
-                  <Text style={styles.analysisTitle}>⚠️ Atenção</Text>
-                  {analysis.missing.map((item, index) => (
-                    <Text key={index} style={styles.analysisItem}>• {item}</Text>
-                  ))}
-                </View>
-              )}
+              ))}
             </View>
-          )}
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Vitaminas & Minerais</Text>
+            <View style={styles.infoCard}>
+              {COMMON_VITAMINS.filter(v => v.category === 'vitamin' || v.category === 'mineral').map((vitamin, index) => (
+                <View key={index} style={styles.infoItem}>
+                  <Text style={styles.infoItemName}>{vitamin.name}</Text>
+                  <Text style={styles.infoItemBenefits}>{vitamin.benefits}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
         </ScrollView>
       </View>
       
