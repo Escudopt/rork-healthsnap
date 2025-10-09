@@ -688,9 +688,21 @@ export default function SupplementsScreen() {
     try {
       const stored = await AsyncStorage.getItem(MY_VITAMINS_STORAGE_KEY);
       if (stored) {
-        const vitamins = JSON.parse(stored) as MyVitamin[];
-        setMyVitamins(vitamins);
-        console.log('💊 Loaded my vitamins:', vitamins.length);
+        try {
+          const vitamins = JSON.parse(stored) as MyVitamin[];
+          if (Array.isArray(vitamins)) {
+            setMyVitamins(vitamins);
+            console.log('💊 Loaded my vitamins:', vitamins.length);
+          } else {
+            console.error('❌ Invalid vitamins data format, clearing storage');
+            await AsyncStorage.removeItem(MY_VITAMINS_STORAGE_KEY);
+            setMyVitamins([]);
+          }
+        } catch (parseError) {
+          console.error('❌ JSON Parse error for vitamins, clearing corrupted data:', parseError);
+          await AsyncStorage.removeItem(MY_VITAMINS_STORAGE_KEY);
+          setMyVitamins([]);
+        }
       }
     } catch (error) {
       console.error('❌ Error loading my vitamins:', error);
