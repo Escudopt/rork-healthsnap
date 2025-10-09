@@ -204,7 +204,7 @@ export const [CalorieTrackerProvider, useCalorieTracker] = createContextHook<Cal
         recommendations.push('Priorize proteínas magras e vegetais para manter a saciedade com menos calorias.');
       } else if (profile.goal === 'gain') {
         recommendations.push(`Consuma ${recommendedCalories} kcal/dia com superávit de 300 kcal para ganhar massa muscular.`);
-        recommendations.push('Combine treino de força com alimentação rica em proteínas (${Math.round(profile.weight * 1.6)}g/dia).');
+        recommendations.push(`Combine treino de força com alimentação rica em proteínas (${Math.round(profile.weight * 1.6)}g/dia).`);
       } else {
         recommendations.push(`Mantenha ${recommendedCalories} kcal/dia para manter seu peso atual de ${profile.weight}kg.`);
         recommendations.push('Foque em alimentos nutritivos e mantenha uma rotina de exercícios regular.');
