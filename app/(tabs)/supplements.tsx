@@ -1863,7 +1863,13 @@ export default function SupplementsScreen() {
                   Baseado no seu perfil e análise nutricional
                 </Text>
                 
-                {personalizedRecommendations.slice(0, 3).map((supplement, index) => (
+                {personalizedRecommendations.slice(0, 3).map((supplement, index) => {
+                  const isAlreadyTaking = myVitamins.some(v => 
+                    v.name.toLowerCase().includes(supplement.name.toLowerCase().split(' ')[0]) ||
+                    supplement.name.toLowerCase().includes(v.name.toLowerCase().split(' ')[0])
+                  );
+                  
+                  return (
                   <Animated.View
                     key={supplement.id}
                     style={[
@@ -1889,7 +1895,7 @@ export default function SupplementsScreen() {
                         style={styles.supplementGradient}
                       />
                       
-                      {supplement.priority && (
+                      {supplement.priority && !isAlreadyTaking && (
                         <View style={[
                           styles.priorityBadge,
                           {
@@ -1898,6 +1904,19 @@ export default function SupplementsScreen() {
                         ]}>
                           <Text style={styles.priorityText}>
                             {supplement.priority === 'high' ? 'PRIORIDADE' : 'RECOMENDADO'}
+                          </Text>
+                        </View>
+                      )}
+                      
+                      {isAlreadyTaking && (
+                        <View style={[
+                          styles.priorityBadge,
+                          {
+                            backgroundColor: '#4CAF50'
+                          }
+                        ]}>
+                          <Text style={styles.priorityText}>
+                            JÁ A TOMAR
                           </Text>
                         </View>
                       )}
@@ -1936,7 +1955,8 @@ export default function SupplementsScreen() {
                       </View>
                     </BlurCard>
                   </Animated.View>
-                ))}
+                  );
+                })}
               </View>
             )}
             
