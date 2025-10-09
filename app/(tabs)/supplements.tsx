@@ -938,12 +938,31 @@ export default function SupplementsScreen() {
       const vitaminCValue = Math.round(nutritionalAnalysis.vitaminC);
       const vitaminDValue = Math.round(nutritionalAnalysis.vitaminD);
       
-      const prompt = `Analyze user supplementation and diet. Current supplements: ${vitaminList}. Daily average last 7 days - Protein: ${proteinValue}g, Carbs: ${carbsValue}g, Fat: ${fatValue}g, Fiber: ${fiberValue}g, Calcium: ${calciumValue}mg, Iron: ${ironValue}mg, Vitamin C: ${vitaminCValue}mg, Vitamin D: ${vitaminDValue}IU. Provide analysis with 3 fields in Portuguese: coverage (well covered needs, 2-3 items), missing (detected deficiencies, 2-3 items), suggestions (practical suggestions, 2-3 items). Keep responses concise and in Portuguese.`;
-      
       console.log('🤖 Sending analysis request...');
       
       const { generateObject } = await import('@rork/toolkit-sdk');
       const { z } = await import('zod');
+      
+      const prompt = `Analyze user supplementation and diet.
+
+Current supplements: ${vitaminList}
+
+Daily average (last 7 days):
+- Protein: ${proteinValue}g
+- Carbs: ${carbsValue}g
+- Fat: ${fatValue}g
+- Fiber: ${fiberValue}g
+- Calcium: ${calciumValue}mg
+- Iron: ${ironValue}mg
+- Vitamin C: ${vitaminCValue}mg
+- Vitamin D: ${vitaminDValue}IU
+
+Provide analysis in Portuguese with:
+1. coverage: 2-3 well covered nutritional needs
+2. missing: 2-3 detected deficiencies
+3. suggestions: 2-3 practical suggestions
+
+Keep responses concise and in Portuguese.`;
       
       const analysis = await generateObject({
         messages: [{ role: 'user', content: prompt }],
