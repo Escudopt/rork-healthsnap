@@ -892,6 +892,17 @@ export default function SupplementsScreen() {
         }
       });
       
+      if (recentMeals.length === 0) {
+        console.log('⚠️ No recent meals to analyze');
+        setAiAnalysis({
+          coverage: [],
+          missing: [],
+          suggestions: ['Adicione refeições para receber análise personalizada'],
+          isAnalyzing: false
+        });
+        return;
+      }
+      
       const nutritionalAnalysis = recentMeals.reduce((acc, meal) => {
         meal.foods?.forEach((food: any) => {
           acc.protein += food.protein || 0;
@@ -914,31 +925,30 @@ export default function SupplementsScreen() {
         nutritionalAnalysis[key as keyof typeof nutritionalAnalysis] /= daysAnalyzed;
       });
       
-      const vitaminList = myVitamins.map(v => `${v.name} (${v.dosage})`).join(', ');
+      const vitaminList = myVitamins.length > 0 
+        ? myVitamins.map(v => `${v.name} (${v.dosage})`).join(', ')
+        : 'Nenhum suplemento registrado';
       
-      const prompt = `Você é um nutricionista especializado. Analise a suplementação atual e a alimentação do usuário.
+      const prompt = `Analise a suplementação e alimentação do usuário.
 
-Vitaminas/Suplementos que o usuário está tomando:
-${vitaminList}
+Suplementos atuais: ${vitaminList}
 
-Análise nutricional média diária (últimos 7 dias):
-- Proteína: ${Math.round(nutritionalAnalysis.protein)}g
-- Carboidratos: ${Math.round(nutritionalAnalysis.carbs)}g
-- Gordura: ${Math.round(nutritionalAnalysis.fat)}g
-- Fibra: ${Math.round(nutritionalAnalysis.fiber)}g
-- Cálcio: ${Math.round(nutritionalAnalysis.calcium)}mg
-- Ferro: ${Math.round(nutritionalAnalysis.iron)}mg
-- Vitamina C: ${Math.round(nutritionalAnalysis.vitaminC)}mg
-- Vitamina D: ${Math.round(nutritionalAnalysis.vitaminD)}UI
+Média diária (7 dias):
+Proteína: ${Math.round(nutritionalAnalysis.protein)}g
+Carboidratos: ${Math.round(nutritionalAnalysis.carbs)}g
+Gordura: ${Math.round(nutritionalAnalysis.fat)}g
+Fibra: ${Math.round(nutritionalAnalysis.fiber)}g
+Cálcio: ${Math.round(nutritionalAnalysis.calcium)}mg
+Ferro: ${Math.round(nutritionalAnalysis.iron)}mg
+Vitamina C: ${Math.round(nutritionalAnalysis.vitaminC)}mg
+Vitamina D: ${Math.round(nutritionalAnalysis.vitaminD)}UI
 
-Por favor, forneça uma análise em formato JSON com:
-1. "coverage": array de strings com as necessidades nutricionais que JÁ estão bem cobertas (pela alimentação OU suplementos)
-2. "missing": array de strings com as deficiências nutricionais detectadas que NÃO estão sendo supridas
-3. "suggestions": array de strings com sugestões específicas de suplementos ou ajustes na alimentação
-
-Seja específico e prático. Limite a 3-4 itens em cada categoria.
-
-Resposta em JSON puro (sem markdown):`;
+Forneça análise com:
+1. coverage: necessidades bem cobertas (2-3 itens)
+2. missing: deficiências detectadas (2-3 itens)
+3. suggestions: sugestões práticas (2-3 itens)`;
+      
+      console.log('🤖 Sending analysis request...');
       
       const { generateObject } = await import('@rork/toolkit-sdk');
       const { z } = await import('zod');
@@ -946,26 +956,26 @@ Resposta em JSON puro (sem markdown):`;
       const analysis = await generateObject({
         messages: [{ role: 'user', content: prompt }],
         schema: z.object({
-          coverage: z.array(z.string()).describe('Necessidades nutricionais bem cobertas'),
-          missing: z.array(z.string()).describe('Deficiências nutricionais detectadas'),
-          suggestions: z.array(z.string()).describe('Sugestões de suplementos ou ajustes')
+          coverage: z.array(z.string()).describe('Necessidades bem cobertas'),
+          missing: z.array(z.string()).describe('Deficiências detectadas'),
+          suggestions: z.array(z.string()).describe('Sugestões práticas')
         })
-      }).catch((error) => {
-        console.error('❌ generateObject error:', error);
-        return { coverage: [], missing: [], suggestions: [] };
       });
       
-      console.log('🤖 AI Analysis:', analysis);
+      console.log('✅ AI Analysis received:', analysis);
       
       setAiAnalysis({
-        coverage: analysis.coverage || [],
-        missing: analysis.missing || [],
-        suggestions: analysis.suggestions || [],
+        coverage: Array.isArray(analysis.coverage) ? analysis.coverage.slice(0, 4) : [],
+        missing: Array.isArray(analysis.missing) ? analysis.missing.slice(0, 4) : [],
+        suggestions: Array.isArray(analysis.suggestions) ? analysis.suggestions.slice(0, 4) : [],
         isAnalyzing: false
       });
       
     } catch (error) {
       console.error('❌ Error analyzing vitamin coverage:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.error('Error details:', errorMessage);
+      
       setAiAnalysis({
         coverage: [],
         missing: [],
