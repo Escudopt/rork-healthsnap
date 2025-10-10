@@ -125,9 +125,6 @@ IMPORTANTE:
 - Inclua aquecimento e alongamento
 - Retorne APENAS o JSON, sem texto adicional`;
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
-      
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
         headers: {
@@ -140,11 +137,8 @@ IMPORTANTE:
               content: prompt
             }
           ]
-        }),
-        signal: controller.signal
+        })
       });
-      
-      clearTimeout(timeoutId);
       
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
@@ -170,15 +164,9 @@ IMPORTANTE:
         throw new Error('Formato de resposta inválido');
       }
 
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error generating workout recommendations:', err);
-      if (err.name === 'AbortError') {
-        setError('Tempo de resposta excedido. Por favor, tente novamente.');
-      } else if (err.message?.includes('504') || err.message?.includes('503')) {
-        setError('Serviço temporariamente indisponível. Tente novamente em alguns instantes.');
-      } else {
-        setError('Não foi possível gerar recomendações. Verifique sua conexão.');
-      }
+      setError('Não foi possível gerar recomendações. Tente novamente.');
       
       setRecommendations([
         {
@@ -298,12 +286,9 @@ IMPORTANTE:
 
   useEffect(() => {
     if (userMetrics && recommendations.length === 0) {
-      const timer = setTimeout(() => {
-        generateWorkoutRecommendations();
-      }, 500);
-      return () => clearTimeout(timer);
+      generateWorkoutRecommendations();
     }
-  }, []);
+  }, [userMetrics]);
 
   const getIntensityColor = (intensity: string) => {
     switch (intensity) {

@@ -131,44 +131,59 @@ export default function NutritionTipsScreen() {
 
   // Generate personalized nutrition tips based on user profile and recent meals
   const generatePersonalizedTips = React.useCallback(async () => {
-    if (!userProfile || !healthMetrics) return;
-    if (isLoadingTips) return;
+    if (!userProfile || !healthMetrics || isLoadingTips) return;
     
     setIsLoadingTips(true);
-    console.log('🧠 Starting to generate personalized nutrition tips...');
     
     try {
-      const recentMeals = meals.slice(0, 10);
+      // Get recent meals for dietary analysis
+      const recentMeals = meals.slice(0, 10); // Last 10 meals
       const mealAnalysis = recentMeals.map((meal: any) => ({
         name: meal.name,
         calories: meal.totalCalories,
         foods: meal.foods.map((f: any) => f.name).join(', ')
       }));
       
-      const aiPrompt = `Crie 8-10 dicas de nutrição inteligentes e personalizadas em português para:
+      const aiPrompt = `
+Crie 8-10 dicas de nutrição inteligentes e personalizadas em português para:
 
-🧑‍⚕️ PERFIL:
+🧑‍⚕️ PERFIL DO USUÁRIO:
 - Nome: ${userProfile.name}
-- Idade: ${userProfile.age} anos
+- Idade: ${userProfile.age} anos (${userProfile.age < 25 ? 'Jovem adulto' : userProfile.age < 40 ? 'Adulto' : userProfile.age < 60 ? 'Meia-idade' : 'Idoso'})
 - Peso: ${userProfile.weight} kg
 - Altura: ${userProfile.height} cm
 - Sexo: ${userProfile.gender === 'male' ? 'Masculino' : 'Feminino'}
-- Atividade: ${userProfile.activityLevel}
+- Nível de atividade: ${userProfile.activityLevel}
 - Objetivo: ${userProfile.goal === 'lose' ? 'Perder peso' : userProfile.goal === 'gain' ? 'Ganhar peso' : 'Manter peso'}
 
-📊 MÉTRICAS:
+📊 MÉTRICAS DE SAÚDE:
 - IMC: ${healthMetrics.bmi} (${healthMetrics.bmiCategory})
 - TMB: ${healthMetrics.bmr} kcal/dia
-- Meta: ${healthMetrics.recommendedCalories} kcal/dia
+- TDEE: ${healthMetrics.tdee} kcal/dia
+- Meta calórica: ${healthMetrics.recommendedCalories} kcal/dia
 
-🍽️ REFEIÇÕES RECENTES:
-${mealAnalysis.length > 0 ? mealAnalysis.map((meal: any, i: number) => `${i+1}. ${meal.name} (${meal.calories} kcal): ${meal.foods}`).join('\n') : 'Nenhuma refeição registrada'}
+🍽️ ANÁLISE ALIMENTAR RECENTE:
+${mealAnalysis.length > 0 ? mealAnalysis.map((meal: any, i: number) => `${i+1}. ${meal.name} (${meal.calories} kcal): ${meal.foods}`).join('\n') : 'Nenhuma refeição registrada recentemente'}
 
-Crie dicas específicas para idade, objetivo e padrão alimentar. Use emojis. Máximo 2 frases por dica. Uma dica por linha.`;
-      
-      console.log('📡 Sending request to AI API...');
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 60000);
+🎯 FOQUE EM DICAS ESPECÍFICAS PARA:
+1. Necessidades nutricionais específicas da idade (${userProfile.age} anos)
+2. Alimentos que complementem o padrão alimentar atual
+3. Timing ideal de refeições para o objetivo
+4. Micronutrientes essenciais para a faixa etária
+5. Estratégias para otimizar o metabolismo
+6. Hidratação personalizada
+7. Suplementação inteligente se necessário
+8. Prevenção de deficiências nutricionais
+
+✅ CRITÉRIOS PARA CADA DICA:
+- Específica para idade e perfil
+- Baseada no padrão alimentar atual
+- Prática e aplicável no dia a dia
+- Focada em resultados mensuráveis
+- Máximo 2 frases por dica
+- Use emojis para categorizar
+
+Formato: Uma dica por linha, começando com emoji relevante.`;
       
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
@@ -182,54 +197,35 @@ Crie dicas específicas para idade, objetivo e padrão alimentar. Use emojis. M�
               content: aiPrompt
             }
           ]
-        }),
-        signal: controller.signal
+        })
       });
-      
-      clearTimeout(timeoutId);
-      
-      console.log('📡 Response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('📦 Received data:', data);
-        
         const tips = data.completion
           .split('\n')
-          .filter((tip: string) => tip.trim().length > 10)
-          .map((tip: string) => tip.trim().replace(/^\d+\.\s*/, '').replace(/^-\s*/, ''))
+          .filter((tip: string) => tip.trim().length > 0)
+          .map((tip: string) => tip.trim().replace(/^\d+\.\s*/, ''))
           .slice(0, 10);
         
-        console.log('✅ Generated tips:', tips);
         setPersonalizedTips(tips);
+        console.log('✅ Generated intelligent nutrition tips:', tips.length);
       } else {
-        const errorText = await response.text();
-        console.error('❌ API Error:', response.status, errorText);
-        setPersonalizedTips(['❌ Erro ao gerar dicas. Tente novamente.']);
+        console.error('❌ Failed to generate personalized tips');
       }
-    } catch (error: any) {
-      console.error('❌ Error generating tips:', error);
-      if (error.name === 'AbortError') {
-        setPersonalizedTips(['⏱️ Tempo de resposta excedido. Por favor, tente novamente.']);
-      } else if (error.message?.includes('504') || error.message?.includes('503')) {
-        setPersonalizedTips(['🔄 Serviço temporariamente indisponível. Tente novamente em alguns instantes.']);
-      } else {
-        setPersonalizedTips(['❌ Erro de conexão. Verifique sua internet e tente novamente.']);
-      }
+    } catch (error) {
+      console.error('❌ Error generating personalized tips:', error);
     } finally {
       setIsLoadingTips(false);
     }
   }, [userProfile, healthMetrics, meals, isLoadingTips]);
 
+  // Generate tips when profile is available
   useEffect(() => {
-    if (userProfile && healthMetrics && personalizedTips.length === 0 && !isLoadingTips) {
-      console.log('🎯 Auto-generating tips on mount...');
-      const timer = setTimeout(() => {
-        generatePersonalizedTips();
-      }, 500);
-      return () => clearTimeout(timer);
+    if (userProfile && healthMetrics && personalizedTips.length === 0) {
+      generatePersonalizedTips();
     }
-  }, []);
+  }, [userProfile, healthMetrics, personalizedTips.length, generatePersonalizedTips]);
 
   const filteredTips = selectedCategory === 'all' 
     ? nutritionTips 

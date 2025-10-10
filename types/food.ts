@@ -77,20 +77,3 @@ export interface HealthyFood {
   preparationTips: string[];
   contraindications?: string[];
 }
-
-export interface SupplementIntake {
-  id: string;
-  name: string;
-  amount: number;
-  unit: 'g' | 'mg' | 'mcg' | 'UI' | 'cápsulas';
-  category: 'supplement' | 'vitamin';
-  timestamp: string;
-  date: string;
-}
-
-export interface DailySupplementTarget {
-  name: string;
-  target: number;
-  unit: string;
-  category: 'supplement' | 'vitamin';
-}
