@@ -770,10 +770,6 @@ export default function HomeScreen() {
                         </Text>
                         <View style={styles.userStatsRow}>
                           <Text style={[styles.userName, { color: colors.textSecondary }]}>
-                            {userProfile.age} anos
-                          </Text>
-                          <View style={[styles.statDivider, { backgroundColor: colors.textSecondary }]} />
-                          <Text style={[styles.userName, { color: colors.textSecondary }]}>
                             {userProfile.height}cm
                           </Text>
                           <View style={[styles.statDivider, { backgroundColor: colors.textSecondary }]} />
