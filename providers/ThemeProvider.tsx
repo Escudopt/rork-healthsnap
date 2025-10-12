@@ -50,87 +50,87 @@ export interface ThemeColors {
 }
 
 const lightTheme: ThemeColors = {
-  // Background colors - Soft, clean whites
-  background: '#FAFBFF',
-  backgroundSecondary: '#F5F7FA',
+  // Background colors - Pure white
+  background: '#FFFFFF',
+  backgroundSecondary: '#FAFAFA',
   backgroundTertiary: '#FFFFFF',
   
-  // Surface colors - Elevated with subtle depth
+  // Surface colors - Clean white surfaces
   surface: '#FFFFFF',
-  surfaceSecondary: 'rgba(0, 122, 255, 0.06)',
+  surfaceSecondary: '#F5F5F5',
   surfaceElevated: '#FFFFFF',
   
-  // Text colors - High contrast, readable
-  text: '#1A1A1C',
-  textSecondary: 'rgba(60, 60, 67, 0.65)',
-  textTertiary: 'rgba(60, 60, 67, 0.4)',
+  // Text colors - Pure black hierarchy
+  text: '#000000',
+  textSecondary: '#666666',
+  textTertiary: '#999999',
   
-  // Border colors - Subtle separation
-  border: 'rgba(0, 0, 0, 0.08)',
-  borderSecondary: 'rgba(0, 0, 0, 0.04)',
+  // Border colors - Subtle gray lines
+  border: '#E0E0E0',
+  borderSecondary: '#F0F0F0',
   
-  // Accent colors - Vibrant iOS blue
-  primary: '#007AFF',
-  primaryLight: '#5AC8FA',
-  primaryDark: '#0051D5',
+  // Accent colors - Black accents
+  primary: '#000000',
+  primaryLight: '#333333',
+  primaryDark: '#000000',
   
-  // Status colors - iOS standard
-  success: '#34C759',
-  warning: '#FF9500',
-  error: '#FF3B30',
+  // Status colors - Monochrome
+  success: '#000000',
+  warning: '#666666',
+  error: '#000000',
   
-  // Glass/blur effects - Premium frosted glass
-  glassBackground: 'rgba(255, 255, 255, 0.85)',
-  glassBorder: 'rgba(0, 0, 0, 0.06)',
-  glassOverlay: 'rgba(255, 255, 255, 0.6)',
+  // Glass/blur effects - Clean white glass
+  glassBackground: 'rgba(255, 255, 255, 0.95)',
+  glassBorder: 'rgba(0, 0, 0, 0.08)',
+  glassOverlay: 'rgba(255, 255, 255, 0.8)',
   
-  // Tab bar - Clean and modern
-  tabBarBackground: 'rgba(255, 255, 255, 0.92)',
-  tabBarBorder: 'rgba(0, 0, 0, 0.06)',
-  tabBarActive: '#007AFF',
-  tabBarInactive: 'rgba(60, 60, 67, 0.6)',
+  // Tab bar - Minimal white
+  tabBarBackground: 'rgba(255, 255, 255, 0.98)',
+  tabBarBorder: 'rgba(0, 0, 0, 0.08)',
+  tabBarActive: '#000000',
+  tabBarInactive: '#999999',
 };
 
 const darkTheme: ThemeColors = {
-  // Background colors - Rich, deep blacks with subtle blue tint
-  background: '#0A0B0D',
-  backgroundSecondary: '#12141A',
-  backgroundTertiary: '#1A1D26',
+  // Background colors - Pure black
+  background: '#000000',
+  backgroundSecondary: '#0A0A0A',
+  backgroundTertiary: '#000000',
   
-  // Surface colors - Elevated with depth
-  surface: '#161821',
-  surfaceSecondary: '#1E2230',
-  surfaceElevated: '#1C1F2E',
+  // Surface colors - Dark surfaces
+  surface: '#000000',
+  surfaceSecondary: '#1A1A1A',
+  surfaceElevated: '#0A0A0A',
   
-  // Text colors - Crystal clear whites
+  // Text colors - Pure white hierarchy
   text: '#FFFFFF',
-  textSecondary: '#A8B0C0',
-  textTertiary: '#6B7280',
+  textSecondary: '#999999',
+  textTertiary: '#666666',
   
-  // Border colors - Subtle glowing edges
-  border: 'rgba(255, 255, 255, 0.08)',
-  borderSecondary: 'rgba(255, 255, 255, 0.04)',
+  // Border colors - Subtle white lines
+  border: '#1F1F1F',
+  borderSecondary: '#0F0F0F',
   
-  // Accent colors - Electric blue with glow
-  primary: '#3B82F6',
-  primaryLight: '#60A5FA',
-  primaryDark: '#2563EB',
+  // Accent colors - White accents
+  primary: '#FFFFFF',
+  primaryLight: '#CCCCCC',
+  primaryDark: '#FFFFFF',
   
-  // Status colors - Vibrant and clear
-  success: '#10B981',
-  warning: '#F59E0B',
-  error: '#EF4444',
+  // Status colors - Monochrome
+  success: '#FFFFFF',
+  warning: '#999999',
+  error: '#FFFFFF',
   
-  // Glass/blur effects - Premium frosted dark glass
-  glassBackground: 'rgba(22, 24, 33, 0.88)',
-  glassBorder: 'rgba(59, 130, 246, 0.12)',
-  glassOverlay: 'rgba(255, 255, 255, 0.03)',
+  // Glass/blur effects - Clean black glass
+  glassBackground: 'rgba(0, 0, 0, 0.95)',
+  glassBorder: 'rgba(255, 255, 255, 0.08)',
+  glassOverlay: 'rgba(0, 0, 0, 0.8)',
   
-  // Tab bar - Sleek and modern
-  tabBarBackground: 'rgba(22, 24, 33, 0.95)',
-  tabBarBorder: 'rgba(59, 130, 246, 0.15)',
-  tabBarActive: '#3B82F6',
-  tabBarInactive: '#6B7280',
+  // Tab bar - Minimal black
+  tabBarBackground: 'rgba(0, 0, 0, 0.98)',
+  tabBarBorder: 'rgba(255, 255, 255, 0.08)',
+  tabBarActive: '#FFFFFF',
+  tabBarInactive: '#666666',
 };
 
 interface ThemeContextType {
