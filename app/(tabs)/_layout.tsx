@@ -26,6 +26,10 @@ export default function TabLayout() {
           borderTopWidth: 0,
           elevation: 0,
           paddingBottom: Platform.OS === 'ios' ? insets.bottom : 0,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -1 },
+          shadowOpacity: isDark ? 0.2 : 0.05,
+          shadowRadius: 8,
         },
         tabBarActiveTintColor: colors.tabBarActive,
         tabBarInactiveTintColor: colors.tabBarInactive,
@@ -55,8 +59,8 @@ export default function TabLayout() {
               top: 0,
               left: 0,
               right: 0,
-              height: 0.5,
-              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+              height: 0.33,
+              backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
             },
           });
           
@@ -66,8 +70,8 @@ export default function TabLayout() {
                 StyleSheet.absoluteFillObject,
                 {
                   backgroundColor: isDark 
-                    ? 'rgba(28, 28, 30, 0.95)' 
-                    : 'rgba(248, 248, 248, 0.95)',
+                    ? 'rgba(0, 0, 0, 0.98)' 
+                    : 'rgba(255, 255, 255, 0.98)',
                   backdropFilter: 'blur(20px)',
                   WebkitBackdropFilter: 'blur(20px)',
                 }
@@ -77,7 +81,7 @@ export default function TabLayout() {
           ) : (
             <BlurView
               intensity={100}
-              tint={isDark ? "systemMaterialDark" : "systemMaterialLight"}
+              tint={isDark ? "dark" : "light"}
               style={[StyleSheet.absoluteFillObject, styles.tabBarContainer]}
             >
               <View style={styles.tabBarBorder} />

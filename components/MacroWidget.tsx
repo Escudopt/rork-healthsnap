@@ -24,24 +24,24 @@ const macroConfig = {
   protein: {
     name: 'Proteína',
     icon: Beef,
-    color: '#FF6B6B',
-    gradientColors: ['#FF6B6B', '#FF8E8E'],
+    color: '#000000',
+    gradientColors: ['#000000', '#333333'],
     unit: 'g',
     defaultGoal: 120,
   },
   carbs: {
     name: 'Carboidratos',
     icon: Wheat,
-    color: '#4ECDC4',
-    gradientColors: ['#4ECDC4', '#6FE6DD'],
+    color: '#000000',
+    gradientColors: ['#000000', '#333333'],
     unit: 'g',
     defaultGoal: 200,
   },
   fat: {
     name: 'Gorduras',
     icon: Droplets,
-    color: '#FFE66D',
-    gradientColors: ['#FFE66D', '#FFF08A'],
+    color: '#000000',
+    gradientColors: ['#000000', '#333333'],
     unit: 'g',
     defaultGoal: 70,
   },
@@ -68,22 +68,14 @@ export function MacroWidget({ foods, type, goal, onPress }: MacroWidgetProps) {
       style={styles.container}
     >
       <BlurCard style={[styles.card, { backgroundColor: colors.surfaceElevated }]}>
-        <LinearGradient
-          colors={isDark ? 
-            [`${config.color}15`, `${config.color}08`] : 
-            [`${config.color}10`, `${config.color}05`]
-          }
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradientOverlay}
-        >
+        <View style={styles.gradientOverlay}>
           {/* Header */}
           <View style={styles.header}>
-            <View style={[styles.iconContainer, { backgroundColor: config.color + '20' }]}>
+            <View style={[styles.iconContainer, { backgroundColor: colors.surfaceSecondary }]}>
               <IconComponent 
-                color={config.color} 
+                color={colors.text} 
                 size={16} 
-                strokeWidth={2.5} 
+                strokeWidth={2} 
               />
             </View>
             <Text style={[styles.title, { color: colors.textSecondary }]}>
@@ -109,7 +101,7 @@ export function MacroWidget({ foods, type, goal, onPress }: MacroWidgetProps) {
                   styles.progressFill,
                   {
                     width: `${percentage}%`,
-                    backgroundColor: isOverGoal ? '#FF6B6B' : config.color,
+                    backgroundColor: colors.text,
                   }
                 ]} 
               />
@@ -122,8 +114,8 @@ export function MacroWidget({ foods, type, goal, onPress }: MacroWidgetProps) {
           {/* Status Indicator */}
           {isOverGoal && (
             <View style={styles.statusContainer}>
-              <TrendingUp color="#FF6B6B" size={12} strokeWidth={2} />
-              <Text style={[styles.statusText, { color: '#FF6B6B' }]}>
+              <TrendingUp color={colors.text} size={12} strokeWidth={2} />
+              <Text style={[styles.statusText, { color: colors.text }]}>
                 Meta excedida
               </Text>
             </View>
@@ -131,13 +123,13 @@ export function MacroWidget({ foods, type, goal, onPress }: MacroWidgetProps) {
           
           {currentValue >= targetGoal * 0.8 && !isOverGoal && (
             <View style={styles.statusContainer}>
-              <TrendingUp color={config.color} size={12} strokeWidth={2} />
-              <Text style={[styles.statusText, { color: config.color }]}>
+              <TrendingUp color={colors.text} size={12} strokeWidth={2} />
+              <Text style={[styles.statusText, { color: colors.text }]}>
                 Quase lá!
               </Text>
             </View>
           )}
-        </LinearGradient>
+        </View>
       </BlurCard>
     </TouchableOpacity>
   );

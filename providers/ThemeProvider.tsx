@@ -57,7 +57,7 @@ const lightTheme: ThemeColors = {
   
   // Surface colors - Clean white surfaces
   surface: '#FFFFFF',
-  surfaceSecondary: '#F5F5F5',
+  surfaceSecondary: '#F8F8F8',
   surfaceElevated: '#FFFFFF',
   
   // Text colors - Pure black hierarchy
@@ -66,7 +66,7 @@ const lightTheme: ThemeColors = {
   textTertiary: '#999999',
   
   // Border colors - Subtle gray lines
-  border: '#E0E0E0',
+  border: '#E5E5E5',
   borderSecondary: '#F0F0F0',
   
   // Accent colors - Black accents
@@ -81,12 +81,12 @@ const lightTheme: ThemeColors = {
   
   // Glass/blur effects - Clean white glass
   glassBackground: 'rgba(255, 255, 255, 0.95)',
-  glassBorder: 'rgba(0, 0, 0, 0.08)',
+  glassBorder: 'rgba(0, 0, 0, 0.06)',
   glassOverlay: 'rgba(255, 255, 255, 0.8)',
   
   // Tab bar - Minimal white
   tabBarBackground: 'rgba(255, 255, 255, 0.98)',
-  tabBarBorder: 'rgba(0, 0, 0, 0.08)',
+  tabBarBorder: 'rgba(0, 0, 0, 0.06)',
   tabBarActive: '#000000',
   tabBarInactive: '#999999',
 };
@@ -99,8 +99,8 @@ const darkTheme: ThemeColors = {
   
   // Surface colors - Dark surfaces
   surface: '#000000',
-  surfaceSecondary: '#1A1A1A',
-  surfaceElevated: '#0A0A0A',
+  surfaceSecondary: '#1C1C1C',
+  surfaceElevated: '#0F0F0F',
   
   // Text colors - Pure white hierarchy
   text: '#FFFFFF',
@@ -108,8 +108,8 @@ const darkTheme: ThemeColors = {
   textTertiary: '#666666',
   
   // Border colors - Subtle white lines
-  border: '#1F1F1F',
-  borderSecondary: '#0F0F0F',
+  border: '#2A2A2A',
+  borderSecondary: '#1A1A1A',
   
   // Accent colors - White accents
   primary: '#FFFFFF',
@@ -123,12 +123,12 @@ const darkTheme: ThemeColors = {
   
   // Glass/blur effects - Clean black glass
   glassBackground: 'rgba(0, 0, 0, 0.95)',
-  glassBorder: 'rgba(255, 255, 255, 0.08)',
+  glassBorder: 'rgba(255, 255, 255, 0.06)',
   glassOverlay: 'rgba(0, 0, 0, 0.8)',
   
   // Tab bar - Minimal black
   tabBarBackground: 'rgba(0, 0, 0, 0.98)',
-  tabBarBorder: 'rgba(255, 255, 255, 0.08)',
+  tabBarBorder: 'rgba(255, 255, 255, 0.06)',
   tabBarActive: '#FFFFFF',
   tabBarInactive: '#666666',
 };

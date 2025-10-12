@@ -185,21 +185,17 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                   activeOpacity={0.7}
                   disabled={isAnalyzing}
                 >
-                  <LinearGradient
-                    colors={[
-                      isDark ? '#1E88E5' : '#2196F3',
-                      isDark ? '#1565C0' : '#1976D2'
-                    ]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                    style={styles.flatButtonGradient}
+                  <View
+                    style={[styles.flatButtonGradient, {
+                      backgroundColor: isDark ? '#FFFFFF' : '#000000',
+                    }]}
                   >
                     {isAnalyzing ? (
-                      <ActivityIndicator color="#FFFFFF" size="small" />
+                      <ActivityIndicator color={isDark ? '#000000' : '#FFFFFF'} size="small" />
                     ) : (
-                      <Camera color="#FFFFFF" size={24} strokeWidth={2.5} />
+                      <Camera color={isDark ? '#000000' : '#FFFFFF'} size={24} strokeWidth={2.5} />
                     )}
-                  </LinearGradient>
+                  </View>
                 </TouchableOpacity>
               </Animated.View>
               
@@ -232,17 +228,13 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                   activeOpacity={0.7}
                   disabled={isAnalyzing}
                 >
-                  <LinearGradient
-                    colors={[
-                      isDark ? '#7E57C2' : '#9C27B0',
-                      isDark ? '#5E35B1' : '#7B1FA2'
-                    ]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                    style={styles.flatButtonGradient}
+                  <View
+                    style={[styles.flatButtonGradient, {
+                      backgroundColor: isDark ? '#FFFFFF' : '#000000',
+                    }]}
                   >
-                    <Edit3 color="#FFFFFF" size={24} strokeWidth={2.5} />
-                  </LinearGradient>
+                    <Edit3 color={isDark ? '#000000' : '#FFFFFF'} size={24} strokeWidth={2.5} />
+                  </View>
                 </TouchableOpacity>
               </Animated.View>
               
@@ -288,17 +280,13 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                       }),
                     }
                   ]} />
-                  <LinearGradient
-                    colors={[
-                      isDark ? '#66BB6A' : '#4CAF50',
-                      isDark ? '#43A047' : '#388E3C'
-                    ]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                    style={styles.flatButtonGradient}
+                  <View
+                    style={[styles.flatButtonGradient, {
+                      backgroundColor: isDark ? '#FFFFFF' : '#000000',
+                    }]}
                   >
-                    <Pill color="#FFFFFF" size={24} strokeWidth={2.5} />
-                  </LinearGradient>
+                    <Pill color={isDark ? '#000000' : '#FFFFFF'} size={24} strokeWidth={2.5} />
+                  </View>
                 </TouchableOpacity>
               </Animated.View>
             </View>
@@ -323,14 +311,14 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   card: {
-    borderRadius: 24,
+    borderRadius: 20,
     padding: 20,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 3,
     overflow: 'hidden' as const,
   },
   content: {
@@ -373,13 +361,13 @@ const styles = StyleSheet.create({
   flatButton: {
     width: 56,
     height: 56,
-    borderRadius: 18,
+    borderRadius: 16,
     overflow: 'hidden' as const,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
     position: 'relative' as const,
   },
   flatButtonGlow: {
@@ -395,7 +383,7 @@ const styles = StyleSheet.create({
   flatButtonGradient: {
     width: 56,
     height: 56,
-    borderRadius: 18,
+    borderRadius: 16,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
     position: 'relative' as const,

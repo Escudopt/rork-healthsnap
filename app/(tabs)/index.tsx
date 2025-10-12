@@ -702,20 +702,7 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={isDark ? [
-          '#000000',
-          '#0A0B0D',
-          '#12141A'
-        ] : [
-          '#F0F4FF',
-          '#FAFBFF',
-          '#FFFFFF'
-        ]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={StyleSheet.absoluteFillObject}
-      />
+      <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.background }]} />
       
       <StatusBar 
         barStyle={isDark ? 'light-content' : 'dark-content'} 
@@ -1413,7 +1400,7 @@ export default function HomeScreen() {
 const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: isDark ? '#0B0B0C' : '#FAFBFF',
+    backgroundColor: colors.background,
   },
   safeArea: {
     flex: 1,
