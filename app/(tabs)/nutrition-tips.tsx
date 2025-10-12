@@ -51,7 +51,7 @@ const nutritionTips: NutritionTip[] = [
     icon: <Sunrise color="white" size={24} />,
     time: 'Ao Acordar',
     category: 'morning',
-    color: '#FF6B6B'
+    color: '#000000'
   },
   {
     id: '2',
@@ -61,7 +61,7 @@ const nutritionTips: NutritionTip[] = [
     icon: <Coffee color="white" size={24} />,
     time: 'Primeira Hora',
     category: 'morning',
-    color: '#4ECDC4'
+    color: '#1C1C1E'
   },
   {
     id: '3',
@@ -71,7 +71,7 @@ const nutritionTips: NutritionTip[] = [
     icon: <Sun color="white" size={24} />,
     time: 'Meio-dia',
     category: 'lunch',
-    color: '#45B7D1'
+    color: '#2C2C2E'
   },
   {
     id: '4',
@@ -81,7 +81,7 @@ const nutritionTips: NutritionTip[] = [
     icon: <Utensils color="white" size={24} />,
     time: 'Durante o Almoço',
     category: 'lunch',
-    color: '#96CEB4'
+    color: '#3A3A3C'
   },
   {
     id: '5',
@@ -91,7 +91,7 @@ const nutritionTips: NutritionTip[] = [
     icon: <Moon color="white" size={24} />,
     time: 'Antes de Dormir',
     category: 'night',
-    color: '#A8E6CF'
+    color: '#48484A'
   },
   {
     id: '6',
@@ -101,15 +101,15 @@ const nutritionTips: NutritionTip[] = [
     icon: <Clock color="white" size={24} />,
     time: '3h Antes do Sono',
     category: 'night',
-    color: '#DDA0DD'
+    color: '#636366'
   }
 ];
 
 const categories = [
-  { key: 'all', label: 'Todas', icon: <Heart color="white" size={20} /> },
-  { key: 'morning', label: 'Manhã', icon: <Sunrise color="white" size={20} /> },
-  { key: 'lunch', label: 'Almoço', icon: <Sun color="white" size={20} /> },
-  { key: 'night', label: 'Noite', icon: <Moon color="white" size={20} /> }
+  { key: 'all', label: 'Todas', icon: <Heart size={20} /> },
+  { key: 'morning', label: 'Manhã', icon: <Sunrise size={20} /> },
+  { key: 'lunch', label: 'Almoço', icon: <Sun size={20} /> },
+  { key: 'night', label: 'Noite', icon: <Moon size={20} /> }
 ];
 
 export default function NutritionTipsScreen() {
@@ -776,7 +776,10 @@ Formato: Uma dica por linha, começando com emoji relevante.`;
                     selectedCategory === category.key && styles.selectedCategoryCard
                   ]}
                 >
-                  {React.cloneElement(category.icon, { color: selectedCategory === category.key ? colors.text : colors.textSecondary })}
+                  {React.cloneElement(category.icon, { 
+                    color: selectedCategory === category.key ? '#000000' : colors.textSecondary,
+                    strokeWidth: 2
+                  })}
                   <Text style={[
                     styles.categoryText,
                     selectedCategory === category.key && styles.selectedCategoryText
@@ -794,7 +797,7 @@ Formato: Uma dica por linha, começando com emoji relevante.`;
           <Animated.View style={[styles.sectionContainer, { opacity: fadeAnim }]}>
             <View style={[styles.aiTipsCard, { backgroundColor: colors.surfaceElevated }]}>
               <View style={styles.sectionHeader}>
-                <View style={[styles.sectionIcon, { backgroundColor: '#007AFF' }]}>
+                <View style={[styles.sectionIcon, { backgroundColor: '#000000' }]}>
                   <Sparkles color="white" size={24} />
                 </View>
                 <View style={styles.aiTipsHeader}>
@@ -890,7 +893,7 @@ Formato: Uma dica por linha, começando com emoji relevante.`;
         <Animated.View style={[styles.sectionContainer, { opacity: fadeAnim }]}>
           <View style={[styles.sectionCard, { backgroundColor: colors.surfaceElevated }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIcon, { backgroundColor: '#4FC3F7' }]}>
+              <View style={[styles.sectionIcon, { backgroundColor: '#1C1C1E' }]}>
                 <Droplets color="white" size={24} />
               </View>
               <Text style={styles.sectionTitle}>Hidratação Inteligente</Text>
@@ -923,7 +926,7 @@ Formato: Uma dica por linha, começando com emoji relevante.`;
         <Animated.View style={[styles.sectionContainer, { opacity: fadeAnim }]}>
           <View style={[styles.sectionCard, { backgroundColor: colors.surfaceElevated }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIcon, { backgroundColor: '#FF7043' }]}>
+              <View style={[styles.sectionIcon, { backgroundColor: '#2C2C2E' }]}>
                 <Activity color="white" size={24} />
               </View>
               <Text style={styles.sectionTitle}>Nutrição e Exercício</Text>
@@ -950,7 +953,7 @@ Formato: Uma dica por linha, começando com emoji relevante.`;
         <Animated.View style={[styles.sectionContainer, { opacity: fadeAnim }]}>
           <View style={[styles.sectionCard, { backgroundColor: colors.surfaceElevated }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIcon, { backgroundColor: '#66BB6A' }]}>
+              <View style={[styles.sectionIcon, { backgroundColor: '#3A3A3C' }]}>
                 <Calendar color="white" size={24} />
               </View>
               <Text style={styles.sectionTitle}>Planejamento Semanal</Text>
@@ -994,7 +997,7 @@ Formato: Uma dica por linha, começando com emoji relevante.`;
         <Animated.View style={[styles.sectionContainer, { opacity: fadeAnim }]}>
           <View style={[styles.sectionCard, { backgroundColor: colors.surfaceElevated }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIcon, { backgroundColor: '#AB47BC' }]}>
+              <View style={[styles.sectionIcon, { backgroundColor: '#48484A' }]}>
                 <Zap color="white" size={24} />
               </View>
               <Text style={styles.sectionTitle}>Superalimentos</Text>
@@ -1045,7 +1048,7 @@ Formato: Uma dica por linha, começando com emoji relevante.`;
         <Animated.View style={[styles.sectionContainer, { opacity: fadeAnim }]}>
           <View style={[styles.sectionCard, { backgroundColor: colors.surfaceElevated }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIcon, { backgroundColor: '#FFA726' }]}>
+              <View style={[styles.sectionIcon, { backgroundColor: '#636366' }]}>
                 <Leaf color="white" size={24} />
               </View>
               <Text style={styles.sectionTitle}>Nutrição Sazonal</Text>
@@ -1086,7 +1089,7 @@ Formato: Uma dica por linha, começando com emoji relevante.`;
         <Animated.View style={[styles.generalTipsContainer, { opacity: fadeAnim }]}>
           <View style={[styles.generalTipsCard, { backgroundColor: colors.surfaceElevated }]}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.sectionIcon, { backgroundColor: '#42A5F5' }]}>
+              <View style={[styles.sectionIcon, { backgroundColor: '#8E8E93' }]}>
                 <Lightbulb color="white" size={24} />
               </View>
               <Text style={styles.generalTipsTitle}>Dicas Essenciais</Text>
