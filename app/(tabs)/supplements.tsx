@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -660,16 +660,18 @@ export default function SupplementsScreen() {
   } | null>(null);
   
   // Get intelligent personalized recommendations
-  const personalizedRecommendations = userProfile 
-    ? getIntelligentSupplementRecommendations(
-        userProfile.age, 
-        userProfile.gender, 
-        userProfile.activityLevel, 
-        userProfile.goal,
-        meals,
-        healthMetrics
-      )
-    : [];
+  const personalizedRecommendations = useMemo(() => {
+    return userProfile 
+      ? getIntelligentSupplementRecommendations(
+          userProfile.age, 
+          userProfile.gender, 
+          userProfile.activityLevel, 
+          userProfile.goal,
+          meals,
+          healthMetrics
+        )
+      : [];
+  }, [userProfile, meals, healthMetrics]);
 
   // Analyze vitamin coverage vs deficiencies
   const analyzeVitaminCoverage = useCallback(() => {
