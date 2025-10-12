@@ -915,7 +915,7 @@ export default function SupplementsScreen() {
   const styles = useThemedStyles((colors, isDark) => StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDark ? '#000000' : '#F2F2F7',
+      backgroundColor: isDark ? '#000000' : '#FFFFFF',
     },
     safeArea: {
       flex: 1,
@@ -1265,7 +1265,7 @@ export default function SupplementsScreen() {
     addButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#4CAF50',
+      backgroundColor: isDark ? '#FFFFFF' : '#000000',
       paddingHorizontal: 16,
       paddingVertical: 10,
       borderRadius: 20,
@@ -1274,7 +1274,7 @@ export default function SupplementsScreen() {
     addButtonText: {
       fontSize: 14,
       fontWeight: '700' as const,
-      color: 'white',
+      color: isDark ? '#000000' : '#FFFFFF',
     },
     myVitaminCard: {
       padding: 16,
@@ -1395,7 +1395,7 @@ export default function SupplementsScreen() {
       gap: 8,
     },
     saveButton: {
-      backgroundColor: '#4CAF50',
+      backgroundColor: isDark ? '#FFFFFF' : '#000000',
     },
     cancelButton: {
       backgroundColor: isDark ? 'rgba(158, 158, 158, 0.2)' : 'rgba(158, 158, 158, 0.15)',
@@ -1403,7 +1403,7 @@ export default function SupplementsScreen() {
     formButtonText: {
       fontSize: 15,
       fontWeight: '700' as const,
-      color: 'white',
+      color: isDark ? '#000000' : '#FFFFFF',
     },
     cancelButtonText: {
       color: colors.text,
@@ -1519,7 +1519,7 @@ export default function SupplementsScreen() {
       width: 48,
       height: 48,
       borderRadius: 24,
-      backgroundColor: '#4CAF50',
+      backgroundColor: isDark ? '#FFFFFF' : '#000000',
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: 16,
@@ -1680,12 +1680,12 @@ export default function SupplementsScreen() {
       <LinearGradient
         colors={isDark ? [
           '#000000',
-          '#1C1C1E',
-          '#2C2C2E'
+          '#000000',
+          '#000000'
         ] : [
-          '#F2F2F7',
           '#FFFFFF',
-          '#F2F2F7'
+          '#FFFFFF',
+          '#FFFFFF'
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -1786,7 +1786,7 @@ export default function SupplementsScreen() {
                     style={styles.addButton}
                     onPress={() => setIsAddingVitamin(true)}
                   >
-                    <Plus color="white" size={18} strokeWidth={2.5} />
+                    <Plus color={isDark ? '#000000' : '#FFFFFF'} size={18} strokeWidth={2.5} />
                     <Text style={styles.addButtonText}>Adicionar</Text>
                   </TouchableOpacity>
                 )}
@@ -1860,7 +1860,7 @@ export default function SupplementsScreen() {
                       style={[styles.formButton, styles.saveButton]}
                       onPress={addVitamin}
                     >
-                      <Check color="white" size={18} strokeWidth={2.5} />
+                      <Check color={isDark ? '#000000' : '#FFFFFF'} size={18} strokeWidth={2.5} />
                       <Text style={styles.formButtonText}>Guardar</Text>
                     </TouchableOpacity>
                   </View>
@@ -1870,7 +1870,7 @@ export default function SupplementsScreen() {
               {myVitamins.length === 0 && !isAddingVitamin && (
                 <BlurCard style={styles.emptyVitaminsCard}>
                   <View style={styles.emptyVitaminsIcon}>
-                    <Pill color="white" size={24} />
+                    <Pill color={isDark ? '#000000' : '#FFFFFF'} size={24} />
                   </View>
                   <Text style={styles.emptyVitaminsTitle}>Nenhuma Vitamina Adicionada</Text>
                   <Text style={styles.emptyVitaminsText}>
@@ -1948,7 +1948,7 @@ export default function SupplementsScreen() {
                         style={[styles.formButton, styles.saveButton]}
                         onPress={() => updateVitamin(vitamin.id)}
                       >
-                        <Check color="white" size={18} strokeWidth={2.5} />
+                        <Check color={isDark ? '#000000' : '#FFFFFF'} size={18} strokeWidth={2.5} />
                         <Text style={styles.formButtonText}>Guardar</Text>
                       </TouchableOpacity>
                     </View>

@@ -67,7 +67,7 @@ export default function ProfileScreen() {
   const styles = useThemedStyles((colors, isDark) => StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: isDark ? '#000000' : '#F2F2F7',
+      backgroundColor: isDark ? '#000000' : '#FFFFFF',
     },
     safeArea: {
       flex: 1,
@@ -324,6 +324,7 @@ export default function ProfileScreen() {
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: 4,
+      backgroundColor: isDark ? '#FFFFFF' : '#000000',
     },
     profileStatValue: {
       fontSize: 20,
@@ -388,6 +389,7 @@ export default function ProfileScreen() {
       borderRadius: 12,
       justifyContent: 'center',
       alignItems: 'center',
+      backgroundColor: isDark ? '#FFFFFF' : '#000000',
     },
     summaryCardTitle: {
       fontSize: 13,
@@ -962,8 +964,8 @@ export default function ProfileScreen() {
     return (
       <View style={[styles.fullWidthCard, { backgroundColor: colors.surfaceElevated }]}>
         <View style={styles.summaryCardHeader}>
-          <View style={[styles.summaryCardIcon, { backgroundColor: '#34C759' }]}>
-            <TrendingUp color="white" size={16} strokeWidth={2.5} />
+          <View style={styles.summaryCardIcon}>
+            <TrendingUp color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
           </View>
           <Text style={[styles.summaryCardTitle, { color: colors.text }]}>Pontuação de Saúde</Text>
         </View>
@@ -1008,8 +1010,8 @@ export default function ProfileScreen() {
     return (
       <View style={[styles.fullWidthCard, { backgroundColor: colors.surfaceElevated }]}>
         <View style={styles.summaryCardHeader}>
-          <View style={[styles.summaryCardIcon, { backgroundColor: '#007AFF' }]}>
-            <Activity color="white" size={16} strokeWidth={2.5} />
+          <View style={styles.summaryCardIcon}>
+            <Activity color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
           </View>
           <Text style={[styles.summaryCardTitle, { color: colors.text }]}>Nutrição de Hoje</Text>
         </View>
@@ -1056,12 +1058,12 @@ export default function ProfileScreen() {
       <LinearGradient
         colors={isDark ? [
           '#000000',
-          '#1C1C1E',
-          '#2C2C2E'
+          '#000000',
+          '#000000'
         ] : [
-          '#F2F2F7',
           '#FFFFFF',
-          '#F2F2F7'
+          '#FFFFFF',
+          '#FFFFFF'
         ]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -1310,24 +1312,24 @@ export default function ProfileScreen() {
                   
                   <View style={styles.profileStatsContainer}>
                     <View style={styles.profileStatItem}>
-                      <View style={[styles.profileStatIcon, { backgroundColor: '#FF9500' }]}>
-                        <Ruler color="white" size={16} strokeWidth={2.5} />
+                      <View style={styles.profileStatIcon}>
+                        <Ruler color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                       </View>
                       <Text style={styles.profileStatValue}>{userProfile.height}</Text>
                       <Text style={styles.profileStatLabel}>cm</Text>
                     </View>
                     
                     <View style={styles.profileStatItem}>
-                      <View style={[styles.profileStatIcon, { backgroundColor: '#34C759' }]}>
-                        <Scale color="white" size={16} strokeWidth={2.5} />
+                      <View style={styles.profileStatIcon}>
+                        <Scale color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                       </View>
                       <Text style={styles.profileStatValue}>{userProfile.weight}</Text>
                       <Text style={styles.profileStatLabel}>kg</Text>
                     </View>
                     
                     <View style={styles.profileStatItem}>
-                      <View style={[styles.profileStatIcon, { backgroundColor: '#007AFF' }]}>
-                        <Activity color="white" size={16} strokeWidth={2.5} />
+                      <View style={styles.profileStatIcon}>
+                        <Activity color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                       </View>
                       <Text style={styles.profileStatValue}>{meals.filter(m => {
                         try {
@@ -1347,8 +1349,8 @@ export default function ProfileScreen() {
                     <View style={styles.summaryCards}>
                       <View style={[styles.summaryCard, { backgroundColor: colors.surfaceElevated }]}>
                         <View style={styles.summaryCardHeader}>
-                          <View style={[styles.summaryCardIcon, { backgroundColor: '#4CAF50' }]}>
-                            <Scale color="white" size={16} strokeWidth={2.5} />
+                          <View style={styles.summaryCardIcon}>
+                            <Scale color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                           </View>
                           <Text style={[styles.summaryCardTitle, { color: colors.text }]}>IMC</Text>
                         </View>
@@ -1374,8 +1376,8 @@ export default function ProfileScreen() {
 
                       <View style={[styles.summaryCard, { backgroundColor: colors.surfaceElevated }]}>
                         <View style={styles.summaryCardHeader}>
-                          <View style={[styles.summaryCardIcon, { backgroundColor: '#FF9800' }]}>
-                            <Activity color="white" size={16} strokeWidth={2.5} />
+                          <View style={styles.summaryCardIcon}>
+                            <Activity color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                           </View>
                           <Text style={[styles.summaryCardTitle, { color: colors.text }]}>TMB</Text>
                         </View>
@@ -1404,8 +1406,8 @@ export default function ProfileScreen() {
                     <View style={styles.summaryCards}>
                       <View style={[styles.summaryCard, { backgroundColor: colors.surfaceElevated }]}>
                         <View style={styles.summaryCardHeader}>
-                          <View style={[styles.summaryCardIcon, { backgroundColor: '#2196F3' }]}>
-                            <Target color="white" size={16} strokeWidth={2.5} />
+                          <View style={styles.summaryCardIcon}>
+                            <Target color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                           </View>
                           <Text style={[styles.summaryCardTitle, { color: colors.text }]}>TDEE</Text>
                         </View>
@@ -1431,8 +1433,8 @@ export default function ProfileScreen() {
 
                       <View style={[styles.summaryCard, { backgroundColor: colors.surfaceElevated }]}>
                         <View style={styles.summaryCardHeader}>
-                          <View style={[styles.summaryCardIcon, { backgroundColor: '#9C27B0' }]}>
-                            <Ruler color="white" size={16} strokeWidth={2.5} />
+                          <View style={styles.summaryCardIcon}>
+                            <Ruler color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                           </View>
                           <Text style={[styles.summaryCardTitle, { color: colors.text }]}>Meta</Text>
                         </View>
@@ -1466,8 +1468,8 @@ export default function ProfileScreen() {
                     {/* Third row - Peso Ideal (Full width) */}
                     <View style={[styles.fullWidthCard, { backgroundColor: colors.surfaceElevated }]}>
                       <View style={styles.summaryCardHeader}>
-                        <View style={[styles.summaryCardIcon, { backgroundColor: '#34C759' }]}>
-                          <Scale color="white" size={16} strokeWidth={2.5} />
+                        <View style={styles.summaryCardIcon}>
+                          <Scale color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                         </View>
                         <Text style={[styles.summaryCardTitle, { color: colors.text }]}>Peso Ideal</Text>
                       </View>
@@ -1494,8 +1496,8 @@ export default function ProfileScreen() {
                     {/* Recommendations - Full width */}
                     <View style={[styles.fullWidthCard, { backgroundColor: colors.surfaceElevated }]}>
                       <View style={styles.summaryCardHeader}>
-                        <View style={[styles.summaryCardIcon, { backgroundColor: '#007AFF' }]}>
-                          <CheckCircle color="white" size={16} strokeWidth={2.5} />
+                        <View style={styles.summaryCardIcon}>
+                          <CheckCircle color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                         </View>
                         <Text style={[styles.summaryCardTitle, { color: colors.text }]}>Recomendações</Text>
                       </View>
@@ -1518,8 +1520,8 @@ export default function ProfileScreen() {
                       activeOpacity={0.7}
                     >
                       <View style={styles.summaryCardHeader}>
-                        <View style={[styles.summaryCardIcon, { backgroundColor: '#007AFF' }]}>
-                          <Info color="white" size={16} strokeWidth={2.5} />
+                        <View style={styles.summaryCardIcon}>
+                          <Info color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                         </View>
                         <Text style={[styles.summaryCardTitle, { color: colors.text }]}>Fontes & Referências</Text>
                       </View>
@@ -1529,8 +1531,8 @@ export default function ProfileScreen() {
                     {/* Delete Options */}
                     <View style={[styles.fullWidthCard, { backgroundColor: colors.surfaceElevated }]}>
                       <View style={styles.summaryCardHeader}>
-                        <View style={[styles.summaryCardIcon, { backgroundColor: '#FF3B30' }]}>
-                          <Trash2 color="white" size={16} strokeWidth={2.5} />
+                        <View style={styles.summaryCardIcon}>
+                          <Trash2 color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2.5} />
                         </View>
                         <Text style={[styles.summaryCardTitle, { color: colors.text }]}>Gerenciar Dados</Text>
                       </View>
@@ -1542,8 +1544,8 @@ export default function ProfileScreen() {
                           activeOpacity={0.7}
                         >
                           <View style={styles.deleteOptionContent}>
-                            <View style={[styles.deleteOptionIcon, { backgroundColor: '#FF9500' }]}>
-                              <History color="white" size={16} strokeWidth={2} />
+                            <View style={[styles.deleteOptionIcon, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}>
+                              <History color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2} />
                             </View>
                             <View style={styles.deleteOptionText}>
                               <Text style={[styles.deleteOptionTitle, { color: colors.text }]}>Apagar Histórico</Text>
@@ -1558,8 +1560,8 @@ export default function ProfileScreen() {
                           activeOpacity={0.7}
                         >
                           <View style={styles.deleteOptionContent}>
-                            <View style={[styles.deleteOptionIcon, { backgroundColor: '#FF3B30' }]}>
-                              <AlertTriangle color="white" size={16} strokeWidth={2} />
+                            <View style={[styles.deleteOptionIcon, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}>
+                              <AlertTriangle color={isDark ? '#000000' : '#FFFFFF'} size={16} strokeWidth={2} />
                             </View>
                             <View style={styles.deleteOptionText}>
                               <Text style={[styles.deleteOptionTitle, { color: colors.text }]}>Reset Completo</Text>
