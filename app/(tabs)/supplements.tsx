@@ -989,10 +989,7 @@ export default function SupplementsScreen() {
       justifyContent: 'center',
       alignItems: 'center',
       marginRight: 16,
-      shadowColor: 'rgba(0, 0, 0, 0.2)',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
+      backgroundColor: isDark ? '#FFFFFF' : '#000000',
     },
     supplementInfo: {
       flex: 1,
@@ -1001,13 +998,13 @@ export default function SupplementsScreen() {
     supplementName: {
       fontSize: 22,
       fontWeight: '800',
-      color: colors.text,
+      color: isDark ? '#FFFFFF' : '#000000',
       marginBottom: 6,
       letterSpacing: 0.3,
     },
     supplementDescription: {
       fontSize: 15,
-      color: colors.textSecondary,
+      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
       lineHeight: 22,
       fontWeight: '500',
     },
@@ -1017,7 +1014,7 @@ export default function SupplementsScreen() {
     benefitsTitle: {
       fontSize: 16,
       fontWeight: '700',
-      color: colors.text,
+      color: isDark ? '#FFFFFF' : '#000000',
       marginBottom: 12,
       letterSpacing: 0.2,
     },
@@ -1029,30 +1026,31 @@ export default function SupplementsScreen() {
     benefitChip: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: colors.surfaceSecondary,
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
       paddingHorizontal: 12,
       paddingVertical: 8,
       borderRadius: 16,
       borderWidth: 1,
-      borderColor: colors.border,
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
       gap: 6,
     },
     benefitDot: {
       width: 6,
       height: 6,
       borderRadius: 3,
+      backgroundColor: isDark ? '#FFFFFF' : '#000000',
     },
     benefitText: {
       fontSize: 13,
-      color: colors.textSecondary,
+      color: isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
       fontWeight: '600',
     },
     dosageSection: {
-      backgroundColor: colors.surfaceSecondary,
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
       padding: 16,
       borderRadius: 16,
       borderWidth: 1,
-      borderColor: colors.border,
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.08)',
       marginBottom: 16,
     },
     dosageHeader: {
@@ -1064,21 +1062,21 @@ export default function SupplementsScreen() {
     dosageTitle: {
       fontSize: 15,
       fontWeight: '700',
-      color: colors.text,
+      color: isDark ? '#FFFFFF' : '#000000',
       letterSpacing: 0.2,
     },
     dosageText: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
       fontWeight: '600',
       lineHeight: 20,
     },
     warningSection: {
-      backgroundColor: isDark ? 'rgba(255, 107, 53, 0.12)' : 'rgba(255, 107, 53, 0.08)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
       padding: 16,
       borderRadius: 16,
       borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(255, 107, 53, 0.3)' : 'rgba(255, 107, 53, 0.2)',
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)',
     },
     warningHeader: {
       flexDirection: 'row',
@@ -1089,7 +1087,7 @@ export default function SupplementsScreen() {
     warningTitle: {
       fontSize: 16,
       fontWeight: '700',
-      color: '#ff6b35',
+      color: isDark ? '#FFFFFF' : '#000000',
       letterSpacing: 0.2,
     },
     warningContent: {
@@ -1104,12 +1102,12 @@ export default function SupplementsScreen() {
       width: 6,
       height: 6,
       borderRadius: 3,
-      backgroundColor: '#ff6b35',
+      backgroundColor: isDark ? '#FFFFFF' : '#000000',
       marginTop: 7,
     },
     warningText: {
       fontSize: 14,
-      color: colors.textSecondary,
+      color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
       lineHeight: 20,
       fontWeight: '500',
       flex: 1,
@@ -1117,10 +1115,10 @@ export default function SupplementsScreen() {
     disclaimerCard: {
       padding: 24,
       marginTop: 20,
-      backgroundColor: isDark ? 'rgba(255, 107, 53, 0.15)' : 'rgba(255, 107, 53, 0.08)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
       borderRadius: 20,
       borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(255, 107, 53, 0.35)' : 'rgba(255, 107, 53, 0.2)',
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
     },
     disclaimerHeader: {
       flexDirection: 'row',
@@ -1131,22 +1129,22 @@ export default function SupplementsScreen() {
     disclaimerTitle: {
       fontSize: 18,
       fontWeight: '800',
-      color: colors.text,
+      color: isDark ? '#FFFFFF' : '#000000',
       letterSpacing: 0.3,
     },
     disclaimerText: {
       fontSize: 15,
-      color: colors.textSecondary,
+      color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
       lineHeight: 22,
       fontWeight: '500',
     },
     safetyCard: {
       padding: 24,
       marginTop: 16,
-      backgroundColor: isDark ? 'rgba(0, 212, 255, 0.12)' : 'rgba(0, 122, 255, 0.08)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
       borderRadius: 20,
       borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(0, 212, 255, 0.3)' : 'rgba(0, 122, 255, 0.2)',
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
     },
     safetyHeader: {
       flexDirection: 'row',
@@ -1157,7 +1155,7 @@ export default function SupplementsScreen() {
     safetyTitle: {
       fontSize: 18,
       fontWeight: '800',
-      color: colors.text,
+      color: isDark ? '#FFFFFF' : '#000000',
       letterSpacing: 0.3,
     },
     safetyTips: {
@@ -1165,7 +1163,7 @@ export default function SupplementsScreen() {
     },
     safetyTip: {
       fontSize: 15,
-      color: colors.textSecondary,
+      color: isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
       lineHeight: 22,
       fontWeight: '500',
       paddingLeft: 4,
@@ -2050,26 +2048,16 @@ export default function SupplementsScreen() {
                     ]}
                   >
                     <BlurCard style={styles.supplementCard}>
-                      <LinearGradient
-                        colors={[
-                          `${supplement.color}20`,
-                          `${supplement.color}10`,
-                          'transparent'
-                        ]}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        style={styles.supplementGradient}
-                      />
+
                       
                       {supplement.priority && (
                         <View style={[
                           styles.priorityBadge,
                           {
-                            backgroundColor: supplement.priority === 'high' ? '#4CAF50' : 
-                                           supplement.priority === 'medium' ? '#4CAF50' : '#9E9E9E'
+                            backgroundColor: isDark ? '#FFFFFF' : '#000000'
                           }
                         ]}>
-                          <Text style={styles.priorityText}>
+                          <Text style={[styles.priorityText, { color: isDark ? '#000000' : '#FFFFFF' }]}>
                             {supplement.priority === 'high' ? 'PRIORIDADE' : 
                              supplement.priority === 'medium' ? 'RECOMENDADO' : 'OPCIONAL'}
                           </Text>
@@ -2077,11 +2065,8 @@ export default function SupplementsScreen() {
                       )}
                       
                       <View style={styles.supplementHeader}>
-                        <View style={[
-                          styles.supplementIcon,
-                          { backgroundColor: supplement.color }
-                        ]}>
-                          {supplement.icon}
+                        <View style={styles.supplementIcon}>
+                          {React.isValidElement(supplement.icon) && React.cloneElement(supplement.icon, { color: isDark ? '#000000' : '#FFFFFF' } as any)}
                         </View>
                         <View style={styles.supplementInfo}>
                           <Text style={styles.supplementName}>{supplement.name}</Text>
@@ -2094,7 +2079,7 @@ export default function SupplementsScreen() {
                         <View style={styles.benefitsGrid}>
                           {supplement.benefits.map((benefit, benefitIndex) => (
                             <View key={`${supplement.id}-benefit-${benefitIndex}`} style={styles.benefitChip}>
-                              <View style={[styles.benefitDot, { backgroundColor: supplement.color }]} />
+                              <View style={styles.benefitDot} />
                               <Text style={styles.benefitText}>{benefit}</Text>
                             </View>
                           ))}
@@ -2103,7 +2088,7 @@ export default function SupplementsScreen() {
                       
                       <View style={styles.dosageSection}>
                         <View style={styles.dosageHeader}>
-                          <Pill color={colors.textSecondary} size={16} />
+                          <Pill color={isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'} size={16} />
                           <Text style={styles.dosageTitle}>Dosagem Recomendada</Text>
                         </View>
                         <Text style={styles.dosageText}>{supplement.dosage}</Text>
@@ -2112,7 +2097,7 @@ export default function SupplementsScreen() {
                       {supplement.ageWarnings && supplement.ageWarnings.length > 0 && (
                         <View style={styles.warningSection}>
                           <View style={styles.warningHeader}>
-                            <AlertTriangle color="#FF6B35" size={18} />
+                            <AlertTriangle color={isDark ? '#FFFFFF' : '#000000'} size={18} />
                             <Text style={styles.warningTitle}>Avisos Importantes</Text>
                           </View>
                           <View style={styles.warningContent}>
@@ -2159,23 +2144,9 @@ export default function SupplementsScreen() {
                 ]}
               >
                 <BlurCard style={styles.supplementCard}>
-                  <LinearGradient
-                    colors={[
-                      `${supplement.color}15`,
-                      `${supplement.color}08`,
-                      'transparent'
-                    ]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.supplementGradient}
-                  />
-                  
                   <View style={styles.supplementHeader}>
-                    <View style={[
-                      styles.supplementIcon,
-                      { backgroundColor: supplement.color }
-                    ]}>
-                      {supplement.icon}
+                    <View style={styles.supplementIcon}>
+                      {React.isValidElement(supplement.icon) && React.cloneElement(supplement.icon, { color: isDark ? '#000000' : '#FFFFFF' } as any)}
                     </View>
                     <View style={styles.supplementInfo}>
                       <Text style={styles.supplementName}>{supplement.name}</Text>
@@ -2188,7 +2159,7 @@ export default function SupplementsScreen() {
                     <View style={styles.benefitsGrid}>
                       {supplement.benefits.map((benefit, benefitIndex) => (
                         <View key={`${supplement.id}-benefit-${benefitIndex}`} style={styles.benefitChip}>
-                          <View style={[styles.benefitDot, { backgroundColor: supplement.color }]} />
+                          <View style={styles.benefitDot} />
                           <Text style={styles.benefitText}>{benefit}</Text>
                         </View>
                       ))}
@@ -2197,7 +2168,7 @@ export default function SupplementsScreen() {
                   
                   <View style={styles.dosageSection}>
                     <View style={styles.dosageHeader}>
-                      <Pill color={colors.textSecondary} size={16} />
+                      <Pill color={isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'} size={16} />
                       <Text style={styles.dosageTitle}>Dosagem Recomendada</Text>
                     </View>
                     <Text style={styles.dosageText}>{supplement.dosage}</Text>
@@ -2206,7 +2177,7 @@ export default function SupplementsScreen() {
                   {supplement.ageWarnings && supplement.ageWarnings.length > 0 && (
                     <View style={styles.warningSection}>
                       <View style={styles.warningHeader}>
-                        <AlertTriangle color="#FF6B35" size={18} />
+                        <AlertTriangle color={isDark ? '#FFFFFF' : '#000000'} size={18} />
                         <Text style={styles.warningTitle}>Avisos Importantes</Text>
                       </View>
                       <View style={styles.warningContent}>
@@ -2225,7 +2196,7 @@ export default function SupplementsScreen() {
 
             <BlurCard style={styles.disclaimerCard}>
               <View style={styles.disclaimerHeader}>
-                <AlertTriangle color="#ff6b35" size={24} />
+                <AlertTriangle color={isDark ? '#FFFFFF' : '#000000'} size={24} />
                 <Text style={styles.disclaimerTitle}>Aviso Médico Importante</Text>
               </View>
               <Text style={styles.disclaimerText}>
@@ -2237,7 +2208,7 @@ export default function SupplementsScreen() {
 
             <BlurCard style={styles.safetyCard}>
               <View style={styles.safetyHeader}>
-                <Info color={isDark ? "#00d4ff" : "#007AFF"} size={24} />
+                <Info color={isDark ? '#FFFFFF' : '#000000'} size={24} />
                 <Text style={styles.safetyTitle}>Dicas de Segurança</Text>
               </View>
               <View style={styles.safetyTips}>
