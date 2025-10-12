@@ -99,7 +99,7 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
             />
           ) : (
             <View style={[styles.placeholderIcon, { backgroundColor: colors.surfaceSecondary }]}>
-              <Utensils color={colors.textTertiary} size={24} strokeWidth={1.5} />
+              <Utensils color={colors.textTertiary} size={20} strokeWidth={1.5} />
             </View>
           )}
           
@@ -144,15 +144,15 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     marginBottom: 14,
   },
   card: {
-    backgroundColor: isDark ? 'rgba(22, 24, 33, 0.7)' : 'rgba(255, 255, 255, 0.8)',
-    borderRadius: 20,
-    shadowColor: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(0, 122, 255, 0.15)',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: isDark ? 0.4 : 0.12,
-    shadowRadius: isDark ? 16 : 20,
-    elevation: isDark ? 8 : 6,
-    borderWidth: 1,
-    borderColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 122, 255, 0.1)',
+    backgroundColor: isDark ? '#0F0F0F' : '#FFFFFF',
+    borderRadius: 16,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: isDark ? 0.3 : 0.04,
+    shadowRadius: isDark ? 4 : 8,
+    elevation: isDark ? 2 : 1,
+    borderWidth: 0.5,
+    borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
     overflow: 'hidden' as const,
   },
   cardContent: {
@@ -162,14 +162,14 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     alignItems: 'center' as const,
   },
   iconImage: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   placeholderIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
   },

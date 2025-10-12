@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ActivityIndicator } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Camera, Edit3, Pill } from 'lucide-react-native';
 import Svg, { Circle } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
@@ -108,11 +107,11 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
     <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
       <View
         style={[styles.card, {
-          backgroundColor: isDark ? 'rgba(22, 24, 33, 0.75)' : 'rgba(255, 255, 255, 0.85)',
-          shadowColor: isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(0, 122, 255, 0.2)',
-          shadowOpacity: isDark ? 0.5 : 0.15,
-          borderWidth: 1,
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 122, 255, 0.12)',
+          backgroundColor: isDark ? '#0F0F0F' : '#FFFFFF',
+          shadowColor: '#000000',
+          shadowOpacity: isDark ? 0.3 : 0.04,
+          borderWidth: 0.5,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
         }]}
       >
         <View style={styles.content}>
@@ -122,7 +121,7 @@ export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, on
                 cx={size / 2}
                 cy={size / 2}
                 r={radius}
-                stroke={isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 122, 255, 0.12)'}
+                stroke={isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}
                 strokeWidth={strokeWidth}
                 fill="none"
               />
@@ -311,14 +310,14 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   card: {
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
     overflow: 'hidden' as const,
   },
   content: {
@@ -364,10 +363,10 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden' as const,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
     position: 'relative' as const,
   },
   flatButtonGlow: {
