@@ -30,11 +30,12 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.tabBarActive,
         tabBarInactiveTintColor: colors.tabBarInactive,
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 11,
           marginTop: 4,
           marginBottom: 0,
           textAlign: 'center' as const,
-          fontWeight: '600' as const,
+          fontWeight: '500' as const,
+          letterSpacing: -0.2,
         },
         tabBarItemStyle: {
           paddingVertical: Platform.OS === 'ios' ? 8 : 6,
@@ -89,8 +90,8 @@ export default function TabLayout() {
         name="index"
         options={{
           title: t('home'),
-          tabBarIcon: ({ color, size }) => {
-            return <Home color={color} size={24} strokeWidth={2} />;
+          tabBarIcon: ({ color, focused }) => {
+            return <Home color={color} size={26} strokeWidth={focused ? 2.2 : 1.8} />;
           },
         }}
       />
@@ -99,8 +100,8 @@ export default function TabLayout() {
         name="nutrition-tips"
         options={{
           title: t('nutritionTips'),
-          tabBarIcon: ({ color, size }) => {
-            return <BookOpen color={color} size={24} strokeWidth={2} />;
+          tabBarIcon: ({ color, focused }) => {
+            return <BookOpen color={color} size={26} strokeWidth={focused ? 2.2 : 1.8} />;
           },
         }}
       />
@@ -108,8 +109,8 @@ export default function TabLayout() {
         name="workout"
         options={{
           title: 'Treino',
-          tabBarIcon: ({ color, size }) => {
-            return <Dumbbell color={color} size={24} strokeWidth={2} />;
+          tabBarIcon: ({ color, focused }) => {
+            return <Dumbbell color={color} size={26} strokeWidth={focused ? 2.2 : 1.8} />;
           },
         }}
       />
@@ -117,8 +118,8 @@ export default function TabLayout() {
         name="supplements"
         options={{
           title: t('supplements'),
-          tabBarIcon: ({ color, size }) => {
-            return <Pill color={color} size={24} strokeWidth={2} />;
+          tabBarIcon: ({ color, focused }) => {
+            return <Pill color={color} size={26} strokeWidth={focused ? 2.2 : 1.8} />;
           },
         }}
       />
@@ -126,8 +127,8 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: t('profile'),
-          tabBarIcon: ({ color, size, focused }) => {
-            return <User color={color} size={24} strokeWidth={2} />;
+          tabBarIcon: ({ color, focused }) => {
+            return <User color={color} size={26} strokeWidth={focused ? 2.2 : 1.8} />;
           },
         }}
       />
@@ -135,8 +136,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: t('settingsTitle'),
-          tabBarIcon: ({ color, size }) => {
-            return <Settings color={color} size={24} strokeWidth={2} />;
+          tabBarIcon: ({ color, focused }) => {
+            return <Settings color={color} size={26} strokeWidth={focused ? 2.2 : 1.8} />;
           },
         }}
       />
