@@ -1218,15 +1218,15 @@ export default function SupplementsScreen() {
       marginBottom: 20,
       borderRadius: 20,
       alignItems: 'center',
-      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.15)' : 'rgba(255, 152, 0, 0.08)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
       borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 152, 0, 0.2)',
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
     },
     noProfileIcon: {
       width: 48,
       height: 48,
       borderRadius: 24,
-      backgroundColor: '#FF9800',
+      backgroundColor: isDark ? '#FFFFFF' : '#000000',
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: 16,
@@ -1554,9 +1554,9 @@ export default function SupplementsScreen() {
       padding: 20,
       marginBottom: 20,
       borderRadius: 20,
-      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.15)' : 'rgba(255, 152, 0, 0.08)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
       borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 152, 0, 0.2)',
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
     },
     analysisHeader: {
       flexDirection: 'row',
@@ -1583,9 +1583,9 @@ export default function SupplementsScreen() {
       padding: 20,
       marginBottom: 16,
       borderRadius: 20,
-      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
       borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)',
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
     },
     coverageTitle: {
       fontSize: 18,
@@ -1612,6 +1612,7 @@ export default function SupplementsScreen() {
       width: 8,
       height: 8,
       borderRadius: 4,
+      backgroundColor: isDark ? '#FFFFFF' : '#000000',
     },
     coverageItemText: {
       fontSize: 14,
@@ -1623,9 +1624,9 @@ export default function SupplementsScreen() {
       padding: 20,
       marginBottom: 16,
       borderRadius: 20,
-      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.15)' : 'rgba(255, 152, 0, 0.08)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
       borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(255, 152, 0, 0.3)' : 'rgba(255, 152, 0, 0.2)',
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
     },
     missingTitle: {
       fontSize: 18,
@@ -1644,11 +1645,11 @@ export default function SupplementsScreen() {
       gap: 12,
     },
     suggestionItem: {
-      backgroundColor: isDark ? 'rgba(255, 152, 0, 0.1)' : 'rgba(255, 152, 0, 0.05)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
       padding: 14,
       borderRadius: 12,
       borderLeftWidth: 3,
-      borderLeftColor: '#FF9800',
+      borderLeftColor: isDark ? '#FFFFFF' : '#000000',
     },
     suggestionText: {
       fontSize: 14,
@@ -1659,9 +1660,9 @@ export default function SupplementsScreen() {
     successCard: {
       padding: 20,
       borderRadius: 20,
-      backgroundColor: isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.12)',
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
       borderWidth: 1.5,
-      borderColor: isDark ? 'rgba(76, 175, 80, 0.4)' : 'rgba(76, 175, 80, 0.3)',
+      borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)',
       alignItems: 'center',
     },
     successText: {
@@ -1724,8 +1725,8 @@ export default function SupplementsScreen() {
             {deficiencyAnalysis && (deficiencyAnalysis.covered.length > 0 || deficiencyAnalysis.missing.length > 0) && (
               <View style={styles.analysisSection}>
                 <View style={styles.analysisHeader}>
-                  <View style={[styles.summaryCardIcon, { backgroundColor: deficiencyAnalysis.missing.length === 0 ? '#4CAF50' : '#FF9800' }]}>
-                    <Target color="white" size={20} strokeWidth={2.5} />
+                  <View style={[styles.summaryCardIcon, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}>
+                    <Target color={isDark ? '#000000' : '#FFFFFF'} size={20} strokeWidth={2.5} />
                   </View>
                   <Text style={styles.analysisTitle}>
                     {deficiencyAnalysis.missing.length === 0 ? '✅ Deficiências Cobertas' : '⚠️ Análise de Deficiências'}
@@ -1741,7 +1742,7 @@ export default function SupplementsScreen() {
                     <View style={styles.coverageList}>
                       {deficiencyAnalysis.covered.map((item, index) => (
                         <View key={`covered-${index}`} style={styles.coverageItem}>
-                          <View style={[styles.coverageBullet, { backgroundColor: '#4CAF50' }]} />
+                          <View style={styles.coverageBullet} />
                           <Text style={styles.coverageItemText}>{item}</Text>
                         </View>
                       ))}
@@ -1989,8 +1990,8 @@ export default function SupplementsScreen() {
             {userProfile ? (
               <View style={styles.personalizedSection}>
                 <View style={styles.personalizedHeader}>
-                  <View style={[styles.summaryCardIcon, { backgroundColor: '#4CAF50' }]}>
-                    <Target color="white" size={20} strokeWidth={2.5} />
+                  <View style={[styles.summaryCardIcon, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}>
+                    <Target color={isDark ? '#000000' : '#FFFFFF'} size={20} strokeWidth={2.5} />
                   </View>
                   <Text style={styles.personalizedTitle}>Recomendações Personalizadas</Text>
                 </View>
@@ -2006,9 +2007,9 @@ export default function SupplementsScreen() {
                 </Text>
                 
                 {personalizedRecommendations.length === 0 && (
-                  <BlurCard style={[styles.noProfileCard, { backgroundColor: isDark ? 'rgba(76, 175, 80, 0.15)' : 'rgba(76, 175, 80, 0.08)' }]}>
-                    <View style={[styles.noProfileIcon, { backgroundColor: '#4CAF50' }]}>
-                      <Target color="white" size={24} />
+                  <BlurCard style={[styles.noProfileCard, { backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)' }]}>
+                    <View style={[styles.noProfileIcon, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}>
+                      <Target color={isDark ? '#000000' : '#FFFFFF'} size={24} />
                     </View>
                     <Text style={styles.noProfileTitle}>Parabéns! Nutrição Equilibrada</Text>
                     <Text style={styles.noProfileText}>
@@ -2021,8 +2022,8 @@ export default function SupplementsScreen() {
                 {personalizedRecommendations.length > 0 && (
                   <View style={styles.analysisCard}>
                     <View style={styles.analysisHeader}>
-                      <View style={[styles.summaryCardIcon, { backgroundColor: '#FF9800' }]}>
-                        <AlertTriangle color="white" size={20} strokeWidth={2.5} />
+                      <View style={[styles.summaryCardIcon, { backgroundColor: isDark ? '#FFFFFF' : '#000000' }]}>
+                        <AlertTriangle color={isDark ? '#000000' : '#FFFFFF'} size={20} strokeWidth={2.5} />
                       </View>
                       <Text style={styles.analysisTitle}>Deficiências Detectadas</Text>
                     </View>
@@ -2117,7 +2118,7 @@ export default function SupplementsScreen() {
             ) : (
               <BlurCard style={styles.noProfileCard}>
                 <View style={styles.noProfileIcon}>
-                  <AlertTriangle color="white" size={24} />
+                  <AlertTriangle color={isDark ? '#000000' : '#FFFFFF'} size={24} />
                 </View>
                 <Text style={styles.noProfileTitle}>Configure seu Perfil</Text>
                 <Text style={styles.noProfileText}>
