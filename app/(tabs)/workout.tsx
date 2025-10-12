@@ -390,7 +390,7 @@ IMPORTANTE:
       gap: 8,
     },
     refreshButtonText: {
-      color: 'white',
+      color: isDark ? '#000000' : '#FFFFFF',
       fontSize: 15,
       fontWeight: '600' as const,
       letterSpacing: 0.2,
@@ -692,7 +692,7 @@ IMPORTANTE:
               end={{ x: 1, y: 1 }}
               style={styles.refreshButtonGradient}
             >
-              <RefreshCw color="white" size={18} strokeWidth={2.5} />
+              <RefreshCw color={isDark ? '#000000' : '#FFFFFF'} size={18} strokeWidth={2.5} />
               <Text style={styles.refreshButtonText}>
                 {isLoading ? 'Gerando...' : 'Gerar Novos Treinos'}
               </Text>
