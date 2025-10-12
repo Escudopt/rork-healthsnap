@@ -57,7 +57,7 @@ const lightTheme: ThemeColors = {
   
   // Surface colors - Clean white surfaces
   surface: '#FFFFFF',
-  surfaceSecondary: '#F9F9F9',
+  surfaceSecondary: '#F8F8F8',
   surfaceElevated: '#FFFFFF',
   
   // Text colors - Pure black hierarchy
@@ -66,8 +66,8 @@ const lightTheme: ThemeColors = {
   textTertiary: '#999999',
   
   // Border colors - Subtle gray lines
-  border: '#E8E8E8',
-  borderSecondary: '#F2F2F2',
+  border: '#E5E5E5',
+  borderSecondary: '#F0F0F0',
   
   // Accent colors - Black accents
   primary: '#000000',
@@ -80,15 +80,15 @@ const lightTheme: ThemeColors = {
   error: '#000000',
   
   // Glass/blur effects - Clean white glass
-  glassBackground: 'rgba(255, 255, 255, 0.98)',
-  glassBorder: 'rgba(0, 0, 0, 0.04)',
+  glassBackground: 'rgba(255, 255, 255, 0.95)',
+  glassBorder: 'rgba(0, 0, 0, 0.06)',
   glassOverlay: 'rgba(255, 255, 255, 0.9)',
   
   // Tab bar - Minimal white
-  tabBarBackground: 'rgba(255, 255, 255, 0.98)',
-  tabBarBorder: 'rgba(0, 0, 0, 0.04)',
+  tabBarBackground: 'rgba(255, 255, 255, 0.95)',
+  tabBarBorder: 'rgba(0, 0, 0, 0.06)',
   tabBarActive: '#000000',
-  tabBarInactive: '#AAAAAA',
+  tabBarInactive: '#999999',
 };
 
 const darkTheme: ThemeColors = {
