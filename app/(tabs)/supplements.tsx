@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -673,8 +673,8 @@ export default function SupplementsScreen() {
       : [];
   }, [userProfile, meals, healthMetrics]);
 
-  // Analyze vitamin coverage vs deficiencies
-  const analyzeVitaminCoverage = useCallback(() => {
+  // Run analysis when vitamins or recommendations change
+  useEffect(() => {
     if (!userProfile || personalizedRecommendations.length === 0 || myVitamins.length === 0) {
       setDeficiencyAnalysis(null);
       return;
@@ -747,11 +747,6 @@ export default function SupplementsScreen() {
     setDeficiencyAnalysis({ covered, missing, suggestions });
     console.log('📊 Vitamin coverage analysis:', { covered: covered.length, missing: missing.length });
   }, [userProfile, personalizedRecommendations, myVitamins]);
-
-  // Run analysis when vitamins or recommendations change
-  useEffect(() => {
-    analyzeVitaminCoverage();
-  }, [analyzeVitaminCoverage]);
 
   useEffect(() => {
     Animated.parallel([
