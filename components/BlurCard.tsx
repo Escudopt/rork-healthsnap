@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, Platform, ViewStyle } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 
 interface BlurCardProps {
   children: React.ReactNode;
@@ -36,7 +35,17 @@ export function BlurCard({ children, style, intensity = 85, variant = 'default' 
 
   const variantStyles = getVariantStyles();
 
-  // Simple card without blur for Apple Health style
+  if (Platform.OS === 'ios' && isLiquidGlassAvailable()) {
+    return (
+      <GlassView 
+        style={[styles.glassCard, variantStyles, style]}
+        glassEffectStyle="regular"
+      >
+        {children}
+      </GlassView>
+    );
+  }
+
   return (
     <View style={[styles.simpleCard, variantStyles, style]}>
       {children}
@@ -45,6 +54,16 @@ export function BlurCard({ children, style, intensity = 85, variant = 'default' 
 }
 
 const styles = StyleSheet.create({
+  glassCard: {
+    overflow: 'hidden',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
+  },
   simpleCard: {
     overflow: 'hidden',
     shadowColor: '#000',

@@ -3,6 +3,7 @@ import { Home, BookOpen, Pill, User, Settings, Dumbbell } from 'lucide-react-nat
 
 import { StyleSheet, Platform, View } from 'react-native';
 import { BlurView } from 'expo-blur';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useLanguage } from '@/providers/LanguageProvider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -64,21 +65,44 @@ export default function TabLayout() {
             },
           });
           
-          return Platform.OS === 'web' ? (
-            <View style={[StyleSheet.absoluteFillObject, styles.tabBarContainer]}>
-              <View style={[
-                StyleSheet.absoluteFillObject,
-                {
-                  backgroundColor: isDark 
-                    ? 'rgba(0, 0, 0, 0.98)' 
-                    : 'rgba(255, 255, 255, 0.98)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                }
-              ]} />
-              <View style={styles.tabBarBorder} />
-            </View>
-          ) : (
+          if (Platform.OS === 'web') {
+            return (
+              <View style={[StyleSheet.absoluteFillObject, styles.tabBarContainer]}>
+                <View style={[
+                  StyleSheet.absoluteFillObject,
+                  {
+                    backgroundColor: isDark 
+                      ? 'rgba(0, 0, 0, 0.98)' 
+                      : 'rgba(255, 255, 255, 0.98)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                  }
+                ]} />
+                <View style={styles.tabBarBorder} />
+              </View>
+            );
+          }
+
+          if (Platform.OS === 'ios' && isLiquidGlassAvailable()) {
+            return (
+              <GlassView
+                glassEffectStyle="regular"
+                style={[StyleSheet.absoluteFillObject, styles.tabBarContainer]}
+              >
+                <View style={[
+                  StyleSheet.absoluteFillObject,
+                  {
+                    backgroundColor: isDark 
+                      ? 'rgba(0, 0, 0, 0.2)' 
+                      : 'rgba(255, 255, 255, 0.2)',
+                  }
+                ]} />
+                <View style={styles.tabBarBorder} />
+              </GlassView>
+            );
+          }
+
+          return (
             <BlurView
               intensity={100}
               tint={isDark ? "dark" : "light"}
