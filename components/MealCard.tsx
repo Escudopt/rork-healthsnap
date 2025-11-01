@@ -8,7 +8,6 @@ import {
   Animated,
   Alert,
   Platform,
-  Modal,
 } from 'react-native';
 import { Trash2, ChevronRight, Utensils, Share2 } from 'lucide-react-native';
 import { Meal } from '@/types/food';
@@ -50,9 +49,16 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
         setShowShareCard(true);
         
         setTimeout(async () => {
-          await shareMeal(meal, shareCardRef);
-          setShowShareCard(false);
-        }, 500);
+          try {
+            console.log('📸 Starting share capture...');
+            await shareMeal(meal, shareCardRef);
+            console.log('✅ Share completed');
+          } catch (shareError) {
+            console.error('❌ Share error:', shareError);
+          } finally {
+            setShowShareCard(false);
+          }
+        }, 1000);
       }
     } catch (error) {
       console.error('Error sharing meal:', error);
@@ -178,16 +184,11 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
       </View>
       </Animated.View>
 
-      <Modal
-        visible={showShareCard}
-        transparent
-        animationType="none"
-        statusBarTranslucent
-      >
+      {showShareCard && (
         <View style={styles.offscreenContainer}>
           <MealShareCard ref={shareCardRef} meal={meal} />
         </View>
-      </Modal>
+      )}
     </>
   );
 }
@@ -306,9 +307,12 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   offscreenContainer: {
     position: 'absolute' as const,
-    left: -10000,
-    top: -10000,
-    width: 1080,
-    height: 1920,
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    opacity: 0.001,
+    zIndex: -999,
+    overflow: 'hidden' as const,
   },
 });

@@ -56,7 +56,6 @@ export const MealShareCard = React.forwardRef<View, MealShareCardProps>(
                   }}
                   style={styles.mealImage}
                   resizeMode="cover"
-                  defaultSource={require('../assets/images/icon.png')}
                 />
               </View>
             )}

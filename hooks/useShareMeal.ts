@@ -1,10 +1,9 @@
-import { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState, useRef } from 'react';
 import { Platform, Alert, Share, View } from 'react-native';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
 import { captureRef } from 'react-native-view-shot';
 import { Meal } from '@/types/food';
-import React from "react";
 
 export function useShareMeal() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -12,12 +11,16 @@ export function useShareMeal() {
 
   const captureShareCard = async (cardRef: React.RefObject<View | null>): Promise<string | null> => {
     try {
+      console.log('📸 captureShareCard - Starting...');
+      console.log('📸 cardRef:', cardRef);
+      console.log('📸 cardRef.current:', cardRef.current);
+      
       if (!cardRef.current) {
-        console.error('Share card ref not available');
+        console.error('❌ Share card ref not available');
         return null;
       }
 
-      console.log('Capturing share card...');
+      console.log('📸 About to call captureRef...');
       
       const uri = await captureRef(cardRef, {
         format: 'jpg',
@@ -25,10 +28,14 @@ export function useShareMeal() {
         result: 'tmpfile',
       });
 
-      console.log('Share card captured:', uri);
+      console.log('✅ Share card captured successfully!');
+      console.log('💾 URI:', uri);
+      console.log('💾 URI length:', uri?.length || 0);
+      
       return uri;
     } catch (error) {
-      console.error('Error capturing share card:', error);
+      console.error('❌ Error capturing share card:', error);
+      console.error('❌ Error details:', JSON.stringify(error, null, 2));
       return null;
     }
   };
