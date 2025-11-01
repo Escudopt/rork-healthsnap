@@ -52,7 +52,7 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
         setTimeout(async () => {
           await shareMeal(meal, shareCardRef);
           setShowShareCard(false);
-        }, 100);
+        }, 500);
       }
     } catch (error) {
       console.error('Error sharing meal:', error);
@@ -308,5 +308,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     position: 'absolute' as const,
     left: -10000,
     top: -10000,
+    width: 1080,
+    height: 1920,
   },
 });
