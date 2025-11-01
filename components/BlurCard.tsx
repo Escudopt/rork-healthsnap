@@ -1,52 +1,75 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
-import { useTheme } from '@/providers/ThemeProvider';
+import { View, StyleSheet, Platform, ViewStyle } from 'react-native';
+import { GlassView, isLiquidGlassAvailable } from 'expo-glass-effect';
 
 interface BlurCardProps {
   children: React.ReactNode;
   style?: ViewStyle;
-  variant?: 'default' | 'elevated' | 'flat';
+  intensity?: number;
+  variant?: 'default' | 'premium' | 'subtle';
 }
 
-export function BlurCard({ children, style, variant = 'default' }: BlurCardProps) {
-  const { colors } = useTheme();
-  
+export function BlurCard({ children, style, intensity = 85, variant = 'default' }: BlurCardProps) {
   const getVariantStyles = () => {
     switch (variant) {
-      case 'elevated':
+      case 'premium':
         return {
-          borderRadius: 16,
-          backgroundColor: colors.surfaceElevated,
-          borderWidth: 1,
-          borderColor: colors.border,
+          borderRadius: 28,
+          shadowRadius: 24,
+          shadowOpacity: 0.4,
         };
-      case 'flat':
+      case 'subtle':
         return {
-          borderRadius: 12,
-          backgroundColor: colors.surface,
-          borderWidth: 0,
+          borderRadius: 18,
+          shadowRadius: 14,
+          shadowOpacity: 0.2,
         };
       default:
         return {
-          borderRadius: 16,
-          backgroundColor: colors.surface,
-          borderWidth: 1,
-          borderColor: colors.border,
+          borderRadius: 24,
+          shadowRadius: 18,
+          shadowOpacity: 0.3,
         };
     }
   };
 
   const variantStyles = getVariantStyles();
 
+  if (Platform.OS === 'ios' && isLiquidGlassAvailable()) {
+    return (
+      <GlassView 
+        style={[styles.glassCard, variantStyles, style]}
+        glassEffectStyle="regular"
+      >
+        {children}
+      </GlassView>
+    );
+  }
+
   return (
-    <View style={[styles.card, variantStyles, style]}>
+    <View style={[styles.simpleCard, variantStyles, style]}>
       {children}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
+  glassCard: {
     overflow: 'hidden',
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  simpleCard: {
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
 });
