@@ -28,6 +28,13 @@ export const MealShareCard = React.forwardRef<View, MealShareCardProps>(
       minute: '2-digit',
     });
 
+    React.useEffect(() => {
+      if (!meal.imageBase64) {
+        console.log('📝 No image in meal, calling onImageLoad immediately');
+        onImageLoad?.();
+      }
+    }, [meal.imageBase64, onImageLoad]);
+
     return (
       <View ref={ref} style={styles.container}>
         <LinearGradient

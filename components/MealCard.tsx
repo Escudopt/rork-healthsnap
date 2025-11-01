@@ -30,6 +30,7 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const shareCardRef = useRef<View>(null);
   const [showShareCard, setShowShareCard] = useState(false);
+  const [imageReady, setImageReady] = useState(false);
 
   const handleViewDetails = () => {
     if (Platform.OS !== 'web') {
@@ -47,34 +48,45 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
         await shareMeal(meal);
       } else {
         console.log('🔄 Mounting share card...');
+        setImageReady(false);
         setShowShareCard(true);
         
-        setTimeout(async () => {
-          try {
-            console.log('📸 Starting share capture...');
-            console.log('📸 shareCardRef.current:', shareCardRef.current);
-            
-            if (!shareCardRef.current) {
-              console.error('❌ shareCardRef.current is null, waiting more...');
-              
-              // Wait a bit more and try again
-              setTimeout(async () => {
-                console.log('🔄 Retry - shareCardRef.current:', shareCardRef.current);
-                await shareMeal(meal, shareCardRef);
-                setShowShareCard(false);
-              }, 500);
-              return;
-            }
-            
+        // Wait for component to be ready
+        const maxWaitTime = 5000;
+        const startTime = Date.now();
+        
+        const waitForReady = async () => {
+          console.log('⏳ Waiting for share card to be ready...');
+          console.log('📸 shareCardRef.current:', shareCardRef.current);
+          console.log('🖼️ imageReady:', imageReady);
+          
+          // Check if component is mounted and image is ready (or no image)
+          const hasImage = !!meal.imageBase64;
+          const isReady = shareCardRef.current && (!hasImage || imageReady);
+          
+          if (isReady) {
+            console.log('✅ Share card ready, capturing...');
             await shareMeal(meal, shareCardRef);
-            console.log('✅ Share completed');
-          } catch (shareError) {
-            console.error('❌ Share error:', shareError);
-          } finally {
-            console.log('🧹 Unmounting share card...');
             setShowShareCard(false);
+            return;
           }
-        }, 2000);
+          
+          // Check timeout
+          if (Date.now() - startTime > maxWaitTime) {
+            console.warn('⏱️ Timeout waiting for share card, capturing anyway...');
+            if (shareCardRef.current) {
+              await shareMeal(meal, shareCardRef);
+            }
+            setShowShareCard(false);
+            return;
+          }
+          
+          // Wait and retry
+          setTimeout(waitForReady, 100);
+        };
+        
+        // Start waiting after giving React time to render
+        setTimeout(waitForReady, 300);
       }
     } catch (error) {
       console.error('Error sharing meal:', error);
@@ -202,7 +214,14 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
 
       {showShareCard && (
         <View style={styles.offscreenContainer}>
-          <MealShareCard ref={shareCardRef} meal={meal} />
+          <MealShareCard 
+            ref={shareCardRef} 
+            meal={meal} 
+            onImageLoad={() => {
+              console.log('🎉 Image loaded in MealCard');
+              setImageReady(true);
+            }}
+          />
         </View>
       )}
     </>
