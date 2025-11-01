@@ -89,6 +89,14 @@ export default function SettingsScreen() {
       type: 'navigation' as const,
       onPress: () => router.push('/help'),
     },
+    {
+      id: 'liquid-glass',
+      title: 'Liquid Glass Demo',
+      subtitle: 'Demonstração do componente Liquid Glass',
+      icon: Settings,
+      type: 'navigation' as const,
+      onPress: () => router.push('/liquid-glass-demo'),
+    },
   ];
 
   const renderSettingItem = (item: SettingOption) => {
