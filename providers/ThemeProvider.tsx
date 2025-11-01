@@ -94,43 +94,43 @@ const lightTheme: ThemeColors = {
 const darkTheme: ThemeColors = {
   // Background colors - Pure black
   background: '#000000',
-  backgroundSecondary: '#0A0A0A',
+  backgroundSecondary: '#000000',
   backgroundTertiary: '#000000',
   
-  // Surface colors - Dark surfaces
+  // Surface colors - Dark surfaces with minimal elevation
   surface: '#000000',
-  surfaceSecondary: '#1A1A1A',
-  surfaceElevated: '#0F0F0F',
+  surfaceSecondary: '#0A0A0A',
+  surfaceElevated: '#0A0A0A',
   
-  // Text colors - Pure white hierarchy
+  // Text colors - Pure white hierarchy (Threads-inspired)
   text: '#FFFFFF',
-  textSecondary: '#999999',
-  textTertiary: '#666666',
+  textSecondary: '#777777',
+  textTertiary: '#555555',
   
   // Border colors - Subtle white lines
-  border: '#2A2A2A',
-  borderSecondary: '#1A1A1A',
+  border: '#1A1A1A',
+  borderSecondary: '#0F0F0F',
   
   // Accent colors - White accents
   primary: '#FFFFFF',
-  primaryLight: '#CCCCCC',
+  primaryLight: '#E5E5E5',
   primaryDark: '#FFFFFF',
   
   // Status colors - Monochrome
   success: '#FFFFFF',
-  warning: '#999999',
+  warning: '#888888',
   error: '#FFFFFF',
   
   // Glass/blur effects - Clean black glass
-  glassBackground: 'rgba(0, 0, 0, 0.98)',
-  glassBorder: 'rgba(255, 255, 255, 0.04)',
-  glassOverlay: 'rgba(0, 0, 0, 0.9)',
+  glassBackground: 'rgba(0, 0, 0, 0.95)',
+  glassBorder: 'rgba(255, 255, 255, 0.06)',
+  glassOverlay: 'rgba(0, 0, 0, 0.85)',
   
   // Tab bar - Minimal black
-  tabBarBackground: 'rgba(0, 0, 0, 0.98)',
-  tabBarBorder: 'rgba(255, 255, 255, 0.04)',
+  tabBarBackground: 'rgba(0, 0, 0, 0.95)',
+  tabBarBorder: 'rgba(255, 255, 255, 0.06)',
   tabBarActive: '#FFFFFF',
-  tabBarInactive: '#555555',
+  tabBarInactive: '#666666',
 };
 
 interface ThemeContextType {

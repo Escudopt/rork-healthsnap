@@ -23,7 +23,7 @@ interface MealCardProps {
 
 export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
   const { deleteMeal } = useCalorieTracker();
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handleViewDetails = () => {
@@ -39,18 +39,18 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
     }
 
     Alert.alert(
-      'Excluir Refeição',
-      'Tem certeza que deseja excluir esta refeição?',
+      'Delete Meal',
+      'Are you sure you want to delete this meal?',
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Excluir',
+          text: 'Delete',
           style: 'destructive',
           onPress: async () => {
             try {
               Animated.timing(scaleAnim, {
                 toValue: 0,
-                duration: 300,
+                duration: 200,
                 useNativeDriver: true,
               }).start(async () => {
                 await deleteMeal(meal.id);
@@ -59,13 +59,13 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
               console.error('Error deleting meal:', error);
               Animated.timing(scaleAnim, {
                 toValue: 1,
-                duration: 200,
+                duration: 150,
                 useNativeDriver: true,
               }).start();
               
               Alert.alert(
-                'Erro ao Excluir',
-                'Não foi possível excluir a refeição. Tente novamente.',
+                'Delete Error',
+                'Could not delete meal. Please try again.',
                 [{ text: 'OK' }]
               );
             }
@@ -75,14 +75,19 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
     );
   };
 
-  const styles = createStyles(colors, isDark);
-
   return (
     <Animated.View style={[
       styles.container,
       { transform: [{ scale: scaleAnim }] }
     ]}>
-      <View style={styles.card}>
+      <View style={[
+        styles.card,
+        {
+          backgroundColor: colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+        }
+      ]}>
         <View style={styles.cardContent}>
           {meal.imageBase64 ? (
             <Image
@@ -98,39 +103,32 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
               }}
             />
           ) : (
-            <View style={[styles.placeholderIcon, { backgroundColor: colors.surfaceSecondary }]}>
-              <Utensils color={colors.textTertiary} size={20} strokeWidth={1.5} />
+            <View style={[styles.placeholderIcon, { backgroundColor: colors.surfaceSecondary, borderColor: colors.border }]}>
+              <Utensils color={colors.textTertiary} size={18} strokeWidth={1.5} />
             </View>
           )}
           
           <View style={styles.content}>
-            <View style={styles.info}>
-              <View style={styles.mealTypeContainer}>
-                <Text style={styles.mealType}>{meal.mealType}</Text>
+            <View style={styles.header}>
+              <View style={styles.mealTypeTag}>
+                <Text style={[styles.mealType, { color: colors.textSecondary }]}>{meal.mealType}</Text>
               </View>
-              <Text style={[styles.foods, { color: colors.text }]} numberOfLines={2}>
-                {meal.foods.map(f => f.name).join(', ')}
-              </Text>
+              <Text style={[styles.calories, { color: colors.text }]}>{meal.totalCalories} kcal</Text>
             </View>
             
-            <View style={styles.footer}>
-              <View style={styles.caloriesContainer}>
-                <Text style={[styles.calories, { color: colors.text }]}>{meal.totalCalories} kcal</Text>
-              </View>
-              <View style={styles.actionButtons}>
-                {showDetailButton && (
-                  <TouchableOpacity onPress={handleViewDetails} style={styles.detailButton}>
-                    <View style={styles.detailButtonInner}>
-                      <ChevronRight color={colors.primary} size={18} strokeWidth={2} />
-                    </View>
-                  </TouchableOpacity>
-                )}
-                <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-                  <View style={styles.deleteButtonInner}>
-                    <Trash2 color={colors.error} size={18} strokeWidth={2} />
-                  </View>
+            <Text style={[styles.foods, { color: colors.textSecondary }]} numberOfLines={2}>
+              {meal.foods.map(f => f.name).join(', ')}
+            </Text>
+            
+            <View style={styles.actionButtons}>
+              {showDetailButton && (
+                <TouchableOpacity onPress={handleViewDetails} style={styles.actionButton}>
+                  <ChevronRight color={colors.text} size={18} strokeWidth={1.5} />
                 </TouchableOpacity>
-              </View>
+              )}
+              <TouchableOpacity onPress={handleDelete} style={styles.actionButton}>
+                <Trash2 color={colors.text} size={18} strokeWidth={1.5} />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -139,100 +137,67 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
   );
 }
 
-const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
-    marginBottom: 14,
+    marginBottom: 0,
   },
   card: {
-    backgroundColor: isDark ? '#0F0F0F' : '#FFFFFF',
-    borderRadius: 20,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: isDark ? 0.3 : 0.03,
-    shadowRadius: isDark ? 8 : 12,
-    elevation: isDark ? 2 : 1,
-    borderWidth: 0.5,
-    borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
-    overflow: 'hidden' as const,
+    overflow: 'hidden',
   },
   cardContent: {
-    flexDirection: 'row' as const,
-    padding: 16,
-    gap: 12,
-    alignItems: 'center' as const,
+    flexDirection: 'row',
+    padding: 20,
+    gap: 16,
+    alignItems: 'flex-start',
   },
   iconImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 8,
   },
   placeholderIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
   },
   content: {
     flex: 1,
     gap: 8,
   },
-  info: {
-    flex: 1,
-    gap: 4,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  mealTypeContainer: {
-    backgroundColor: colors.primary + (isDark ? '18' : '12'),
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    alignSelf: 'flex-start' as const,
-    marginBottom: 4,
+  mealTypeTag: {
+    paddingHorizontal: 0,
   },
   mealType: {
-    fontSize: 12,
-    fontWeight: '600' as const,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 0.5,
-    color: colors.primary,
-  },
-  foods: {
-    fontSize: 13,
-    fontWeight: '400' as const,
-    lineHeight: 16,
-  },
-  footer: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    alignItems: 'center' as const,
-    marginTop: 6,
-  },
-  caloriesContainer: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
+    fontSize: 11,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
   },
   calories: {
     fontSize: 16,
-    fontWeight: '600' as const,
+    fontWeight: '600',
+    letterSpacing: -0.3,
+  },
+  foods: {
+    fontSize: 14,
+    fontWeight: '400',
+    lineHeight: 20,
+    letterSpacing: -0.1,
   },
   actionButtons: {
-    flexDirection: 'row' as const,
-    gap: 8,
+    flexDirection: 'row',
+    gap: 16,
+    marginTop: 4,
   },
-  detailButton: {
-    borderRadius: 20,
-  },
-  deleteButton: {
-    borderRadius: 20,
-  },
-  detailButtonInner: {
-    padding: 8,
-    borderRadius: 22,
-    backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0, 122, 255, 0.1)',
-  },
-  deleteButtonInner: {
-    padding: 8,
-    borderRadius: 22,
-    backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 59, 48, 0.1)',
+  actionButton: {
+    padding: 0,
   },
 });

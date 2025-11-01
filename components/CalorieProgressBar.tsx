@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, ActivityIndicator } from 'react-native';
 import { Camera, Edit3, Pill } from 'lucide-react-native';
-import Svg, { Circle } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '@/providers/ThemeProvider';
 
@@ -14,292 +13,198 @@ interface CalorieProgressBarProps {
   onVitaminsPress?: () => void;
 }
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-
-export function CalorieProgressBar({ currentCalories, dailyGoal, onGoalPress, onCameraPress, onManualPress, onVitaminsPress }: CalorieProgressBarProps) {
-  const { colors, isDark } = useTheme();
-  const progressAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+export function CalorieProgressBar({ currentCalories, dailyGoal, onCameraPress, onManualPress, onVitaminsPress }: CalorieProgressBarProps) {
+  const { colors } = useTheme();
+  const scaleAnim = useRef(new Animated.Value(0.98)).current;
   const cameraButtonScale = useRef(new Animated.Value(1)).current;
   const manualButtonScale = useRef(new Animated.Value(1)).current;
   const vitaminsButtonScale = useRef(new Animated.Value(1)).current;
-  const vitaminsPulseAnim = useRef(new Animated.Value(1)).current;
-  const vitaminsGlowAnim = useRef(new Animated.Value(0)).current;
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   
   const percentage = Math.min((currentCalories / dailyGoal) * 100, 100);
-  const progressColor = colors.primary;
-  
-  const size = 90;
-  const strokeWidth = 8;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(progressAnim, {
-        toValue: percentage,
-        duration: 1000,
-        useNativeDriver: false,
-      }),
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        useNativeDriver: true,
-        tension: 50,
-        friction: 7,
-      }),
-    ]).start();
-    
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.05,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1200,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-    
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(vitaminsPulseAnim, {
-          toValue: 1.08,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(vitaminsPulseAnim, {
-          toValue: 1,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-    
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(vitaminsGlowAnim, {
-          toValue: 1,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(vitaminsGlowAnim, {
-          toValue: 0,
-          duration: 2000,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [percentage, progressAnim, scaleAnim, pulseAnim, vitaminsPulseAnim, vitaminsGlowAnim]);
-  
-  const strokeDashoffset = progressAnim.interpolate({
-    inputRange: [0, 100],
-    outputRange: [circumference, 0],
-  });
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      tension: 40,
+      friction: 8,
+    }).start();
+  }, [scaleAnim]);
   
   return (
     <Animated.View style={[styles.container, { transform: [{ scale: scaleAnim }] }]}>
       <View
         style={[styles.card, {
-          backgroundColor: isDark ? '#0F0F0F' : '#FFFFFF',
-          shadowColor: '#000000',
-          shadowOpacity: isDark ? 0.3 : 0.04,
-          borderWidth: 0.5,
-          borderColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+          backgroundColor: colors.surface,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
         }]}
       >
-        <View style={styles.content}>
-          <View style={styles.circularProgressContainer}>
-            <Svg width={size} height={size}>
-              <Circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke={isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}
-                strokeWidth={strokeWidth}
-                fill="none"
-              />
-              <AnimatedCircle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                stroke={progressColor}
-                strokeWidth={strokeWidth}
-                fill="none"
-                strokeDasharray={circumference}
-                strokeDashoffset={strokeDashoffset}
-                strokeLinecap="round"
-                rotation="-90"
-                origin={`${size / 2}, ${size / 2}`}
-              />
-            </Svg>
-            <View style={styles.circularProgressCenter}>
-              <Text style={[styles.circularProgressValue, { color: colors.text }]}>{currentCalories}</Text>
-              <Text style={[styles.circularProgressUnit, { color: colors.textSecondary }]}>kcal</Text>
-            </View>
+        <View style={styles.topRow}>
+          <View style={styles.caloriesDisplay}>
+            <Text style={[styles.currentCalories, { color: colors.text }]}>{currentCalories}</Text>
+            <Text style={[styles.separator, { color: colors.textSecondary }]}>/</Text>
+            <Text style={[styles.goalCalories, { color: colors.textSecondary }]}>{dailyGoal}</Text>
           </View>
-          
-          <View style={styles.rightContent}>
-            <View style={styles.buttonsRow}>
-              <Animated.View style={{ transform: [{ scale: cameraButtonScale }] }}>
-                <TouchableOpacity 
-                  onPress={async () => {
-                    if (isAnalyzing || !onCameraPress) return;
-                    
-                    if (Platform.OS !== 'web') {
-                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }
-                    
-                    Animated.sequence([
-                      Animated.timing(cameraButtonScale, {
-                        toValue: 0.9,
-                        duration: 100,
-                        useNativeDriver: true,
-                      }),
-                      Animated.spring(cameraButtonScale, {
-                        toValue: 1,
-                        useNativeDriver: true,
-                        tension: 300,
-                        friction: 10,
-                      }),
-                    ]).start();
-                    
-                    setIsAnalyzing(true);
-                    
-                    try {
-                      await onCameraPress();
-                    } finally {
-                      setTimeout(() => {
-                        setIsAnalyzing(false);
-                      }, 2500);
-                    }
-                  }} 
-                  style={styles.flatButton}
-                  activeOpacity={0.7}
-                  disabled={isAnalyzing}
-                >
-                  <View
-                    style={[styles.flatButtonGradient, {
-                      backgroundColor: isDark ? '#FFFFFF' : '#000000',
-                    }]}
-                  >
-                    {isAnalyzing ? (
-                      <ActivityIndicator color={isDark ? '#000000' : '#FFFFFF'} size="small" />
-                    ) : (
-                      <Camera color={isDark ? '#000000' : '#FFFFFF'} size={24} strokeWidth={2.5} />
-                    )}
-                  </View>
-                </TouchableOpacity>
-              </Animated.View>
-              
-              <Animated.View style={{ transform: [{ scale: manualButtonScale }] }}>
-                <TouchableOpacity 
-                  onPress={async () => {
-                    if (isAnalyzing || !onManualPress) return;
-                    
-                    if (Platform.OS !== 'web') {
-                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    }
-                    
-                    Animated.sequence([
-                      Animated.timing(manualButtonScale, {
-                        toValue: 0.9,
-                        duration: 100,
-                        useNativeDriver: true,
-                      }),
-                      Animated.spring(manualButtonScale, {
-                        toValue: 1,
-                        useNativeDriver: true,
-                        tension: 300,
-                        friction: 10,
-                      }),
-                    ]).start();
-                    
-                    onManualPress();
-                  }} 
-                  style={styles.flatButton}
-                  activeOpacity={0.7}
-                  disabled={isAnalyzing}
-                >
-                  <View
-                    style={[styles.flatButtonGradient, {
-                      backgroundColor: isDark ? '#FFFFFF' : '#000000',
-                    }]}
-                  >
-                    <Edit3 color={isDark ? '#000000' : '#FFFFFF'} size={24} strokeWidth={2.5} />
-                  </View>
-                </TouchableOpacity>
-              </Animated.View>
-              
-              <Animated.View style={{ 
-                transform: [{ 
-                  scale: Animated.multiply(vitaminsPulseAnim, vitaminsButtonScale) 
-                }] 
-              }}>
-                <TouchableOpacity 
-                  onPress={async () => {
-                    if (isAnalyzing || !onVitaminsPress) return;
-                    
-                    if (Platform.OS !== 'web') {
-                      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    }
-                    
-                    Animated.sequence([
-                      Animated.timing(vitaminsButtonScale, {
-                        toValue: 0.9,
-                        duration: 100,
-                        useNativeDriver: true,
-                      }),
-                      Animated.spring(vitaminsButtonScale, {
-                        toValue: 1,
-                        useNativeDriver: true,
-                        tension: 300,
-                        friction: 10,
-                      }),
-                    ]).start();
-                    
-                    onVitaminsPress();
-                  }} 
-                  style={styles.flatButton}
-                  activeOpacity={0.7}
-                  disabled={isAnalyzing}
-                >
-                  <Animated.View style={[
-                    styles.flatButtonGlow,
-                    {
-                      opacity: vitaminsGlowAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0, 0.4],
-                      }),
-                    }
-                  ]} />
-                  <View
-                    style={[styles.flatButtonGradient, {
-                      backgroundColor: isDark ? '#FFFFFF' : '#000000',
-                    }]}
-                  >
-                    <Pill color={isDark ? '#000000' : '#FFFFFF'} size={24} strokeWidth={2.5} />
-                  </View>
-                </TouchableOpacity>
-              </Animated.View>
-            </View>
-            {isAnalyzing ? (
-              <Text style={[styles.analyzingText, { color: colors.primary }]}>
-                🍽️ A analisar refeição...
-              </Text>
-            ) : (
-              <Text style={[styles.goalText, { color: colors.textSecondary }]}>
-                Meta: {dailyGoal} kcal ({Math.round(percentage)}%)
-              </Text>
-            )}
-          </View>
+          <Text style={[styles.percentageText, { color: colors.textSecondary }]}>{Math.round(percentage)}%</Text>
         </View>
+
+        <View style={[styles.progressBar, { backgroundColor: colors.border }]}>
+          <Animated.View
+            style={[
+              styles.progressFill,
+              {
+                width: `${percentage}%`,
+                backgroundColor: colors.text,
+              },
+            ]}
+          />
+        </View>
+
+        <View style={styles.buttonsRow}>
+          <Animated.View style={{ transform: [{ scale: cameraButtonScale }] }}>
+            <TouchableOpacity 
+              onPress={async () => {
+                if (isAnalyzing || !onCameraPress) return;
+                
+                if (Platform.OS !== 'web') {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                
+                Animated.sequence([
+                  Animated.timing(cameraButtonScale, {
+                    toValue: 0.92,
+                    duration: 80,
+                    useNativeDriver: true,
+                  }),
+                  Animated.spring(cameraButtonScale, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                    tension: 300,
+                    friction: 10,
+                  }),
+                ]).start();
+                
+                setIsAnalyzing(true);
+                
+                try {
+                  await onCameraPress();
+                } finally {
+                  setTimeout(() => {
+                    setIsAnalyzing(false);
+                  }, 2500);
+                }
+              }} 
+              style={styles.button}
+              activeOpacity={0.7}
+              disabled={isAnalyzing}
+            >
+              <View
+                style={[styles.buttonInner, {
+                  backgroundColor: colors.text,
+                  borderColor: colors.border,
+                }]}
+              >
+                {isAnalyzing ? (
+                  <ActivityIndicator color={colors.background} size="small" />
+                ) : (
+                  <Camera color={colors.background} size={20} strokeWidth={2} />
+                )}
+              </View>
+              <Text style={[styles.buttonLabel, { color: colors.textSecondary }]}>Scan</Text>
+            </TouchableOpacity>
+          </Animated.View>
+          
+          <Animated.View style={{ transform: [{ scale: manualButtonScale }] }}>
+            <TouchableOpacity 
+              onPress={async () => {
+                if (isAnalyzing || !onManualPress) return;
+                
+                if (Platform.OS !== 'web') {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                
+                Animated.sequence([
+                  Animated.timing(manualButtonScale, {
+                    toValue: 0.92,
+                    duration: 80,
+                    useNativeDriver: true,
+                  }),
+                  Animated.spring(manualButtonScale, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                    tension: 300,
+                    friction: 10,
+                  }),
+                ]).start();
+                
+                onManualPress();
+              }} 
+              style={styles.button}
+              activeOpacity={0.7}
+              disabled={isAnalyzing}
+            >
+              <View
+                style={[styles.buttonInner, {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                }]}
+              >
+                <Edit3 color={colors.text} size={20} strokeWidth={2} />
+              </View>
+              <Text style={[styles.buttonLabel, { color: colors.textSecondary }]}>Manual</Text>
+            </TouchableOpacity>
+          </Animated.View>
+          
+          <Animated.View style={{ transform: [{ scale: vitaminsButtonScale }] }}>
+            <TouchableOpacity 
+              onPress={async () => {
+                if (isAnalyzing || !onVitaminsPress) return;
+                
+                if (Platform.OS !== 'web') {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                
+                Animated.sequence([
+                  Animated.timing(vitaminsButtonScale, {
+                    toValue: 0.92,
+                    duration: 80,
+                    useNativeDriver: true,
+                  }),
+                  Animated.spring(vitaminsButtonScale, {
+                    toValue: 1,
+                    useNativeDriver: true,
+                    tension: 300,
+                    friction: 10,
+                  }),
+                ]).start();
+                
+                onVitaminsPress();
+              }} 
+              style={styles.button}
+              activeOpacity={0.7}
+              disabled={isAnalyzing}
+            >
+              <View
+                style={[styles.buttonInner, {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                }]}
+              >
+                <Pill color={colors.text} size={20} strokeWidth={2} />
+              </View>
+              <Text style={[styles.buttonLabel, { color: colors.textSecondary }]}>Nutrients</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+
+        {isAnalyzing && (
+          <Text style={[styles.analyzingText, { color: colors.textSecondary }]}>
+            Analyzing meal...
+          </Text>
+        )}
       </View>
     </Animated.View>
   );
@@ -310,93 +215,86 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   card: {
-    borderRadius: 20,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
+  },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
     marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 12,
-    elevation: 1,
-    overflow: 'hidden' as const,
   },
-  content: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    alignItems: 'center' as const,
+  caloriesDisplay: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
   },
-  circularProgressContainer: {
-    position: 'relative' as const,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-  },
-  circularProgressCenter: {
-    position: 'absolute' as const,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-  },
-  circularProgressValue: {
-    fontSize: 20,
-    fontWeight: '700' as const,
+  currentCalories: {
+    fontSize: 32,
+    fontWeight: '700',
+    letterSpacing: -1,
+    lineHeight: 36,
     ...Platform.select({
       ios: {
         fontFamily: 'System',
       },
     }),
   },
-  circularProgressUnit: {
-    fontSize: 12,
-    marginTop: 2,
+  separator: {
+    fontSize: 24,
+    fontWeight: '300',
+    letterSpacing: 0,
   },
-  rightContent: {
-    alignItems: 'flex-end' as const,
-    gap: 8,
+  goalCalories: {
+    fontSize: 20,
+    fontWeight: '400',
+    letterSpacing: -0.5,
+  },
+  percentageText: {
+    fontSize: 15,
+    fontWeight: '500',
+    letterSpacing: -0.2,
+  },
+  progressBar: {
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
   },
   buttonsRow: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    gap: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
   },
-  flatButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    overflow: 'hidden' as const,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-    position: 'relative' as const,
+  button: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 8,
   },
-  flatButtonGlow: {
-    position: 'absolute' as const,
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    borderRadius: 18,
-    backgroundColor: '#FFFFFF',
-    zIndex: 0,
+  buttonInner: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
   },
-  flatButtonGradient: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    position: 'relative' as const,
-  },
-  goalText: {
-    fontSize: 13,
-    textAlign: 'right' as const,
-    marginTop: 8,
+  buttonLabel: {
+    fontSize: 11,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   analyzingText: {
     fontSize: 13,
-    textAlign: 'right' as const,
-    marginTop: 8,
-    fontWeight: '600' as const,
-    fontStyle: 'italic' as const,
+    textAlign: 'center',
+    marginTop: 12,
+    fontWeight: '400',
+    letterSpacing: -0.1,
   },
 });

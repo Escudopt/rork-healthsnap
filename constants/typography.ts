@@ -46,61 +46,61 @@ export const FontFamilies = {
 
 // iOS 26 Typography Scale
 export const Typography = {
-  // Large Titles
+  // Large Titles - Threads-inspired hierarchy
   largeTitle: {
     fontFamily: FontFamilies.display,
-    fontSize: 34,
+    fontSize: 32,
     fontWeight: FontWeights.bold,
-    lineHeight: 41,
-    letterSpacing: -0.4,
+    lineHeight: 38,
+    letterSpacing: -0.6,
   },
   
-  // Titles
+  // Titles - Clean hierarchy
   title1: {
     fontFamily: FontFamilies.display,
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: FontWeights.bold,
-    lineHeight: 34,
-    letterSpacing: -0.3,
+    lineHeight: 32,
+    letterSpacing: -0.5,
   },
   title2: {
     fontFamily: FontFamilies.display,
-    fontSize: 22,
-    fontWeight: FontWeights.bold,
-    lineHeight: 28,
-    letterSpacing: -0.2,
+    fontSize: 20,
+    fontWeight: FontWeights.semibold,
+    lineHeight: 26,
+    letterSpacing: -0.4,
   },
   title3: {
     fontFamily: FontFamilies.display,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: FontWeights.semibold,
-    lineHeight: 25,
-    letterSpacing: -0.1,
+    lineHeight: 24,
+    letterSpacing: -0.3,
   },
   
   // Headlines
   headline: {
     fontFamily: FontFamilies.display,
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: FontWeights.semibold,
-    lineHeight: 22,
-    letterSpacing: -0.2,
+    lineHeight: 21,
+    letterSpacing: -0.3,
   },
   
-  // Body Text
+  // Body Text - Optimized for readability
   body: {
     fontFamily: FontFamilies.system,
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: FontWeights.regular,
-    lineHeight: 22,
-    letterSpacing: -0.41,
+    lineHeight: 21,
+    letterSpacing: -0.2,
   },
   bodyEmphasized: {
     fontFamily: FontFamilies.system,
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: FontWeights.semibold,
-    lineHeight: 22,
-    letterSpacing: -0.41,
+    lineHeight: 21,
+    letterSpacing: -0.2,
   },
   
   // Callout
