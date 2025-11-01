@@ -25,7 +25,7 @@ interface MealCardProps {
 export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
   const { deleteMeal } = useCalorieTracker();
   const { colors, isDark } = useTheme();
-  const { shareMeal } = useShareMeal();
+  const { shareMeal, isGenerating } = useShareMeal();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handleViewDetails = () => {
@@ -131,9 +131,17 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
                 <Text style={[styles.calories, { color: colors.text }]}>{meal.totalCalories} kcal</Text>
               </View>
               <View style={styles.actionButtons}>
-                <TouchableOpacity onPress={handleShare} style={styles.shareButton}>
-                  <View style={styles.shareButtonInner}>
-                    <Share2 color={colors.success || '#10B981'} size={18} strokeWidth={2} />
+                <TouchableOpacity 
+                  onPress={handleShare} 
+                  style={styles.shareButton}
+                  disabled={isGenerating}
+                >
+                  <View style={[styles.shareButtonInner, isGenerating && styles.shareButtonGenerating]}>
+                    {isGenerating ? (
+                      <Text style={styles.generatingText}>...</Text>
+                    ) : (
+                      <Share2 color={colors.success || '#10B981'} size={18} strokeWidth={2} />
+                    )}
                   </View>
                 </TouchableOpacity>
                 {showDetailButton && (
@@ -260,5 +268,13 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     padding: 8,
     borderRadius: 22,
     backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)',
+  },
+  shareButtonGenerating: {
+    backgroundColor: isDark ? 'rgba(100, 100, 100, 0.15)' : 'rgba(100, 100, 100, 0.1)',
+  },
+  generatingText: {
+    color: colors.textTertiary,
+    fontSize: 18,
+    fontWeight: '600' as const,
   },
 });
