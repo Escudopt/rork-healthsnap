@@ -764,7 +764,7 @@ export default function SupplementsScreen() {
     ]).start();
     
     loadMyVitamins();
-  }, [fadeAnim, scaleAnim]);
+  }, []);
   
   const loadMyVitamins = async () => {
     try {
