@@ -32,7 +32,6 @@ import { MacroChart } from '@/components/MacroChart';
 import { MacroWidget } from '@/components/MacroWidget';
 import { TopFoodsTable } from '@/components/TopFoodsTable';
 import { FoodPieChart } from '@/components/FoodPieChart';
-import { LiquidGlassButton } from '@/components/LiquidGlassButton';
 
 import { Meal } from '@/types/food';
 import * as Haptics from 'expo-haptics';
@@ -843,56 +842,6 @@ export default function HomeScreen() {
               
 
               
-              {/* Liquid Glass Buttons Demo */}
-              <View style={styles.glassButtonsDemo}>
-                <Text style={[styles.demoSectionTitle, { color: colors.text }]}>Liquid Glass Buttons</Text>
-                <View style={styles.glassButtonsRow}>
-                  <LiquidGlassButton
-                    title="Adicionar"
-                    icon={Plus}
-                    onPress={handleCameraPress}
-                    variant="default"
-                    style={{ flex: 1 }}
-                  />
-                  <LiquidGlassButton
-                    title="Perfil"
-                    icon={User}
-                    onPress={() => router.push('/(tabs)/profile')}
-                    variant="default"
-                    style={{ flex: 1 }}
-                  />
-                </View>
-                <View style={styles.glassButtonsRow}>
-                  <LiquidGlassButton
-                    title="Histórico"
-                    icon={History}
-                    onPress={() => router.push('/meal-history')}
-                    variant="small"
-                    style={{ flex: 1 }}
-                  />
-                  <LiquidGlassButton
-                    title="Análise"
-                    icon={Activity}
-                    onPress={() => setActiveTab('history')}
-                    variant="small"
-                    style={{ flex: 1 }}
-                  />
-                  <LiquidGlassButton
-                    title="Dicas"
-                    icon={Info}
-                    onPress={() => router.push('/(tabs)/nutrition-tips')}
-                    variant="small"
-                    style={{ flex: 1 }}
-                  />
-                </View>
-                <LiquidGlassButton
-                  title="Ver Treinos Inteligentes"
-                  icon={Zap}
-                  onPress={() => router.push('/(tabs)/workout')}
-                  variant="large"
-                />
-              </View>
-
               {/* Food Widgets Section */}
               <View style={styles.foodWidgetsSection}>
                 <View style={styles.sectionHeader}>
@@ -2919,28 +2868,5 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   myVitaminsQuickAccessSubtitle: {
     fontSize: 12,
     fontWeight: '400' as const,
-  },
-  
-  // Liquid Glass Buttons Demo Styles
-  glassButtonsDemo: {
-    marginTop: 12,
-    marginBottom: 12,
-    gap: 12,
-  },
-  demoSectionTitle: {
-    fontSize: 17,
-    fontWeight: '700' as const,
-    marginBottom: 14,
-    letterSpacing: -0.2,
-    opacity: 0.9,
-    ...Platform.select({
-      ios: {
-        fontFamily: 'System',
-      },
-    }),
-  },
-  glassButtonsRow: {
-    flexDirection: 'row',
-    gap: 12,
   },
 });
