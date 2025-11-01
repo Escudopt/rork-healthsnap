@@ -7,6 +7,7 @@ import {
   Image,
   TouchableOpacity,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,17 +20,21 @@ import {
   TrendingUp,
   Droplets,
   Wheat,
-  Beef
+  Beef,
+  Share2
 } from 'lucide-react-native';
 import { BlurCard } from '@/components/BlurCard';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { FoodItem } from '@/types/food';
+import { useShareMeal } from '@/hooks/useShareMeal';
+import * as Haptics from 'expo-haptics';
 
 export default function MealDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { meals } = useCalorieTracker();
   const { colors, isDark } = useTheme();
+  const { shareMeal } = useShareMeal();
   
   const meal = useMemo(() => {
     return meals.find(m => m.id === id);
@@ -70,6 +75,18 @@ export default function MealDetailScreen() {
         year: 'numeric'
       })
     };
+  };
+
+  const handleShare = async () => {
+    if (!meal) return;
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    try {
+      await shareMeal(meal);
+    } catch (error) {
+      console.error('Error sharing meal:', error);
+    }
   };
   
   const renderFoodItem = (food: FoodItem, index: number) => {
@@ -213,6 +230,12 @@ export default function MealDetailScreen() {
               <Text style={[styles.headerTime, { color: colors.textSecondary }]}>{timeInfo.time} • {timeInfo.date}</Text>
             </View>
           </View>
+          <TouchableOpacity
+            onPress={handleShare}
+            style={[styles.shareButtonHeader, { backgroundColor: colors.surfaceElevated }]}
+          >
+            <Share2 color={colors.primary} size={20} />
+          </TouchableOpacity>
         </View>
         
         <ScrollView 
@@ -318,6 +341,7 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 20,
+    gap: 12,
   },
   backButton: {
     padding: 8,
@@ -544,5 +568,14 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   backToHistoryText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  shareButtonHeader: {
+    padding: 10,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: isDark ? 0.2 : 0.1,
+    shadowRadius: 2,
+    elevation: isDark ? 0 : 1,
   },
 });

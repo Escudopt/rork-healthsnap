@@ -9,12 +9,13 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { Trash2, ChevronRight, Utensils } from 'lucide-react-native';
+import { Trash2, ChevronRight, Utensils, Share2 } from 'lucide-react-native';
 import { Meal } from '@/types/food';
 import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme } from '@/providers/ThemeProvider';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { useShareMeal } from '@/hooks/useShareMeal';
 
 interface MealCardProps {
   meal: Meal;
@@ -24,6 +25,7 @@ interface MealCardProps {
 export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
   const { deleteMeal } = useCalorieTracker();
   const { colors, isDark } = useTheme();
+  const { shareMeal } = useShareMeal();
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handleViewDetails = () => {
@@ -31,6 +33,17 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     router.push(`/meal-detail?id=${meal.id}`);
+  };
+
+  const handleShare = async () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    try {
+      await shareMeal(meal);
+    } catch (error) {
+      console.error('Error sharing meal:', error);
+    }
   };
 
   const handleDelete = () => {
@@ -118,6 +131,11 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
                 <Text style={[styles.calories, { color: colors.text }]}>{meal.totalCalories} kcal</Text>
               </View>
               <View style={styles.actionButtons}>
+                <TouchableOpacity onPress={handleShare} style={styles.shareButton}>
+                  <View style={styles.shareButtonInner}>
+                    <Share2 color={colors.success || '#10B981'} size={18} strokeWidth={2} />
+                  </View>
+                </TouchableOpacity>
                 {showDetailButton && (
                   <TouchableOpacity onPress={handleViewDetails} style={styles.detailButton}>
                     <View style={styles.detailButtonInner}>
@@ -234,5 +252,13 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     padding: 8,
     borderRadius: 22,
     backgroundColor: isDark ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255, 59, 48, 0.1)',
+  },
+  shareButton: {
+    borderRadius: 20,
+  },
+  shareButtonInner: {
+    padding: 8,
+    borderRadius: 22,
+    backgroundColor: isDark ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)',
   },
 });
