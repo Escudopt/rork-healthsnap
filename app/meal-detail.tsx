@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Platform,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,13 +29,16 @@ import { useCalorieTracker } from '@/providers/CalorieTrackerProvider';
 import { useTheme, useThemedStyles } from '@/providers/ThemeProvider';
 import { FoodItem } from '@/types/food';
 import { useShareMeal } from '@/hooks/useShareMeal';
+import { MealShareCard } from '@/components/MealShareCard';
 import * as Haptics from 'expo-haptics';
 
 export default function MealDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { meals } = useCalorieTracker();
   const { colors, isDark } = useTheme();
-  const { shareMeal } = useShareMeal();
+  const { shareMeal, isGenerating } = useShareMeal();
+  const shareCardRef = useRef<View>(null);
+  const [showShareCard, setShowShareCard] = useState(false);
   
   const meal = useMemo(() => {
     return meals.find(m => m.id === id);
@@ -83,9 +87,19 @@ export default function MealDetailScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     try {
-      await shareMeal(meal);
+      if (Platform.OS === 'web') {
+        await shareMeal(meal);
+      } else {
+        setShowShareCard(true);
+        
+        setTimeout(async () => {
+          await shareMeal(meal, shareCardRef);
+          setShowShareCard(false);
+        }, 100);
+      }
     } catch (error) {
       console.error('Error sharing meal:', error);
+      setShowShareCard(false);
     }
   };
   
@@ -233,8 +247,13 @@ export default function MealDetailScreen() {
           <TouchableOpacity
             onPress={handleShare}
             style={[styles.shareButtonHeader, { backgroundColor: colors.surfaceElevated }]}
+            disabled={isGenerating}
           >
-            <Share2 color={colors.primary} size={20} />
+            {isGenerating ? (
+              <Text style={[styles.generatingText, { color: colors.textTertiary }]}>...</Text>
+            ) : (
+              <Share2 color={colors.primary} size={20} />
+            )}
           </TouchableOpacity>
         </View>
         
@@ -323,6 +342,17 @@ export default function MealDetailScreen() {
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      <Modal
+        visible={showShareCard}
+        transparent
+        animationType="none"
+        statusBarTranslucent
+      >
+        <View style={styles.offscreenContainer}>
+          <MealShareCard ref={shareCardRef} meal={meal} />
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -577,5 +607,14 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     shadowOpacity: isDark ? 0.2 : 0.1,
     shadowRadius: 2,
     elevation: isDark ? 0 : 1,
+  },
+  generatingText: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  offscreenContainer: {
+    position: 'absolute',
+    left: -10000,
+    top: -10000,
   },
 });

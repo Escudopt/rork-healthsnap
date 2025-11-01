@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,6 +8,7 @@ import {
   Animated,
   Alert,
   Platform,
+  Modal,
 } from 'react-native';
 import { Trash2, ChevronRight, Utensils, Share2 } from 'lucide-react-native';
 import { Meal } from '@/types/food';
@@ -16,6 +17,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useShareMeal } from '@/hooks/useShareMeal';
+import { MealShareCard } from './MealShareCard';
 
 interface MealCardProps {
   meal: Meal;
@@ -27,6 +29,8 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
   const { colors, isDark } = useTheme();
   const { shareMeal, isGenerating } = useShareMeal();
   const scaleAnim = useRef(new Animated.Value(1)).current;
+  const shareCardRef = useRef<View>(null);
+  const [showShareCard, setShowShareCard] = useState(false);
 
   const handleViewDetails = () => {
     if (Platform.OS !== 'web') {
@@ -40,9 +44,19 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     try {
-      await shareMeal(meal);
+      if (Platform.OS === 'web') {
+        await shareMeal(meal);
+      } else {
+        setShowShareCard(true);
+        
+        setTimeout(async () => {
+          await shareMeal(meal, shareCardRef);
+          setShowShareCard(false);
+        }, 100);
+      }
     } catch (error) {
       console.error('Error sharing meal:', error);
+      setShowShareCard(false);
     }
   };
 
@@ -91,11 +105,12 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
   const styles = createStyles(colors, isDark);
 
   return (
-    <Animated.View style={[
-      styles.container,
-      { transform: [{ scale: scaleAnim }] }
-    ]}>
-      <View style={styles.card}>
+    <>
+      <Animated.View style={[
+        styles.container,
+        { transform: [{ scale: scaleAnim }] }
+      ]}>
+        <View style={styles.card}>
         <View style={styles.cardContent}>
           {meal.imageBase64 ? (
             <Image
@@ -161,7 +176,19 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
           </View>
         </View>
       </View>
-    </Animated.View>
+      </Animated.View>
+
+      <Modal
+        visible={showShareCard}
+        transparent
+        animationType="none"
+        statusBarTranslucent
+      >
+        <View style={styles.offscreenContainer}>
+          <MealShareCard ref={shareCardRef} meal={meal} />
+        </View>
+      </Modal>
+    </>
   );
 }
 
@@ -276,5 +303,10 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     color: colors.textTertiary,
     fontSize: 18,
     fontWeight: '600' as const,
+  },
+  offscreenContainer: {
+    position: 'absolute' as const,
+    left: -10000,
+    top: -10000,
   },
 });

@@ -1,88 +1,39 @@
-import { useCallback, useState } from 'react';
-import { Platform, Alert, Share } from 'react-native';
+import { useCallback, useState, useRef } from 'react';
+import { Platform, Alert, Share, View } from 'react-native';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system';
+import { captureRef } from 'react-native-view-shot';
 import { Meal } from '@/types/food';
+import React from "react";
 
 export function useShareMeal() {
   const [isGenerating, setIsGenerating] = useState(false);
+  const shareCardRef = useRef<View>(null);
 
-  const generateMealImage = async (meal: Meal): Promise<string | null> => {
+  const captureShareCard = async (cardRef: React.RefObject<View | null>): Promise<string | null> => {
     try {
-      const timeInfo = new Date(meal.timestamp).toLocaleString('pt-BR', {
-        day: 'numeric',
-        month: 'long',
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-
-      const foodList = meal.foods.map(food => 
-        `${food.name} (${food.calories} kcal)`
-      ).join(', ');
-
-      const macros = meal.foods.reduce((acc, food) => ({
-        protein: acc.protein + (food.protein || 0),
-        carbs: acc.carbs + (food.carbs || 0),
-        fat: acc.fat + (food.fat || 0),
-      }), { protein: 0, carbs: 0, fat: 0 });
-
-      const prompt = `Create a beautiful, modern social media card for sharing a meal with the following details:
-
-Meal Type: ${meal.mealType || 'Refeição'}
-Date & Time: ${timeInfo}
-Total Calories: ${meal.totalCalories} kcal
-
-Foods: ${foodList}
-
-Macronutrients:
-• Protein: ${macros.protein.toFixed(1)}g
-• Carbs: ${macros.carbs.toFixed(1)}g
-• Fat: ${macros.fat.toFixed(1)}g
-
-Design requirements:
-- Modern, clean, and professional design
-- Use a gradient background (green to blue tones)
-- Display all nutrition information clearly
-- Include icons for calories and macros
-- Make it Instagram/social media friendly
-- Add subtle food-related decorative elements
-- Use readable typography with good contrast
-- Make it visually appealing and shareable`;
-
-      console.log('Generating meal share image...');
-      
-      const response = await fetch('https://toolkit.rork.com/images/generate/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt,
-          size: '1024x1024',
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Image generation failed:', errorText);
+      if (!cardRef.current) {
+        console.error('Share card ref not available');
         return null;
       }
 
-      const data = await response.json();
+      console.log('Capturing share card...');
       
-      if (data.image && data.image.base64Data) {
-        const base64Image = `data:${data.image.mimeType};base64,${data.image.base64Data}`;
-        return base64Image;
-      }
-      
-      return null;
+      const uri = await captureRef(cardRef, {
+        format: 'jpg',
+        quality: 0.95,
+        result: 'tmpfile',
+      });
+
+      console.log('Share card captured:', uri);
+      return uri;
     } catch (error) {
-      console.error('Error generating meal image:', error);
+      console.error('Error capturing share card:', error);
       return null;
     }
   };
 
-  const shareMeal = useCallback(async (meal: Meal) => {
+  const shareMeal = useCallback(async (meal: Meal, cardRef?: React.RefObject<View | null>) => {
     if (isGenerating) return;
     
     setIsGenerating(true);
@@ -119,19 +70,19 @@ ${foodList}
 
 #nutrição #calorietracker #saúde`;
 
-      // Generate a beautiful share image
-      let shareImageBase64: string | null = null;
+      // Capture share card as image
+      let shareImageUri: string | null = null;
       
-      if (Platform.OS !== 'web') {
+      if (Platform.OS !== 'web' && cardRef) {
         try {
-          shareImageBase64 = await generateMealImage(meal);
+          shareImageUri = await captureShareCard(cardRef);
         } catch (error) {
-          console.error('Failed to generate share image:', error);
+          console.error('Failed to capture share image:', error);
         }
       }
 
-      // If we have a generated image, share it
-      if (shareImageBase64 && Platform.OS !== 'web') {
+      // If we have a captured image, share it
+      if (shareImageUri && Platform.OS !== 'web') {
         try {
           // Check if sharing is available
           const isAvailable = await Sharing.isAvailableAsync();
@@ -141,18 +92,8 @@ ${foodList}
             return;
           }
 
-          // Save generated image to temporary file
-          const fileUri = `${FileSystem.cacheDirectory}meal_share_${meal.id}.jpg`;
-          const base64Data = shareImageBase64.startsWith('data:')
-            ? shareImageBase64.split(',')[1]
-            : shareImageBase64;
-
-          await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-
           // Share image with message
-          await Sharing.shareAsync(fileUri, {
+          await Sharing.shareAsync(shareImageUri, {
             mimeType: 'image/jpeg',
             dialogTitle: 'Compartilhar Refeição',
             UTI: 'public.jpeg',
@@ -161,7 +102,7 @@ ${foodList}
           // Clean up temporary file after sharing
           setTimeout(async () => {
             try {
-              await FileSystem.deleteAsync(fileUri, { idempotent: true });
+              await FileSystem.deleteAsync(shareImageUri, { idempotent: true });
             } catch (error) {
               console.log('Could not delete temp file:', error);
             }
@@ -208,5 +149,5 @@ ${foodList}
     }
   }, [isGenerating]);
 
-  return { shareMeal, isGenerating };
+  return { shareMeal, isGenerating, shareCardRef };
 }
