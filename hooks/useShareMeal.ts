@@ -21,10 +21,11 @@ export function useShareMeal() {
       }
 
       console.log('📸 About to call captureRef...');
+      console.log('📸 Capture options:', { format: 'png', quality: 1, result: 'tmpfile' });
       
       const uri = await captureRef(cardRef, {
-        format: 'jpg',
-        quality: 0.95,
+        format: 'png',
+        quality: 1,
         result: 'tmpfile',
       });
 
@@ -101,9 +102,9 @@ ${foodList}
 
           // Share image with message
           await Sharing.shareAsync(shareImageUri, {
-            mimeType: 'image/jpeg',
+            mimeType: 'image/png',
             dialogTitle: 'Compartilhar Refeição',
-            UTI: 'public.jpeg',
+            UTI: 'public.png',
           });
 
           // Clean up temporary file after sharing

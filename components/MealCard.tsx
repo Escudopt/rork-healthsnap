@@ -46,19 +46,35 @@ export function MealCard({ meal, showDetailButton = true }: MealCardProps) {
       if (Platform.OS === 'web') {
         await shareMeal(meal);
       } else {
+        console.log('🔄 Mounting share card...');
         setShowShareCard(true);
         
         setTimeout(async () => {
           try {
             console.log('📸 Starting share capture...');
+            console.log('📸 shareCardRef.current:', shareCardRef.current);
+            
+            if (!shareCardRef.current) {
+              console.error('❌ shareCardRef.current is null, waiting more...');
+              
+              // Wait a bit more and try again
+              setTimeout(async () => {
+                console.log('🔄 Retry - shareCardRef.current:', shareCardRef.current);
+                await shareMeal(meal, shareCardRef);
+                setShowShareCard(false);
+              }, 500);
+              return;
+            }
+            
             await shareMeal(meal, shareCardRef);
             console.log('✅ Share completed');
           } catch (shareError) {
             console.error('❌ Share error:', shareError);
           } finally {
+            console.log('🧹 Unmounting share card...');
             setShowShareCard(false);
           }
-        }, 1000);
+        }, 2000);
       }
     } catch (error) {
       console.error('Error sharing meal:', error);
@@ -307,12 +323,9 @@ const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   },
   offscreenContainer: {
     position: 'absolute' as const,
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    opacity: 0.001,
-    zIndex: -999,
-    overflow: 'hidden' as const,
+    left: -10000,
+    top: -10000,
+    width: 1080,
+    height: 1920,
   },
 });

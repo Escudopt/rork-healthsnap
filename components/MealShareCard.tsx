@@ -6,10 +6,11 @@ import { Flame, Activity, Beef, Wheat, Droplets } from 'lucide-react-native';
 
 interface MealShareCardProps {
   meal: Meal;
+  onImageLoad?: () => void;
 }
 
 export const MealShareCard = React.forwardRef<View, MealShareCardProps>(
-  ({ meal }, ref) => {
+  ({ meal, onImageLoad }, ref) => {
     const macros = meal.foods.reduce(
       (acc, food) => ({
         protein: acc.protein + (food.protein || 0),
@@ -56,6 +57,14 @@ export const MealShareCard = React.forwardRef<View, MealShareCardProps>(
                   }}
                   style={styles.mealImage}
                   resizeMode="cover"
+                  onLoad={() => {
+                    console.log('🖼️ Meal image loaded in share card');
+                    onImageLoad?.();
+                  }}
+                  onError={(error) => {
+                    console.error('❌ Meal image load error in share card:', error.nativeEvent.error);
+                    onImageLoad?.();
+                  }}
                 />
               </View>
             )}
